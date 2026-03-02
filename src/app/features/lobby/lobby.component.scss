@@ -1,0 +1,21 @@
+.spacer { flex: 1 1 auto; }
+.username { margin-right: 12px; opacity: 0.8; font-size: 0.9rem; }
+
+.lobby-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 32px;
+  justify-content: center;
+}
+
+.room-card {
+  width: 280px;
+  transition: transform 0.15s ease;
+  &:hover { transform: translateY(-4px); }
+}
+
+.empty {
+  opacity: 0.6;
+  margin-top: 40px;
+}

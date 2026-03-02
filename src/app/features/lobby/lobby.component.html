@@ -1,0 +1,36 @@
+<mat-toolbar color="primary">
+  <span>Toon Live — Lobby</span>
+  <span class="spacer"></span>
+  <span class="username">{{ auth.user()?.username }}</span>
+  <button mat-icon-button (click)="logout()" title="Déconnexion">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="lobby-grid">
+  @for (room of rooms(); track room.id) {
+    <mat-card class="room-card">
+      <mat-card-header>
+        <mat-card-title>{{ room.name }}</mat-card-title>
+        <mat-card-subtitle>
+          <mat-chip-set>
+            <mat-chip [highlighted]="room.userCount > 0">
+              <mat-icon matChipAvatar>people</mat-icon>
+              {{ room.userCount }} / {{ room.maxUsers }}
+            </mat-chip>
+          </mat-chip-set>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-actions align="end">
+        <button mat-flat-button color="accent"
+                [disabled]="room.userCount >= room.maxUsers"
+                (click)="joinRoom(room.id)">
+          Rejoindre
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  } @empty {
+    <p class="empty">Chargement des salles…</p>
+  }
+</div>

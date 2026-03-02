@@ -1,0 +1,23 @@
+<div class="user-list-header">
+  <mat-icon class="header-icon">people</mat-icon>
+  <span>Joueurs ({{ users().length }})</span>
+</div>
+
+<mat-list dense>
+  @for (user of users(); track user.userId) {
+    <mat-list-item>
+      <mat-icon matListItemIcon
+        [class.me]="user.userId === myUserId()">
+        person
+      </mat-icon>
+      <span matListItemTitle>
+        {{ user.username }}
+        @if (user.userId === myUserId()) { <em>(moi)</em> }
+      </span>
+    </mat-list-item>
+  } @empty {
+    <mat-list-item>
+      <span matListItemTitle class="empty">Aucun joueur</span>
+    </mat-list-item>
+  }
+</mat-list>

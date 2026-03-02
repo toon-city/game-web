@@ -1,0 +1,28 @@
+<div class="chat-wrapper">
+  <div class="chat-header">
+    <mat-icon class="header-icon">chat</mat-icon>
+    <span>Chat</span>
+  </div>
+
+  <div class="msg-list" #msgList>
+    @for (msg of messages(); track msg.id) {
+      <div class="msg" [class.mine]="msg.userId === myUserId()">
+        <span class="author">{{ msg.username }}</span>
+        <span class="bubble">{{ msg.text }}</span>
+        <span class="time">{{ msg.sentAt | date:'HH:mm' }}</span>
+      </div>
+    } @empty {
+      <p class="empty">Aucun message. Soyez le premier à parler !</p>
+    }
+  </div>
+
+  <div class="chat-input">
+    <mat-form-field appearance="outline" class="input-field">
+      <input matInput [(ngModel)]="text" (keyup.enter)="send()"
+             placeholder="Message…" autocomplete="off" />
+    </mat-form-field>
+    <button mat-icon-button color="primary" (click)="send()" [disabled]="!text.trim()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+</div>

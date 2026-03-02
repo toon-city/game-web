@@ -1,0 +1,14 @@
+.user-list-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+
+  .header-icon { font-size: 18px; height: 18px; width: 18px; }
+}
+
+.me { color: #bb86fc; }
+.empty { opacity: 0.5; font-style: italic; }

@@ -1,0 +1,38 @@
+{
+  "name": "@toon-live/game-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "bunx ng serve",
+    "build": "bunx ng build",
+    "watch": "bunx ng build --watch --configuration development",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "@angular/animations": "^17.3.0",
+    "@angular/cdk": "^17.3.0",
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@angular/material": "^17.3.0",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "@angular/router": "^17.3.0",
+    "@toon-live/game-socket": "workspace:*",
+    "@toon-live/game-types": "workspace:*",
+    "game-core": "workspace:*",
+    "mobx": "^6.13.7",
+    "pixi.js": "8.2.5",
+    "rxjs": "~7.8.0",
+    "socket.io-client": "^4.7.5",
+    "tslib": "^2.6.0",
+    "zone.js": "~0.14.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^17.3.0",
+    "@angular/cli": "^17.3.0",
+    "@angular/compiler-cli": "^17.3.0",
+    "typescript": "~5.4.5"
+  }
+}
