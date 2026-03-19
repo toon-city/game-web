@@ -45,6 +45,7 @@ export class SocketService implements OnDestroy {
     const token = this.auth.token();
     if (!token) return;
 
+    this.roomState.set(null);
     this.gs = new GameSocket({ serverUrl, token, moveThrottleMs: 50 });
 
     this.unsubs = [
@@ -72,6 +73,7 @@ export class SocketService implements OnDestroy {
     this.gs?.disconnect();
     this.gs = null;
     this.isConnected.set(false);
+    this.roomState.set(null);
   }
 
   // ── Delegating helpers ───────────────────────────────────────────────────────

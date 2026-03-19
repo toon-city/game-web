@@ -15,6 +15,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { RoomPermission } from '@toon-live/game-types';
 import { AuthService } from '../../core/services/auth.service';
+import { environment } from '../../../environments/environment';
 import { SocketService } from '../../core/services/socket.service';
 import { GameCanvasComponent } from './components/game-canvas/game-canvas.component';
 import { ChatComponent } from './components/chat/chat.component';
@@ -51,7 +52,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.roomId = this.route.snapshot.paramMap.get('roomId') ?? '';
-    this.socket.connect('http://localhost:3001');
+    this.socket.connect(environment.wsUrl || window.location.origin);
     // Wait for connection then join
     const check = setInterval(() => {
       if (this.socket.isConnected()) {

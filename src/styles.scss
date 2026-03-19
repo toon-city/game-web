@@ -2,28 +2,127 @@
 
 @include mat.core();
 
-$dark-primary: mat.define-palette(mat.$deep-purple-palette);
-$dark-accent:  mat.define-palette(mat.$blue-palette, A200, A100, A400);
-$dark-warn:    mat.define-palette(mat.$red-palette);
+// ─── Palette inspirée de l'ancienne version ───────────────────────────────────
+// Primaire : pétrol/teal  (ancien : #236981, #043849)
+// Accent   : rose magenta (ancien : #f0037f, #db0076)
+// Warn     : orange       (ancien : #F15A29)
+$primary: mat.define-palette(mat.$cyan-palette,   800, 600, 900);
+$accent:  mat.define-palette(mat.$pink-palette,   A400, A200, A700);
+$warn:    mat.define-palette(mat.$deep-orange-palette, 600);
 
-$dark-theme: mat.define-dark-theme((
+$theme: mat.define-light-theme((
   color: (
-    primary: $dark-primary,
-    accent:  $dark-accent,
-    warn:    $dark-warn,
-  )
+    primary: $primary,
+    accent:  $accent,
+    warn:    $warn,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: '"Nunito", "Helvetica Neue", sans-serif',
+  ),
 ));
 
 html {
-  @include mat.all-component-themes($dark-theme);
+  @include mat.all-component-themes($theme);
 }
 
 * { box-sizing: border-box; }
 
+/* ── Variables globales ──────────────────────────────────────────────────── */
+:root {
+  --toon-sky:          #82c9e8;
+  --toon-sky-light:    #c8eaf6;
+  --toon-sky-dark:     #5ab0d4;
+  --toon-petrol:       #236981;
+  --toon-petrol-dark:  #043849;
+  --toon-pink:         #f0037f;
+  --toon-pink-dark:    #a8005a;
+  --toon-orange:       #f26522;
+  --toon-gold:         #fcd019;
+  --toon-gold-dark:    #c9a000;
+}
+
+/* ── Snackbar — style global ───────────────────────────────────────────────────────── */
+.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  border-radius: 14px !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 6px 28px rgba(3, 56, 73, 0.28) !important;
+  padding: 0 4px !important;
+}
+.mat-mdc-snack-bar-container .mat-mdc-button {
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
+}
+
+/* Erreur — rose magenta */
+.snack-error .mdc-snackbar__surface {
+  background: linear-gradient(90deg, #a8005a 0%, #f0037f 100%) !important;
+  color: #fff !important;
+}
+.snack-error .mat-mdc-button { color: rgba(255, 255, 255, 0.88) !important; }
+
+/* Succès — pétrol */
+.snack-success .mdc-snackbar__surface {
+  background: linear-gradient(90deg, #043849 0%, #236981 60%, #5ab0d4 100%) !important;
+  color: #fff !important;
+}
+.snack-success .mat-mdc-button { color: rgba(255, 255, 255, 0.88) !important; }
+
+/* Info — sky */
+.snack-info .mdc-snackbar__surface {
+  background: linear-gradient(90deg, #5ab0d4 0%, #82c9e8 100%) !important;
+  color: #043849 !important;
+}
+.snack-info .mat-mdc-button { color: #043849 !important; }
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
 html, body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background: #1a1a2e;
-  color: #e0e0e0;
+  font-family: 'Nunito', "Helvetica Neue", sans-serif;
+  background: linear-gradient(160deg,
+    var(--toon-sky-light) 0%,
+    var(--toon-sky)       50%,
+    var(--toon-sky-dark)  100%);
+  background-attachment: fixed;
+  color: var(--toon-petrol-dark);
+}
+
+/* ── Toolbar globale ─────────────────────────────────────────────────────── */
+mat-toolbar.mat-toolbar {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+mat-card.mat-mdc-card {
+  border-radius: 14px !important;
+  box-shadow: 0 4px 16px rgba(3, 56, 73, 0.12) !important;
+  border: 1px solid rgba(130, 201, 232, 0.5);
+  background: rgba(255,255,255, 0.92) !important;
+}
+
+/* ── Boutons ─────────────────────────────────────────────────────────────── */
+.mat-mdc-raised-button,
+.mat-mdc-flat-button {
+  border-radius: 24px !important;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────────── */
+.mat-mdc-chip {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+}
+
+/* ── Dialogs ─────────────────────────────────────────────────────────────── */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.98) !important;
+  border-top: 4px solid var(--toon-pink) !important;
 }

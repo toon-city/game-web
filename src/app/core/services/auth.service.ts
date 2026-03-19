@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { UserInfo } from '@toon-live/game-types';
+import { environment } from '../../../environments/environment';
 
 export interface LoginResponse {
   token: string;
@@ -15,7 +16,7 @@ const USER_KEY = 'toon_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiBase = 'http://localhost:3001/api';
+  private readonly apiBase = environment.apiUrl;
 
   private _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
   private _user = signal<UserInfo | null>(
@@ -34,18 +35,24 @@ export class AuthService {
     private router: Router,
   ) {}
 
-  login(username: string) {
+  login(username: string, password: string) {
     return this.http
-      .post<LoginResponse>(`${this.apiBase}/auth/token`, { username })
-      .pipe(
-        tap((res) => {
-          localStorage.setItem(TOKEN_KEY, res.token);
-          this._token.set(res.token);
-          const user: UserInfo = { id: res.userId, username: res.username, avatarOptions: {} };
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-          this._user.set(user);
-        }),
-      );
+      .post<LoginResponse>(`${this.apiBase}/auth/token`, { username, password })
+      .pipe(tap((res) => this._storeSession(res)));
+  }
+
+  register(username: string, password: string, gender: string, email: string) {
+    return this.http
+      .post<LoginResponse>(`${this.apiBase}/auth/register`, { username, password, gender, email })
+      .pipe(tap((res) => this._storeSession(res)));
+  }
+
+  private _storeSession(res: LoginResponse): void {
+    localStorage.setItem(TOKEN_KEY, res.token);
+    this._token.set(res.token);
+    const user: UserInfo = { id: res.userId, username: res.username, avatarOptions: {} };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this._user.set(user);
   }
 
   logout(): void {

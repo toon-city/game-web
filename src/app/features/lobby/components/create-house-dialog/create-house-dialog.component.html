@@ -1,0 +1,74 @@
+<h2 mat-dialog-title>Créer ma maison</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" novalidate class="dialog-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nom de la maison</mat-label>
+      <input matInput formControlName="name" placeholder="Ex: Chez Toon" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <mat-error>Entre 2 et 64 caractères.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Schéma de maison</mat-label>
+      @if (loadingSchemas) {
+        <mat-icon matPrefix class="spin">sync</mat-icon>
+      }
+      <mat-select formControlName="schemaId">
+        @for (s of schemas; track s.id) {
+          <mat-option [value]="s.id">{{ s.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get('schemaId')?.invalid && form.get('schemaId')?.touched) {
+        <mat-error>Choisissez un schéma.</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="access-group">
+      <label class="access-label">Mode d'accès</label>
+      <mat-radio-group formControlName="access" class="radio-group">
+        <mat-radio-button value="OPEN">
+          <mat-icon class="access-icon">lock_open</mat-icon> Ouvert
+        </mat-radio-button>
+        <mat-radio-button value="PASSWORD">
+          <mat-icon class="access-icon">password</mat-icon> Mot de passe
+        </mat-radio-button>
+        <mat-radio-button value="CLOSED">
+          <mat-icon class="access-icon">lock</mat-icon> Fermé
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    @if (accessValue === 'PASSWORD') {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mot de passe</mat-label>
+        <input matInput formControlName="password"
+               [type]="hidePassword ? 'password' : 'text'" />
+        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (form.get('password')?.invalid && form.get('password')?.touched) {
+          <mat-error>Minimum 3 caractères.</mat-error>
+        }
+      </mat-form-field>
+    }
+
+    @if (error) {
+      <p class="error-msg">{{ error }}</p>
+    }
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close [disabled]="loading">Annuler</button>
+  <button mat-flat-button color="accent" [disabled]="loading" (click)="submit()">
+    @if (loading) {
+      <mat-spinner diameter="18"></mat-spinner>
+    } @else {
+      Créer
+    }
+  </button>
+</mat-dialog-actions>

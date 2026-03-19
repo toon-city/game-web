@@ -9,8 +9,9 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { Application } from 'pixi.js';
-import { GameCore } from 'game-core';
+import { Application, Assets } from 'pixi.js';
+import { GameCore, LoadingView } from 'game-core';
+import { RoomState } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
@@ -33,6 +34,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
+  private loadingView: LoadingView | null = null;
   private subs: Subscription[]    = [];
   private initDone = false;
   private walkTimers   = new Map<string, ReturnType<typeof setTimeout>>();
@@ -41,22 +43,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private lerpTicker: ((ticker: any) => void) | null = null;
 
   ngAfterViewInit(): void {
-    // Attendre que roomState soit disponible avant d'initialiser
-    const state = this.socket.roomState();
-    if (state) {
-      console.log('[GameCanvas] roomState already available, init now');
-      this.initGameCore(state.houseXml, state.users);
-    } else {
-      console.log('[GameCanvas] waiting for roomState…');
-      const interval = setInterval(() => {
-        const s = this.socket.roomState();
-        if (s) {
-          clearInterval(interval);
-          console.log('[GameCanvas] roomState received, init now');
-          this.initGameCore(s.houseXml, s.users);
-        }
-      }, 100);
-    }
+    this.startLoading();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -65,10 +52,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
   }
 
-  private async initGameCore(
-    houseXml: string,
-    existingUsers: Array<{ userId: string; username: string; x: number; y: number }>,
-  ): Promise<void> {
+  private async startLoading(): Promise<void> {
     if (this.initDone) return;
     this.initDone = true;
 
@@ -94,18 +78,58 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       moveSpeed:       5,
       cameraMode:      'lookahead',
     });
-
     this.gc.setCameraPosition(400, 300);
 
-    // ── Charger la map ────────────────────────────────────────────────────────
+    // ── Étape 1 : écran de chargement immédiat ────────────────────────────────
+    // Pré-charger la texture vidéo pour que le Sprite ait des dimensions correctes
+    await Assets.load('assets/ui/loading.webm').catch(() => null);
+    this.loadingView = new LoadingView();
+    this.loadingView.draw(this.app.screen.width, this.app.screen.height);
+    this.app.stage.addChild(this.loadingView);
+    this.loadingView.setMessage('Connexion au serveur...');
+    this.loadingView.setProgress(0.1);
+
+    // Redessiner le fond si le canvas est redimensionné pendant le chargement
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const onResize = (w: number, h: number) => this.loadingView?.draw(w, h);
+    this.app.renderer.on('resize', onResize);
+
+    // ── Étape 2 : attendre la connexion socket ────────────────────────────────
+    await new Promise<void>((resolve) => {
+      if (this.socket.isConnected()) { resolve(); return; }
+      const check = setInterval(() => {
+        if (this.socket.isConnected()) { clearInterval(check); resolve(); }
+      }, 100);
+    });
+
+    this.loadingView.setMessage('Chargement de la room...');
+    this.loadingView.setProgress(0.3);
+
+    // ── Étape 3 : attendre le roomState ──────────────────────────────────────
+    const state = await new Promise<RoomState>((resolve) => {
+      const s = this.socket.roomState();
+      if (s) { resolve(s); return; }
+      const check = setInterval(() => {
+        const s2 = this.socket.roomState();
+        if (s2) { clearInterval(check); resolve(s2); }
+      }, 100);
+    });
+
+    this.loadingView.setMessage('Chargement de la carte...');
+    this.loadingView.setProgress(0.5);
+
+    // ── Étape 4 : charger la map ──────────────────────────────────────────────
     try {
-      await this.gc.loadHouse(houseXml);
+      await this.gc.loadHouse(state.houseXml);
     } catch (e) {
       console.error('[GameCanvas] loadHouse failed:', e);
       return;
     }
 
-    // ── Avatar local ──────────────────────────────────────────────────────────
+    this.loadingView.setMessage('Chargement des joueurs...');
+    this.loadingView.setProgress(0.8);
+
+    // ── Étape 5 : spawner les avatars ─────────────────────────────────────────
     const myId       = this.auth.user()!.id;
     const myUsername = this.auth.user()!.username;
 
@@ -116,15 +140,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     });
     this.gc.bindPlayerInput(myId);
 
-    // ── Transmettre les déplacements locaux au serveur (y compris lors de collisions) ─────
     this.gc.on('avatar:walking', ({ id, avatar, direction }) => {
       if (id === myId) {
         this.socket.sendAvatarMove(this.roomId, avatar.x, avatar.y, direction);
       }
     });
 
-    // ── Spawner les avatars déjà présents dans la salle ───────────────────────
-    for (const u of existingUsers) {
+    for (const u of state.users) {
       if (u.userId !== myId && !this.gc.getAvatar(u.userId)) {
         try {
           this.gc.spawnAvatar(u.userId, u.x, u.y, { username: u.username });
@@ -136,49 +158,37 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     // ── Réagir aux événements réseau ──────────────────────────────────────────
     this.subs.push(
-      // Quelqu'un rejoint
       this.socket.userJoined$.subscribe((p) => {
         if (p.userId === myId || this.gc?.getAvatar(p.userId)) return;
         this.gc?.spawnAvatar(p.userId, p.x, p.y, { username: p.username });
       }),
-
-      // Quelqu'un part
       this.socket.userLeft$.subscribe((p) => {
         this.gc?.removeAvatar(p.userId);
         this.remoteTargets.delete(p.userId);
         clearTimeout(this.walkTimers.get(p.userId));
         this.walkTimers.delete(p.userId);
       }),
-
-      // Déplacement distant : mise à jour de la cible lerp
       this.socket.remoteMove$.subscribe((p) => {
         const remoteAvatar = this.gc?.getAvatar(p.userId);
         if (!remoteAvatar) return;
-        // Mise à jour de la cible d'interpolation (pas de set direct = pas de téléportation)
         this.remoteTargets.set(p.userId, { x: p.x, y: p.y });
-        // changeDirection() réinitialise les textures PIXI → arrête l'AnimatedSprite
-        // → toujours rappeler walk() ensuite pour relancer l'animation
         remoteAvatar.changeDirection(p.direction);
         remoteAvatar.walk();
-        // Arrêter l'animation de marche après 250 ms sans nouveau paquet
         clearTimeout(this.walkTimers.get(p.userId));
         this.walkTimers.set(p.userId, setTimeout(() => {
           this.gc?.getAvatar(p.userId)?.stopWalk();
         }, 250));
       }),
-
-      // Bulle de dialogue distante (AVATAR_SAY)
       this.socket.remoteSay$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
       }),
-
-      // Bulle de dialogue depuis le chat (CHAT_MESSAGE → tous les avatars)
       this.socket.chatMessage$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
       }),
     );
 
     // ── Interpolation lerp pour les avatars distants ─────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.lerpTicker = (ticker: any) => {
       const dt: number = ticker.deltaTime ?? 1;
       for (const [userId, target] of this.remoteTargets) {
@@ -199,8 +209,32 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     };
     this.app.ticker.add(this.lerpTicker);
 
-    // ── Mode édition initial ──────────────────────────────────────────────────
     if (this.editMode) this.gc.setEditMode(true);
+
+    // ── Étape 6 : prêt → slide-out vers le haut ──────────────────────────────
+    this.app.renderer.off('resize', onResize);
+    this.loadingView.setMessage('Prêt !');
+    this.loadingView.setProgress(1.0);
+
+    await new Promise<void>((resolve) => {
+      const totalMs = 400;
+      let   elapsed = 0;
+      const targetY = -(this.app!.screen.height + 10);
+      const lv      = this.loadingView!;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const slideOut = (ticker: any) => {
+        elapsed += (ticker.deltaMS as number);
+        const t = Math.min(elapsed / totalMs, 1);
+        lv.y = targetY * (t * t);
+        if (t >= 1) {
+          this.app!.ticker.remove(slideOut);
+          this.app!.stage.removeChild(lv);
+          this.loadingView = null;
+          resolve();
+        }
+      };
+      this.app!.ticker.add(slideOut);
+    });
   }
 
   ngOnDestroy(): void {

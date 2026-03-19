@@ -1,14 +1,74 @@
+// Wrapper de la liste de joueurs dans le panneau latéral
+:host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
 .user-list-header {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  font-weight: 500;
+  font-weight: 800;
   font-size: 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-family: 'Nunito', sans-serif;
+  color: var(--toon-petrol);
+  border-bottom: 2px solid rgba(252, 208, 25, 0.4);
+  background: rgba(255,255,255,0.5);
 
-  .header-icon { font-size: 18px; height: 18px; width: 18px; }
+  mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    color: var(--toon-petrol);
+  }
+
+  .spacer { flex: 1 1 auto; }
+
+  .user-count {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgba(3,56,73,0.5);
+  }
 }
 
-.me { color: #bb86fc; }
-.empty { opacity: 0.5; font-style: italic; }
+.user-items {
+  overflow-y: auto;
+  padding: 6px 0;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: rgba(35,105,129,0.25); border-radius: 4px; }
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--toon-petrol-dark);
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(130, 201, 232, 0.18);
+  }
+
+  mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    color: var(--toon-sky-dark);
+  }
+}
+
+.empty {
+  color: rgba(3, 56, 73, 0.4);
+  font-style: italic;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 12px;
+}

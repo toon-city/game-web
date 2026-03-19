@@ -1,22 +1,241 @@
-<div class="login-wrapper">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>Toon Live</mat-card-title>
-      <mat-card-subtitle>Entrez votre pseudo pour rejoindre</mat-card-subtitle>
-    </mat-card-header>
-
-    <mat-card-content>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Pseudo</mat-label>
-        <input matInput [(ngModel)]="username" (keyup.enter)="submit()"
-               placeholder="Ex: Toon92" autocomplete="off" />
-      </mat-form-field>
-    </mat-card-content>
-
-    <mat-card-actions align="end">
-      <button mat-flat-button color="primary" [disabled]="loading || !username.trim()" (click)="submit()">
-        {{ loading ? 'Connexion…' : 'Entrer' }}
-      </button>
-    </mat-card-actions>
-  </mat-card>
+<!-- Nuages flottants (décoratifs) -->
+<div class="clouds" aria-hidden="true">
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+  <div class="cloud cloud--3"></div>
+  <div class="cloud cloud--4"></div>
+  <div class="cloud cloud--5"></div>
+  <div class="cloud cloud--6"></div>
+  <div class="cloud cloud--7"></div>
+  <div class="cloud cloud--8"></div>
 </div>
+
+<!-- Layout principal -->
+<div class="page-wrapper">
+  <!-- Logo au-dessus de la carte -->
+  <div class="logo-wrap">
+    <img src="https://www.toon-city.net/images/logo.png" alt="Toon Live" />
+  </div>
+
+  <div class="content-card" [ngClass]="{ 'is-register': mode() === 'register' }">
+
+    <!-- ═══════════════ PANNEAU GAUCHE (image) ═══════════════ -->
+    <div class="panel-bg">
+      <div class="panel-bg__overlay"></div>
+
+      <!-- Bandeau "Rejoindre" (mode login) -->
+      @if (mode() === 'login') {
+        <div class="side-banner side-banner--join">
+          <p class="side-banner__title">Envie de nous rejoindre&nbsp;?</p>
+          <p class="side-banner__sub">Crée ton avatar et explore Toon Live !</p>
+          <button class="cta-btn" type="button" (click)="switchMode()">
+            S'inscrire gratuitement
+          </button>
+        </div>
+      }
+
+      <!-- Bandeau "Déjà inscrit ?" (mode register) -->
+      @if (mode() === 'register') {
+        <div class="side-banner side-banner--back">
+          <p class="side-banner__title">Déjà un compte&nbsp;?</p>
+          <p class="side-banner__sub">Retrouve ton toon et tes amis !</p>
+          <button class="cta-btn cta-btn--outline" type="button" (click)="switchMode()">
+            Se connecter
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- ═══════════════ PANNEAU DROIT (formulaires) ═══════════════ -->
+    <div class="panel-form">
+
+      <!-- Track coulissant (largeur = 200%) -->
+      <div class="forms-track" [ngClass]="{ 'show-register': mode() === 'register' }">
+
+        <!-- ─── Slide CONNEXION ─── -->
+        <div class="form-slide">
+          <h1 class="form-title">Bon retour !</h1>
+          <p class="form-subtitle">Connecte-toi pour retrouver ton toon.</p>
+
+          <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Pseudo</mat-label>
+              <mat-icon matPrefix>person</mat-icon>
+              <input matInput formControlName="username"
+                     placeholder="Ex : Toon92"
+                     autocomplete="username" />
+              @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
+                <mat-error>Entre 2 et 32 caractères.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Mot de passe</mat-label>
+              <mat-icon matPrefix>lock</mat-icon>
+              <input matInput formControlName="password"
+                     [type]="hideLoginPw ? 'password' : 'text'"
+                     autocomplete="current-password" />
+              <button mat-icon-button matSuffix type="button"
+                      (click)="hideLoginPw = !hideLoginPw"
+                      [attr.aria-label]="hideLoginPw ? 'Afficher' : 'Masquer'">
+                <mat-icon>{{ hideLoginPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                <mat-error>Minimum 6 caractères.</mat-error>
+              }
+            </mat-form-field>
+
+            <button mat-flat-button type="submit" class="submit-btn" [disabled]="loadingLogin">
+              @if (loadingLogin) {
+                <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+              } @else {
+                Se connecter
+              }
+            </button>
+
+          </form>
+
+          <!-- Stats -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <mat-icon class="stat-icon">wifi</mat-icon>
+              <div>
+                <span class="stat-value">{{ onlineCount() }}</span>
+                <span class="stat-label">en ligne</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <mat-icon class="stat-icon">group</mat-icon>
+              <div>
+                <span class="stat-value">{{ registeredCount() }}</span>
+                <span class="stat-label">inscrits</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lien inscription (mobile uniquement) -->
+          <p class="mobile-switch">
+            Pas encore de compte ?
+            <button type="button" class="link-btn" (click)="switchMode()">S'inscrire</button>
+          </p>
+        </div>
+
+        <!-- ─── Slide INSCRIPTION ─── -->
+        <div class="form-slide">
+          <h1 class="form-title">Crée ton compte</h1>
+          <p class="form-subtitle">Rejoins la communauté Toon Live !</p>
+
+          <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" novalidate>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Pseudo</mat-label>
+              <mat-icon matPrefix>person</mat-icon>
+              <input matInput formControlName="username"
+                     placeholder="Ex : Toon92"
+                     autocomplete="username" />
+              @if (registerForm.get('username')?.hasError('required') && registerForm.get('username')?.touched) {
+                <mat-error>Le pseudo est obligatoire.</mat-error>
+              } @else if (registerForm.get('username')?.hasError('pattern') && registerForm.get('username')?.touched) {
+                <mat-error>Lettres, chiffres, _ et - uniquement.</mat-error>
+              } @else if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+                <mat-error>Entre 2 et 32 caractères.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Adresse email</mat-label>
+              <mat-icon matPrefix>mail</mat-icon>
+              <input matInput formControlName="email"
+                     type="email"
+                     placeholder="Ex : ton@email.com"
+                     autocomplete="email" />
+              @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+                <mat-error>L'adresse email est obligatoire.</mat-error>
+              } @else if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+                <mat-error>Adresse email invalide.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-icon matPrefix>lock</mat-icon>
+              <input matInput formControlName="password"
+                     [type]="hideRegisterPw ? 'password' : 'text'"
+                     autocomplete="new-password" />
+              <button mat-icon-button matSuffix type="button"
+                      (click)="hideRegisterPw = !hideRegisterPw">
+                <mat-icon>{{ hideRegisterPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                <mat-error>Minimum 6 caractères.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirmer le mot de passe</mat-label>
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <input matInput formControlName="confirmPassword"
+                     [type]="hideConfirmPw ? 'password' : 'text'"
+                     autocomplete="new-password" />
+              <button mat-icon-button matSuffix type="button"
+                      (click)="hideConfirmPw = !hideConfirmPw">
+                <mat-icon>{{ hideConfirmPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched) {
+                <mat-error>Les mots de passe ne correspondent pas.</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Sélection du genre -->
+            <div class="gender-section">
+              <p class="gender-label">
+                Mon genre
+                @if (registerForm.get('gender')?.invalid && registerForm.get('gender')?.touched) {
+                  <span class="gender-error">— sélection obligatoire</span>
+                }
+              </p>
+              <div class="gender-row">
+                <button type="button" class="gender-btn"
+                        [class.selected]="registerForm.get('gender')?.value === 'MALE'"
+                        (click)="registerForm.get('gender')?.setValue('MALE')">
+                  <mat-icon>man</mat-icon>
+                  <span>Homme</span>
+                </button>
+                <button type="button" class="gender-btn"
+                        [class.selected]="registerForm.get('gender')?.value === 'FEMALE'"
+                        (click)="registerForm.get('gender')?.setValue('FEMALE')">
+                  <mat-icon>woman</mat-icon>
+                  <span>Femme</span>
+                </button>
+                <button type="button" class="gender-btn"
+                        [class.selected]="registerForm.get('gender')?.value === 'NON_BINARY'"
+                        (click)="registerForm.get('gender')?.setValue('NON_BINARY')">
+                  <mat-icon>transgender</mat-icon>
+                  <span>Non-binaire</span>
+                </button>
+              </div>
+            </div>
+
+            <button mat-flat-button type="submit" class="submit-btn submit-btn--register"
+                    [disabled]="loadingRegister">
+              @if (loadingRegister) {
+                <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+              } @else {
+                Créer mon compte
+              }
+            </button>
+
+          </form>
+
+          <!-- Lien connexion (mobile uniquement) -->
+          <p class="mobile-switch">
+            Déjà un compte ?
+            <button type="button" class="link-btn" (click)="switchMode()">Se connecter</button>
+          </p>
+        </div>
+
+      </div><!-- /forms-track -->
+    </div><!-- /panel-form -->
+
+  </div><!-- /content-card -->
+</div><!-- /page-wrapper -->

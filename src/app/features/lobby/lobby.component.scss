@@ -1,21 +1,181 @@
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
 .spacer { flex: 1 1 auto; }
-.username { margin-right: 12px; opacity: 0.8; font-size: 0.9rem; }
 
-.lobby-grid {
+.username {
+  margin-right: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+/* ── Layout global ──────────────────────────────────────────────────────── */
+.lobby-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 20px;
   display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+mat-divider {
+  margin: 4px 0;
+  border-color: rgba(130, 201, 232, 0.5) !important;
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+.lobby-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 24px;
-  padding: 32px;
-  justify-content: center;
+  gap: 12px;
+  // Trait doré en bas rappelant les en-têtes de l'ancienne version
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(252, 208, 25, 0.5);
 }
 
-.room-card {
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--toon-petrol);
+  flex: 1 1 auto;
+  font-family: 'Nunito', sans-serif;
+
+  mat-icon {
+    vertical-align: middle;
+    color: var(--toon-pink);
+  }
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Barre de recherche ─────────────────────────────────────────────────── */
+.search-bar {
   width: 280px;
-  transition: transform 0.15s ease;
-  &:hover { transform: translateY(-4px); }
 }
 
-.empty {
-  opacity: 0.6;
-  margin-top: 40px;
+/* ── Grille de salles/maisons ───────────────────────────────────────────── */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+/* ── Carte salle publique ───────────────────────────────────────────────── */
+.room-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+  border-left: 4px solid var(--toon-sky) !important;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(35, 105, 129, 0.22) !important;
+    transform: translateY(-3px);
+    border-left-color: var(--toon-petrol) !important;
+  }
+
+  mat-card-title {
+    color: var(--toon-petrol-dark);
+    font-weight: 800;
+  }
+
+  mat-card-actions {
+    padding: 4px 16px 14px;
+  }
+}
+
+/* ── Carte maison privée ────────────────────────────────────────────────── */
+.house-card {
+  cursor: default;
+  border-left: 4px solid var(--toon-pink) !important;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(240, 3, 127, 0.14) !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* ── Méta maison ────────────────────────────────────────────────────────── */
+.house-owner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  margin-top: 2px;
+  color: var(--toon-petrol);
+  font-weight: 600;
+}
+
+.small-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+}
+
+.house-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ── Chips d'accès ──────────────────────────────────────────────────────── */
+.access-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  // Vert = accès libre
+  &.access-open {
+    background-color: #e0f5e9 !important;
+    color: #1b6e36 !important;
+  }
+  // Orange = mot de passe (rappel de l'orange #F15A29 de l'ancienne version)
+  &.access-password {
+    background-color: #fef3e2 !important;
+    color: #b84a00 !important;
+  }
+  // Rose foncé = fermé (rappel du rose magenta de l'ancienne version)
+  &.access-closed {
+    background-color: #fce4f0 !important;
+    color: var(--toon-pink-dark) !important;
+  }
+}
+
+/* ── Messages vides / hints ─────────────────────────────────────────────── */
+.empty-hint {
+  color: rgba(3, 56, 73, 0.45);
+  font-style: italic;
+  font-weight: 600;
+  grid-column: 1 / -1;
+  padding: 16px 0;
+}
+
+.hint-text {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(3, 56, 73, 0.45);
 }

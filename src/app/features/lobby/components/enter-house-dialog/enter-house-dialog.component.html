@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>
+  <mat-icon>password</mat-icon>
+  Entrer dans "{{ data.house.name }}"
+</h2>
+
+<mat-dialog-content>
+  <p class="hint">Cette maison est protégée par un mot de passe.</p>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput formControlName="password"
+             [type]="hidePassword ? 'password' : 'text'"
+             autocomplete="off" />
+      <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+        <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      @if (form.get('password')?.invalid && form.get('password')?.touched) {
+        <mat-error>Le mot de passe est requis.</mat-error>
+      }
+    </mat-form-field>
+    @if (error) {
+      <p class="error-msg">{{ error }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close [disabled]="loading">Annuler</button>
+  <button mat-flat-button color="primary" [disabled]="loading" (click)="submit()">
+    @if (loading) { <mat-spinner diameter="18"></mat-spinner> } @else { Entrer }
+  </button>
+</mat-dialog-actions>
