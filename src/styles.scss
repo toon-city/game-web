@@ -82,11 +82,7 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: 'Nunito', "Helvetica Neue", sans-serif;
-  background: linear-gradient(160deg,
-    var(--toon-sky-light) 0%,
-    var(--toon-sky)       50%,
-    var(--toon-sky-dark)  100%);
-  background-attachment: fixed;
+  background-color: var(--toon-sky);
   color: var(--toon-petrol-dark);
 }
 

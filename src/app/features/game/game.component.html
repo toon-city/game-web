@@ -1,34 +1,11 @@
-<div class="game-layout">
-  <!-- Top toolbar -->
-  <mat-toolbar class="game-toolbar">
-    <button mat-icon-button (click)="leave()" matTooltip="Retour au lobby">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span class="room-name">{{ roomName() }}</span>
+<app-game-canvas
+  class="game-canvas"
+  [roomId]="roomId"
+  [editMode]="editMode()"
+/>
 
-    @if (canEdit()) {
-      <mat-slide-toggle [(ngModel)]="editMode" color="warn" class="edit-toggle">
-        Mode édition
-      </mat-slide-toggle>
-    }
-
-    <span class="spacer"></span>
-    <span class="username">{{ auth.user()?.username }}</span>
-  </mat-toolbar>
-
-  <!-- Main content -->
-  <div class="game-main">
-    <!-- Canvas -->
-    <app-game-canvas
-      class="canvas-area"
-      [roomId]="roomId"
-      [editMode]="editMode()"
-    />
-
-    <!-- Right panel -->
-    <aside class="side-panel">
-      <app-user-list [roomId]="roomId" />
-      <app-chat [roomId]="roomId" />
-    </aside>
+@if (canEdit()) {
+  <div class="edit-overlay">
+    <mat-slide-toggle [(ngModel)]="editMode" color="warn">Mode édition</mat-slide-toggle>
   </div>
-</div>
+}

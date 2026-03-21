@@ -1,0 +1,176 @@
+<div class="status-bar">
+  <div class="content">
+
+    <!-- ── Connectés ─────────────────────────── -->
+    <button class="connectes" (click)="togglePlayerPanel()" title="Voir les joueurs">
+      <div class="smile">
+        <img src="assets/images/smile.png" alt="Connectés" />
+      </div>
+      <div class="count">{{ statsService.stats().totalConnected }} connectés</div>
+    </button>
+
+    <!-- ── Déditoon container ─────────────────── -->
+    <div class="deditoon-container">
+      <button class="add" (click)="openDeditoonInput()" title="Écrire une déditoon (10 kreds)">
+        Deditoon
+      </button>
+
+      <div class="deditoons">
+        @if (doubledDeditoons().length === 0) {
+          <span class="empty">Aucune déditoon pour l'instant…</span>
+        } @else {
+          <div class="ticker-track">
+            @for (d of doubledDeditoons(); track $index) {
+              <div class="deditoon">
+                <span class="pseudo" [ngClass]="genderClass(d.authorGender)">{{ d.authorUsername }}</span>
+                <span>&nbsp;:</span>
+                <span class="message">{{ d.message }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Panel joueurs ──────────────────────────────────────────────────────── -->
+@if (playerPanelOpen()) {
+  <div class="player-panel" cdkDrag cdkDragBoundary="body">
+    <div class="pp-inner">
+
+      <!-- En-tête / handle de drag -->
+      <div class="header" cdkDragHandle>
+        <span class="header-title">
+          Joueurs
+          <span class="online-badge">{{ statsService.stats().totalConnected }} en ligne</span>
+        </span>
+        <div class="header-actions">
+          <span class="header-total">{{ totalUsers() }} inscrits</span>
+          <button class="close-button" (click)="togglePlayerPanel()" title="Fermer" aria-label="Fermer"></button>
+        </div>
+      </div>
+
+      <!-- Corps -->
+      <div class="body">
+
+        <!-- Barre de recherche -->
+        <div class="search-wrapper">
+          <input
+            class="search"
+            type="search"
+            [(ngModel)]="playerSearch"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Rechercher par pseudo…"
+            aria-label="Rechercher un joueur"
+          />
+        </div>
+
+        <!-- Tableau -->
+        <div class="list">
+          @if (userListService.loading()) {
+            <div class="loader">Chargement…</div>
+          } @else {
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="col-badge" title="Rôle"></th>
+                  <th class="col-pseudo">Pseudo</th>
+                  <th class="col-status">Dernière connexion</th>
+                  <th class="col-join"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of playerRows(); track row.username) {
+                  <tr [class.row--online]="row.online">
+                    <td class="col-badge">
+                      @if (row.rank >= 1) {
+                        <img src="assets/images/modo.png" [alt]="row.rank >= 2 ? 'Admin' : 'Modo'" class="badge-icon" width="20" [title]="row.rank >= 2 ? 'Admin' : 'Modérateur'" />
+                      } @else if (row.toonizLevel > 0) {
+                        <img [src]="'assets/images/tooniz_' + row.toonizLevel + '.png'" [alt]="'Tooniz ' + row.toonizLevel" class="badge-icon" width="20" [title]="'Tooniz niveau ' + row.toonizLevel" />
+                      }
+                    </td>
+                    <td class="col-pseudo">
+                      <span class="pseudo" [ngClass]="genderClass(row.gender)">
+                        @if (row.online) {
+                          <span class="dot"></span>
+                        }
+                        {{ row.username }}
+                      </span>
+                    </td>
+                    <td class="col-status">
+                      @if (row.online) {
+                        <span class="status--online">En ligne</span>
+                      } @else {
+                        <span class="status--offline">{{ formatLastLogin(row.lastLoginAt) }}</span>
+                      }
+                    </td>
+                    <td class="col-join">
+                      @if (row.online && row.roomId) {
+                        <button class="btn-join" (click)="joinRoom(row.roomId)" title="Rejoindre la room">
+                          Rejoindre
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="table-empty">Aucun joueur trouvé.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <div class="buttons">
+            <button class="filter" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">‹</button>
+            @for (p of paginationPages(); track p) {
+              <button class="filter" [class.filter--active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+            }
+            <button class="filter" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)">›</button>
+          </div>
+        }
+
+      </div><!-- /.body -->
+    </div><!-- /.pp-inner -->
+  </div>
+}
+
+<!-- ── Overlay déditoon ───────────────────────────────────────────────────── -->
+@if (deditoonInputOpen()) {
+  <div class="deditoon-overlay" aria-modal="true" aria-label="Écrire une déditoon">
+    <div class="deditoon-overlay__box">
+      <h3 class="deditoon-overlay__title">Écrire une déditoon</h3>
+      <p class="deditoon-overlay__cost">Coûte <strong>10 kreds</strong></p>
+
+      <textarea
+        class="deditoon-overlay__input"
+        [(ngModel)]="deditoonText"
+        maxlength="150"
+        rows="3"
+        placeholder="Votre message (150 car. max)…"
+      ></textarea>
+
+      @if (submitError()) {
+        <p class="deditoon-overlay__error">{{ submitError() }}</p>
+      }
+
+      <div class="deditoon-overlay__actions">
+        <button class="btn btn--ghost" (click)="cancelDeditoon()" [disabled]="submitting()">
+          Annuler
+        </button>
+        <button
+          class="btn btn--primary"
+          (click)="submitDeditoon()"
+          [disabled]="submitting() || !deditoonText.trim()"
+        >
+          @if (submitting()) { Envoi… } @else { Envoyer }
+        </button>
+      </div>
+    </div>
+  </div>
+}

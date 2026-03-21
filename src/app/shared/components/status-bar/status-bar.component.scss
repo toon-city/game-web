@@ -1,0 +1,615 @@
+:host {
+  display: contents;
+}
+
+// ── Carte principale ───────────────────────────────────────────────────────────
+
+.status-bar {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  padding: 5px;
+  background: white;
+  border: 2px solid #2b4a5a;
+  border-radius: 11px;
+  z-index: 200;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
+}
+
+// ── Inner container ────────────────────────────────────────────────────────────
+
+.content {
+  display: flex;
+  border: 2px solid #2b4a5a;
+  border-radius: 6px;
+  align-items: center;
+  overflow: hidden;
+  height: 30px;
+}
+
+// ── Section "Connectés" ────────────────────────────────────────────────────────
+
+.connectes {
+  display: flex;
+  align-items: stretch;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  height: 30px;
+  flex-shrink: 0;
+
+  &:hover .count {
+    background: rgba(93, 144, 164, 0.08);
+  }
+}
+
+.smile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 5px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #009ee0 0%, #009ee0 50%, #0077ab 50%, #0077ab 100%);
+  border-radius: 3px 0 0 3px;
+  flex-shrink: 0;
+
+  img {
+    display: block;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+  }
+}
+
+.count {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-weight: bold;
+  color: #5d90a4;
+  white-space: nowrap;
+  height: 100%;
+}
+
+// ── Déditoon container ─────────────────────────────────────────────────────────
+
+.deditoon-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 14px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #ffffff;
+  background-color: #c10b66;
+  background-image: linear-gradient(180deg, #d2578e 0%, #d2578e 50%, #c10b66 50%, #c10b66 100%);
+  border: none;
+  border-left: 2px solid #2b4a5a;
+  border-right: 2px solid #2b4a5a;
+  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.15s;
+
+  &:hover {
+    filter: brightness(1.12);
+  }
+}
+
+// ── Zone ticker ────────────────────────────────────────────────────────────────
+
+.deditoons {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex: 1;
+  overflow: hidden;
+  background: white;
+
+  .empty {
+    padding: 0 16px;
+    font-style: italic;
+    color: #9ab;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+.ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  white-space: nowrap;
+  animation: ticker-scroll 25s linear infinite;
+
+  .deditoons:hover & {
+    animation-play-state: paused;
+  }
+}
+
+// ── Déditoon item ──────────────────────────────────────────────────────────────
+
+.deditoon {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.pseudo {
+  font-weight: bold;
+  white-space: nowrap;
+
+  &.man       { color: #0c97ba; }
+  &.woman     { color: #d24193; }
+  &.no-binary { color: #2b4a5a; }
+}
+
+.message {
+  font-style: italic;
+  white-space: nowrap;
+}
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+// ── Panel joueurs ──────────────────────────────────────────────────────────────
+
+.player-panel {
+  position: fixed;
+  top: 70px;
+  left: 10px;
+  width: min(760px, calc(100vw - 20px));
+  z-index: 201;
+  font-family: Arial, sans-serif;
+
+  // Cadre style navigator
+  border: 2px solid #3b6e77;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 5px;
+
+  .pp-inner {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #3b6e75;
+    border-radius: 6px;
+    max-height: 510px;
+    overflow: hidden;
+  }
+
+  // ── En-tête (drag handle) ────────────────────────────────────────────────────
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+    // Bleu foncé : #006699 (~5.3:1) → #00547e (~6.1:1) — WCAG AA ✓
+    background-color: #00547e;
+    background-image: linear-gradient(180deg, #006699 0%, #006699 50%, #00547e 50%, #00547e 100%);
+    color: #ffffff;
+
+    &:active { cursor: grabbing; }
+  }
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .online-badge {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-total {
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.9;
+  }
+
+  .close-button {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #3b6e75;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 2px;
+      background: #3b6e75;
+      border-radius: 1px;
+    }
+
+    &::before { transform: translate(-50%, -50%) rotate(45deg); }
+    &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  }
+
+  // ── Corps ────────────────────────────────────────────────────────────────────
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .search-wrapper {
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #e0e8ec;
+    flex-shrink: 0;
+  }
+
+  .search {
+    width: calc(100% - 16px);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #b0c8d4;
+    font-size: 13px;
+    color: #2b4a5a;
+    background: #f8fafc;
+    outline: none;
+
+    &:focus {
+      border-color: #006699;
+      background: white;
+    }
+  }
+
+  .list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .loader {
+    padding: 24px;
+    text-align: center;
+    color: #9ab;
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  // ── Pagination ───────────────────────────────────────────────────────────────
+
+  .buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    border-top: 1px solid #e0e8ec;
+    flex-shrink: 0;
+  }
+
+  .filter {
+    min-width: 30px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid #b0c8d4;
+    background: white;
+    color: #2b4a5a;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+
+    &:hover:not(:disabled):not(.filter--active) {
+      background: #e8f4f8;
+    }
+
+    &--active {
+      background-color: #00547e;
+      background-image: linear-gradient(180deg, #006699 0%, #006699 50%, #00547e 50%, #00547e 100%);
+      color: #ffffff;
+      border-color: #00547e;
+      font-weight: 700;
+      cursor: default;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ── Tableau joueurs ────────────────────────────────────────────────────────────
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  thead tr {
+    background: #f0f5f8;
+    border-bottom: 2px solid #d0dde5;
+  }
+
+  th {
+    padding: 7px 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #4a7080;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    user-select: none;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #eef2f5;
+    transition: background 0.1s;
+
+    &:nth-child(odd) {
+      background-color: #fde3c5;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04) !important;
+    }
+
+    &.row--online {
+      background: #f0faff;
+
+      &:hover {
+        background: #e4f5ff !important;
+      }
+    }
+  }
+
+  td {
+    padding: 7px 12px;
+    vertical-align: middle;
+  }
+}
+
+.table-empty {
+  text-align: center;
+  padding: 24px !important;
+  color: #9ab;
+  font-style: italic;
+}
+
+// ── Colonnes ──────────────────────────────────────────────────────────────────
+
+.col-badge {
+  width: 36px;
+  text-align: center;
+}
+
+.col-pseudo {
+  min-width: 140px;
+}
+
+.col-status {
+  width: 150px;
+  color: #7a9090;
+  font-size: 12px;
+}
+
+.col-join {
+  width: 100px;
+  text-align: right;
+}
+
+// ── Badge rôle (image) ────────────────────────────────────────────────────────
+
+.badge-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+// ── Pseudo dans le tableau ─────────────────────────────────────────────────────
+
+.col-pseudo .pseudo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+// ── Dot en ligne ──────────────────────────────────────────────────────────────
+
+.dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4caf50;
+  box-shadow: 0 0 5px #4caf5099;
+  flex-shrink: 0;
+}
+
+// ── Statut ─────────────────────────────────────────────────────────────────────
+
+.status--online {
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.status--offline {
+  color: #9ab;
+  font-size: 12px;
+}
+
+// ── Bouton rejoindre ───────────────────────────────────────────────────────────
+
+.btn-join {
+  padding: 4px 10px;
+  background-color: #c10b66;
+  background-image: linear-gradient(180deg, #d2578e 0%, #d2578e 50%, #c10b66 50%, #c10b66 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+
+// ── Overlay déditoon ───────────────────────────────────────────────────────────
+
+.deditoon-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deditoon-overlay__box {
+  background: white;
+  border: 2px solid #2b4a5a;
+  border-radius: 14px;
+  padding: 24px 28px;
+  width: min(420px, 95vw);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: Arial, sans-serif;
+}
+
+.deditoon-overlay__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2b4a5a;
+  margin: 0;
+}
+
+.deditoon-overlay__cost {
+  font-size: 13px;
+  color: #555;
+  margin: 0;
+
+  strong {
+    color: #c10b66;
+  }
+}
+
+.deditoon-overlay__input {
+  background: #f8fafc;
+  border: 1px solid #2b4a5a;
+  border-radius: 8px;
+  color: #2b4a5a;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #009ee0;
+  }
+}
+
+.deditoon-overlay__error {
+  color: #c0392b;
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.deditoon-overlay__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+// ── Boutons ────────────────────────────────────────────────────────────────────
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: filter 0.15s;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &--ghost {
+    background: white;
+    color: #2b4a5a;
+    border-color: #2b4a5a;
+
+    &:hover:not(:disabled) {
+      background: #f0f5f8;
+    }
+  }
+
+  &--primary {
+    background-color: #c10b66;
+    background-image: linear-gradient(180deg, #d2578e 0%, #d2578e 50%, #c10b66 50%, #c10b66 100%);
+    color: #ffffff;
+    font-weight: 700;
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+  }
+}

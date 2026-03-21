@@ -1,0 +1,64 @@
+<div class="menu-wrapper" [class.closed]="!menuOpen()">
+  <div class="tab" (click)="toggleMenu()" [title]="menuOpen() ? 'Fermer' : 'Ouvrir'"
+       role="button" tabindex="0" (keyup.enter)="toggleMenu()">
+    <span class="tab-icon">{{ menuOpen() ? '❯' : '❮' }}</span>
+    <span class="tab-count">{{ totalConnected() }}</span>
+  </div>
+
+  <div id="game-menu">
+  <div class="content">
+    <!-- Connected bar -->
+    <div class="connected-bar">
+      <div class="bar">
+        <div class="fill" [style.width.%]="fillPercent()"></div>
+        <div class="count">{{ totalConnected() }}</div>
+      </div>
+      <div class="label">Connectés</div>
+    </div>
+
+    <!-- User list -->
+    <div class="connected-list">
+      <table>
+        <tbody>
+          @for (user of users(); track user.userId) {
+            <tr>
+              <td class="badge-cell">
+                @if (user.rank >= 1) {
+                  <img src="assets/images/modo.png" [alt]="user.rank >= 2 ? 'Admin' : 'Modo'" width="20" />
+                } @else if (user.toonizLevel > 0) {
+                  <img [src]="'assets/images/tooniz_' + user.toonizLevel + '.png'" [alt]="'Tooniz ' + user.toonizLevel" width="20" />
+                }
+              </td>
+              <td [class]="genderClass(user.gender)">{{ user.username }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="2" style="text-align:center;padding:12px;color:#888;font-size:13px;">Aucun joueur</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Emojis grid -->
+    <div class="emojis">
+      @for (n of emojis; track n) {
+        <div class="emoji" title="Emoji {{n}}" style="opacity:0.5;cursor:default;">
+          <img [src]="'assets/images/emojis/' + n + '.png'" [alt]="'Emoji ' + n" width="28" height="28" />
+        </div>
+      }
+    </div>
+
+    <!-- Action buttons -->
+    <div class="buttons">
+      <div class="action-button" style="opacity:0.5;cursor:default;"><img src="assets/images/bouton_coeurs.png" alt="Cœurs" /></div>
+      <div class="action-button" style="opacity:0.5;cursor:default;"><img src="assets/images/bouton_zzz.png" alt="Zzz" /></div>
+      <div class="action-button" style="cursor:default;">
+        @if (soundOn()) {
+          <img src="assets/images/bouton_sound_on.png" alt="Son activé" />
+        } @else {
+          <img src="assets/images/bouton_sound_off.png" alt="Son désactivé" />
+        }
+      </div>
+    </div>
+  </div>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+:host {
+  display: contents;
+}
+
+.identity-card {
+  position: fixed;
+  top: 72px;
+  right: 16px;
+  width: 240px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  padding: 14px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  z-index: 60;
+  backdrop-filter: blur(6px);
+
+  @media (max-width: 767.98px) {
+    display: none;
+  }
+}
+
+.identity-avatar {
+  height: 90px;
+  width: 90px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.identity-details {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+
+  > * { margin: 4px 0; }
+
+  .name {
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+  }
+
+  .role {
+    font-size: 13px;
+    color: #666;
+    margin-top: 6px;
+  }
+
+  .pez,
+  .kred {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+
+    img {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+    }
+  }
+
+  .stat-value {
+    margin-left: auto;
+    min-width: 36px;
+    text-align: right;
+    font-weight: 700;
+    color: #222;
+  }
+}

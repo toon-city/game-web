@@ -120,7 +120,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     // ── Étape 4 : charger la map ──────────────────────────────────────────────
     try {
-      await this.gc.loadHouse(state.houseXml);
+      await this.gc.loadHouse(state.houseData);
     } catch (e) {
       console.error('[GameCanvas] loadHouse failed:', e);
       return;

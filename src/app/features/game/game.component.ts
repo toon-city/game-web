@@ -7,28 +7,18 @@ import {
   computed,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { RoomPermission } from '@toon-live/game-types';
 import { AuthService } from '../../core/services/auth.service';
 import { environment } from '../../../environments/environment';
 import { SocketService } from '../../core/services/socket.service';
 import { GameCanvasComponent } from './components/game-canvas/game-canvas.component';
-import { ChatComponent } from './components/chat/chat.component';
-import { UserListComponent } from './components/user-list/user-list.component';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [
-    MatToolbarModule, MatIconModule, MatButtonModule, MatTooltipModule,
-    MatSlideToggleModule, FormsModule,
-    GameCanvasComponent, ChatComponent, UserListComponent,
-  ],
+  imports: [FormsModule, MatSlideToggleModule, GameCanvasComponent],
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss'],
 })

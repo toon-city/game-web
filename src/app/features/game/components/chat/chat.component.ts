@@ -10,10 +10,7 @@ import {
   AfterViewChecked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { NgFor, DatePipe } from '@angular/common';
+import { NgFor } from '@angular/common';
 import { RemoteChatMessagePayload } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -22,7 +19,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, MatInputModule, MatIconModule, MatButtonModule, NgFor, DatePipe],
+  imports: [FormsModule, NgFor],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
 })
@@ -36,9 +33,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private shouldScrollToBottom = false;
 
   messages = signal<RemoteChatMessagePayload[]>([]);
+  historyOpen = signal(false);
   text = '';
 
   readonly myUserId = () => this.auth.user()?.id ?? '';
+
+  toggleHistory(): void {
+    this.historyOpen.update(v => !v);
+    if (this.historyOpen()) {
+      this.shouldScrollToBottom = true;
+    }
+  }
 
   ngOnInit(): void {
     this.subs.push(

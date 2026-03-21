@@ -1,0 +1,58 @@
+<div class="ui-block navigator" cdkDrag cdkDragBoundary="body" aria-label="Navigateur de l'application">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      Navigateur
+      <div class="header-actions">
+        <button class="header-btn" (click)="openCreateHouseDialog()" title="Créer ma maison" type="button">+</button>
+        <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="search-wrapper">
+        <input
+          class="search"
+          type="search"
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher par nom ou propriétaire..."
+          aria-label="Rechercher maisons" />
+      </div>
+      <div class="list">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Propriétaire</th>
+              <th>Toons</th>
+              <th aria-label="Accès"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filteredRows; track row.id) {
+              <tr (click)="joinRow(row)" style="cursor:pointer">
+                <td>{{ row.name }}</td>
+                <td>{{ row.owner }}</td>
+                <td>{{ row.users }}</td>
+                <td class="lock">
+                  @if (row.access === 'OPEN') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#3B6E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Ouvert"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                  } @else if (row.access === 'PASSWORD') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#f0037f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Mot de passe"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Fermé"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4" class="empty-row">Aucun résultat</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="buttons">
+        <button class="filter" [class.active]="filter() === 'PUBLIC'" (click)="setFilter('PUBLIC')" type="button">PUBLIC</button>
+        <button class="filter" [class.active]="filter() === 'TOUS'" (click)="setFilter('TOUS')" type="button">TOUS</button>
+        <button class="filter" [class.active]="filter() === 'MES_MAISONS'" (click)="setFilter('MES_MAISONS')" type="button">MES MAISONS</button>
+      </div>
+    </div>
+  </div>
+</div>

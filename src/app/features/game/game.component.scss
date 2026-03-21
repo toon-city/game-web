@@ -1,9 +1,28 @@
-.game-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+:host {
+  display: block;
 }
+
+.game-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  background: transparent;
+}
+
+.edit-overlay {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  padding: 8px 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+}
+
 
 .game-toolbar {
   flex-shrink: 0;

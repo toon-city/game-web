@@ -1,0 +1,207 @@
+:host {
+  display: contents;
+}
+
+.ui-block {
+  display: block;
+  border: 2px solid #3B6E77;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 5px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #3B6E75;
+  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #EC038D;
+  border-radius: 4px 4px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  padding: 8px 12px;
+  cursor: grab;
+  user-select: none;
+
+  &:active { cursor: grabbing; }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 1px 7px;
+  cursor: pointer;
+
+  &:hover { background: rgba(255, 255, 255, 0.4); }
+  &:focus { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4); }
+}
+
+.close-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3B6E75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  padding: 0;
+  flex-shrink: 0;
+
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: #3B6E75;
+    border-radius: 1px;
+    left: 50%;
+    top: 50%;
+    transform-origin: center;
+  }
+  &::before { transform: translate(-50%, -50%) rotate(45deg); }
+  &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+}
+
+.navigator {
+  position: fixed;
+  z-index: 100;
+  top: 80px;
+  left: 16px;
+  height: 600px;
+  width: 550px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.search-wrapper {
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+}
+
+.search {
+  width: calc(100% - 16px);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e6e6e6;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  font-size: 14px;
+  font-family: 'Nunito', sans-serif;
+
+  &:focus {
+    outline: none;
+    border-color: #3B6E75;
+    box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.08);
+  }
+}
+
+.list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #ffffff;
+  font-size: 14px;
+
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: linear-gradient(180deg, #f8f8f8, #ffffff);
+    font-weight: 700;
+    color: #333;
+    font-size: 14px;
+  }
+
+  tbody td { font-size: 13px; color: #333; }
+
+  tbody tr:nth-child(odd) { background-color: #fde3c5; }
+  tbody tr:hover { background-color: rgba(0, 0, 0, 0.04); }
+
+  th:first-child, td:first-child { width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  th:nth-child(2), td:nth-child(2) { width: 25%; }
+  th:nth-child(3), td:nth-child(3) { width: 20%; }
+  th:nth-child(4), td:nth-child(4) { width: 10%; text-align: center; }
+
+  td.lock {
+    text-align: center;
+    svg { width: 18px; height: 18px; vertical-align: middle; display: inline-block; }
+  }
+
+  .empty-row {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 24px;
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 0;
+
+  .filter {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 2px solid #3B6E75;
+    background: #fff;
+    color: #3B6E75;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Nunito', sans-serif;
+
+    &:hover { background: rgba(59, 110, 117, 0.06); }
+    &.active { background: #3B6E75; color: #fff; }
+    &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+  }
+}

@@ -1,0 +1,31 @@
+<!-- Décor (toujours visible) -->
+<app-clouds-bg />
+
+<!-- Contenu de la route (lobby = vide → fond visible / room = canvas Pixi) -->
+<router-outlet />
+
+<!-- Overlays de l'interface — visibles uniquement si connecté -->
+@if (auth.isLoggedIn()) {
+  <app-identity-card />
+
+  <app-navbar
+    (accueil)="goHome()"
+    (navigateur)="toggleNav()"
+    (inventaire)="toggleInv()"
+  />
+
+  @if (navOpen()) {
+    <app-navigator (close)="navOpen.set(false)" (joined)="navigatorJoined()" />
+  }
+
+  @if (invOpen()) {
+    <app-inventory (close)="invOpen.set(false)" />
+  }
+
+  @if (inRoom()) {
+    <app-game-menu />
+    <app-chat [roomId]="roomId()" />
+  }
+
+  <app-status-bar />
+}

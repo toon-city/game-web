@@ -1,0 +1,128 @@
+:host {
+  display: contents;
+}
+
+.ui-block {
+  display: block;
+  border: 2px solid #3B6E77;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 5px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #3B6E75;
+  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #EC038D;
+  border-radius: 4px 4px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  padding: 8px 12px;
+  cursor: grab;
+  user-select: none;
+
+  &:active { cursor: grabbing; }
+}
+
+.close-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3B6E75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  padding: 0;
+  flex-shrink: 0;
+
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: #3B6E75;
+    border-radius: 1px;
+    left: 50%;
+    top: 50%;
+    transform-origin: center;
+  }
+  &::before { transform: translate(-50%, -50%) rotate(45deg); }
+  &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+}
+
+.inventory {
+  position: fixed;
+  z-index: 100;
+  top: 80px;
+  left: calc(16px + 550px + 16px);
+  height: 380px;
+  width: 680px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 10px 0;
+
+  .filter {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 2px solid #3B6E75;
+    background: #fff;
+    color: #3B6E75;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Nunito', sans-serif;
+
+    &:hover { background: rgba(59, 110, 117, 0.06); }
+    &.active { background: #3B6E75; color: #fff; }
+    &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+  }
+}
+
+.items {
+  flex-grow: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  overflow: auto;
+  padding-bottom: 10px;
+
+  .item {
+    background: #f9f9f9;
+    height: 50px;
+    width: 50px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+  }
+}

@@ -42,19 +42,52 @@ export class SocketService implements OnDestroy {
   constructor(private auth: AuthService) {}
 
   connect(serverUrl: string): void {
-    const token = this.auth.token();
-    if (!token) return;
+    if (!this.auth.token()) return;
 
     this.roomState.set(null);
-    this.gs = new GameSocket({ serverUrl, token, moveThrottleMs: 50 });
+    this.gs = new GameSocket({ serverUrl, token: () => this.auth.token() ?? '', moveThrottleMs: 50 });
 
     this.unsubs = [
       this.gs.on('connected', () => this.isConnected.set(true)),
       this.gs.on('disconnected', () => this.isConnected.set(false)),
       this.gs.on('roomState', (s) => this.roomState.set(s)),
-      this.gs.on('roomError', (e) => this.roomError$.next(e)),
-      this.gs.on('userJoined', (p) => this.userJoined$.next(p)),
-      this.gs.on('userLeft', (p) => this.userLeft$.next(p)),
+      this.gs.on('roomError', (e) => {
+        this.roomError$.next(e);
+        if (e.code === 'INVALID_TOKEN') {
+          // JWT was rejected by the server (expired or wrong secret).
+          // Log the user out so they re-authenticate and obtain a fresh token.
+          this.auth.logout();
+        }
+      }),
+      this.gs.on('userJoined', (p) => {
+        this.userJoined$.next(p);
+        // Maintain the live users list inside roomState
+        this.roomState.update(state => {
+          if (!state) return state;
+          const already = state.users.some(u => u.userId === p.userId);
+          if (already) return state;
+          return {
+            ...state,
+            users: [...state.users, {
+              userId: p.userId,
+              username: p.username,
+              avatarOptions: p.avatarOptions,
+              x: p.x,
+              y: p.y,
+              gender: p.gender,
+              rank: p.rank,
+              toonizLevel: p.toonizLevel,
+            }],
+          };
+        });
+      }),
+      this.gs.on('userLeft', (p) => {
+        this.userLeft$.next(p);
+        this.roomState.update(state => {
+          if (!state) return state;
+          return { ...state, users: state.users.filter(u => u.userId !== p.userId) };
+        });
+      }),
       this.gs.on('remoteAvatarMove', (p) => this.remoteMove$.next(p)),
       this.gs.on('remoteAvatarSay', (p) => this.remoteSay$.next(p)),
       this.gs.on('remoteChatMessage', (p) => this.chatMessage$.next(p)),
@@ -78,7 +111,10 @@ export class SocketService implements OnDestroy {
 
   // ── Delegating helpers ───────────────────────────────────────────────────────
 
-  joinRoom(roomId: string): void { this.gs?.joinRoom(roomId); }
+  joinRoom(roomId: string): void {
+    const avatarOptions = this.auth.user()?.avatarOptions;
+    this.gs?.joinRoom(roomId, avatarOptions);
+  }
   leaveRoom(roomId: string): void { this.gs?.leaveRoom(roomId); }
 
   sendAvatarMove(roomId: string, x: number, y: number, direction: number): void {

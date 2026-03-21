@@ -42,7 +42,7 @@ export class UserListComponent implements OnInit, OnDestroy {
       this.socket.userJoined$.subscribe((p) => {
         this.users.update((list) => [
           ...list.filter((u) => u.userId !== p.userId),
-          { userId: p.userId, username: p.username, avatarOptions: p.avatarOptions, x: p.x, y: p.y },
+          { userId: p.userId, username: p.username, avatarOptions: p.avatarOptions, x: p.x, y: p.y, gender: p.gender, rank: p.rank, toonizLevel: p.toonizLevel },
         ]);
       }),
       this.socket.userLeft$.subscribe((p) => {

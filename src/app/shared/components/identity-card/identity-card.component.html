@@ -1,0 +1,17 @@
+<aside class="identity-card" aria-label="Identité utilisateur">
+  <div class="identity-avatar" aria-hidden="true">
+    <img src="assets/images/avatar.png" alt="Avatar" />
+  </div>
+  <div class="identity-details">
+    <div class="name">{{ auth.user()?.username ?? 'Invité' }}</div>
+    <div class="pez">
+      <img src="assets/images/pez.png" alt="Pez" width="18" height="18" />
+      <span class="stat-value">{{ auth.user()?.pez ?? 0 }}</span>
+    </div>
+    <div class="kred">
+      <img src="assets/images/kred.png" alt="Kred" width="18" height="18" />
+      <span class="stat-value">{{ auth.user()?.kreds ?? 0 }}</span>
+    </div>
+    <div class="role">Joueur</div>
+  </div>
+</aside>
