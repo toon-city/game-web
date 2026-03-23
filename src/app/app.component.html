@@ -12,6 +12,7 @@
     (accueil)="goHome()"
     (navigateur)="toggleNav()"
     (inventaire)="toggleInv()"
+    (boutique)="toggleShop()"
   />
 
   @if (navOpen()) {
@@ -20,6 +21,10 @@
 
   @if (invOpen()) {
     <app-inventory (close)="invOpen.set(false)" />
+  }
+
+  @if (shopOpen()) {
+    <app-shop (close)="shopOpen.set(false)" />
   }
 
   @if (inRoom()) {

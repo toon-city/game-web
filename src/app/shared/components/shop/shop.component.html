@@ -1,0 +1,94 @@
+<div class="ui-block shop" cdkDrag cdkDragBoundary="body" aria-label="Boutique">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      Boutique
+      <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <!-- Onglets boutiques -->
+    <div class="shop-tabs">
+      @for (tab of shopTabs; track tab.id) {
+        <button class="shop-tab" [class.active]="activeShop() === tab.id"
+                (click)="selectShop(tab.id)" type="button">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <div class="body">
+      <!-- Filtres collections -->
+      <div class="buttons">
+        <button class="filter" [class.active]="activeCollection() === null"
+                (click)="selectCollection(null)" type="button">Tous</button>
+        @for (col of collections(); track col.id) {
+          <button class="filter collection-btn" [class.active]="activeCollection() === col.id"
+                  (click)="selectCollection(col.id)" type="button">
+            @if (col.bannerImage) {
+              <img class="collection-thumb" [src]="col.bannerImage" [alt]="col.name" />
+            }
+            {{ col.name }}
+          </button>
+        }
+      </div>
+
+      <!-- Message d'erreur achat -->
+      @if (buyError()) {
+        <div class="buy-error" role="alert">{{ buyError() }}</div>
+      }
+
+      <!-- Grille articles -->
+      @if (loading()) {
+        <div class="state-msg">Chargement…</div>
+      } @else if (items().length === 0) {
+        <div class="state-msg">Aucun article disponible.</div>
+      } @else {
+        <div class="items">
+          @for (item of items(); track item.id) {
+            <div class="item" [class.out-of-stock]="isOutOfStock(item)">
+              <div class="item-image">
+                @if (item.item.displayImage) {
+                  <img [src]="item.item.displayImage" [alt]="item.item.name" />
+                }
+                @if (isOutOfStock(item)) {
+                  <span class="stock-badge out">Épuisé</span>
+                } @else if (item.stock !== null) {
+                  <span class="stock-badge">{{ item.stock }}</span>
+                }
+              </div>
+              <div class="item-name" [title]="item.item.name">{{ item.item.name }}</div>
+              <div class="item-prices">
+                @if (canBuyPez(item)) {
+                  <button class="btn-buy pez"
+                          [disabled]="buying()?.shopItemId === item.id"
+                          (click)="buy(item, 'PEZ')" type="button">
+                    {{ item.pezPrice }} pez
+                    @if (item.kredBonus > 0) { <span class="bonus">+{{ item.kredBonus }}K</span> }
+                  </button>
+                }
+                @if (canBuyKreds(item)) {
+                  <button class="btn-buy kreds"
+                          [disabled]="buying()?.shopItemId === item.id"
+                          (click)="buy(item, 'KREDS')" type="button">
+                    {{ item.kredPrice }} kreds
+                  </button>
+                }
+                @if (isOutOfStock(item)) {
+                  <span class="no-stock-msg">Rupture de stock</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button (click)="prevPage()" [disabled]="page() === 0" type="button">‹</button>
+          <span>{{ page() + 1 }} / {{ totalPages() }}</span>
+          <button (click)="nextPage()" [disabled]="page() === totalPages() - 1" type="button">›</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

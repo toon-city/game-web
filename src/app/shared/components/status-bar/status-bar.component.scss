@@ -132,9 +132,9 @@
 .ticker-track {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 60px;
   white-space: nowrap;
-  animation: ticker-scroll 25s linear infinite;
+  animation: ticker-scroll 38s linear infinite;
 
   .deditoons:hover & {
     animation-play-state: paused;
@@ -168,8 +168,9 @@
 }
 
 @keyframes ticker-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  /* Commence hors-écran à droite (invisible), parcourt toute la barre, sort à gauche */
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
 }
 
 // ── Panel joueurs ──────────────────────────────────────────────────────────────
@@ -473,6 +474,14 @@
 }
 
 // ── Statut ─────────────────────────────────────────────────────────────────────
+
+.status-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+  cursor: default;
+}
 
 .status--online {
   color: #2e7d32;

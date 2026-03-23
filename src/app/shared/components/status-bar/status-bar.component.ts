@@ -15,9 +15,8 @@ import { StatsService } from '../../../core/services/stats.service';
 import { DeditoonService } from '../../../core/services/deditoon.service';
 import { UserListService, UserListItem } from '../../../core/services/user-list.service';
 
-/** Ligne dans le tableau joueurs : données API + état en ligne */
+/** Ligne dans le tableau joueurs : données API + roomId formaté en string */
 export interface PlayerRow extends UserListItem {
-  online: boolean;
   roomId: string | null;
 }
 
@@ -43,9 +42,8 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   submitting        = signal(false);
 
   // ── Ticker ─────────────────────────────────────────────────────────────────
-  readonly doubledDeditoons = computed(() => {
-    const list = this.deditoonService.deditoons();
-    return list.length > 0 ? [...list, ...list] : [];
+  readonly deditoons = computed(() => {
+    return this.deditoonService.deditoons();
   });
 
   // ── Panel joueurs ──────────────────────────────────────────────────────────
@@ -53,24 +51,15 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   private searchDebounce?: ReturnType<typeof setTimeout>;
   readonly PAGE_SIZE = 15;
 
-  /** Lignes affichées = données API fusionnées avec état en ligne */
+  /** Lignes affichées = données API (online + currentRoomId inclus côté serveur) */
   readonly playerRows = computed<PlayerRow[]>(() => {
     const page = this.userListService.page();
     if (!page) return [];
-    const onlineMap = new Map<string, string>(
-      this.statsService.stats().users.map(u => [u.username, u.roomId])
-    );
-    const rows: PlayerRow[] = page.content.map(u => ({
+    return page.content.map(u => ({
       ...u,
-      online: onlineMap.has(u.username),
-      roomId: onlineMap.get(u.username) ?? null,
+      roomId: u.currentRoomId == null ? null : String(u.currentRoomId),
     }));
-    // Connectés en premier
-    rows.sort((a, b) => {
-      if (a.online !== b.online) return a.online ? -1 : 1;
-      return a.username.localeCompare(b.username);
-    });
-    return rows;
+    // Tri déjà fait côté back : online DESC, lastLoginAt DESC, username ASC
   });
 
   readonly currentPage = computed(() => this.userListService.page()?.number ?? 0);

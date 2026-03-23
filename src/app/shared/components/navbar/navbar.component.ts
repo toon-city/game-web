@@ -6,8 +6,9 @@ import { Component, EventEmitter, Output } from '@angular/core';
   template: `
     <nav class="navbar" aria-label="Navigation principale">
       <img src="assets/images/navbar/accueil.png" alt="Accueil" class="nav-icon" (click)="accueil.emit()" role="button" tabindex="0" />
-      <button class="nav-btn" type="button" (click)="navigateur.emit()">Navigateur</button>
-      <button class="nav-btn" type="button" (click)="inventaire.emit()">Inventaire</button>
+      <img src="assets/images/navbar/navigator.png" alt="Navigateur" class="nav-icon" (click)="navigateur.emit()" role="button" tabindex="0" />
+      <img src="assets/images/navbar/inventory.png" alt="Inventaire" class="nav-icon" (click)="inventaire.emit()" role="button" tabindex="0" />
+      <img src="assets/images/navbar/shop.png" alt="Boutique" class="nav-icon" (click)="boutique.emit()" role="button" tabindex="0" />
     </nav>
   `,
   styles: [`
@@ -58,4 +59,5 @@ export class NavbarComponent {
   @Output() accueil = new EventEmitter<void>();
   @Output() navigateur = new EventEmitter<void>();
   @Output() inventaire = new EventEmitter<void>();
+  @Output() boutique = new EventEmitter<void>();
 }

@@ -1,58 +1,192 @@
-<div class="ui-block navigator" cdkDrag cdkDragBoundary="body" aria-label="Navigateur de l'application">
+<div class="ui-block navigator" cdkDrag cdkDragBoundary="body" aria-label="Navigateur">
   <div class="content">
+
+    <!-- ── En-tête ──────────────────────────────────────────────────────── -->
     <div class="header" cdkDragHandle>
-      Navigateur
+      <span class="header-title">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+        Navigateur
+      </span>
       <div class="header-actions">
-        <button class="header-btn" (click)="openCreateHouseDialog()" title="Créer ma maison" type="button">+</button>
+        <button class="header-btn" (click)="openCreateHouseDialog()" title="Créer ma maison" type="button" aria-label="Créer une maison">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+        </button>
         <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
       </div>
     </div>
+
     <div class="body">
+
+      <!-- ── Onglets de filtre ─────────────────────────────────────────── -->
+      <div class="tabs">
+        <button class="tab" [class.active]="filter() === 'PUBLIC'"
+                (click)="setFilter('PUBLIC')" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+          Public
+        </button>
+        <button class="tab" [class.active]="filter() === 'PRIVE'"
+                (click)="setFilter('PRIVE')" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          Privé
+        </button>
+        <button class="tab" [class.active]="filter() === 'MES_MAISONS'"
+                (click)="setFilter('MES_MAISONS')" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3L2 12h3v8h6v-5h2v5h6v-8h3L12 3zm0 12.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+          Mes maisons
+        </button>
+      </div>
+
+      <!-- ── Barre de recherche ────────────────────────────────────────── -->
       <div class="search-wrapper">
-        <input
-          class="search"
-          type="search"
-          [(ngModel)]="searchQuery"
-          placeholder="Rechercher par nom ou propriétaire..."
-          aria-label="Rechercher maisons" />
+        <div class="search-field">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input class="search" type="search"
+                 [(ngModel)]="searchQuery"
+                 (ngModelChange)="onSearchChange()"
+                 placeholder="Rechercher par nom ou propriétaire…"
+                 aria-label="Rechercher" />
+        </div>
       </div>
+
+      <!-- ── Liste ─────────────────────────────────────────────────────── -->
       <div class="list">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Propriétaire</th>
-              <th>Toons</th>
-              <th aria-label="Accès"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of filteredRows; track row.id) {
-              <tr (click)="joinRow(row)" style="cursor:pointer">
-                <td>{{ row.name }}</td>
-                <td>{{ row.owner }}</td>
-                <td>{{ row.users }}</td>
-                <td class="lock">
-                  @if (row.access === 'OPEN') {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#3B6E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Ouvert"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
-                  } @else if (row.access === 'PASSWORD') {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#f0037f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Mot de passe"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  } @else {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Fermé"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  }
-                </td>
+
+        @if (loading()) {
+          <!-- Squelette de chargement -->
+          <table class="table">
+            <tbody>
+              @for (i of skeletonRows; track i) {
+                <tr class="skeleton-row">
+                  <td><div class="skel" style="width:68%"></div></td>
+                  <td><div class="skel" style="width:55%"></div></td>
+                  <td><div class="skel" style="width:46%"></div></td>
+                  <td><div class="skel" style="width:62%"></div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+        } @else if (rows().length === 0) {
+          <!-- État vide -->
+          <div class="empty-state">
+            <img src="assets/images/maison.png" alt="Aucune maison trouvée" width="32" />
+            <p class="empty-title">Aucun résultat</p>
+            <p class="empty-sub">
+              @if (filter() === 'MES_MAISONS') {
+                Vous n'avez pas encore de maison.
+              } @else if (searchQuery) {
+                Essayez d'autres mots-clés.
+              } @else {
+                Aucune maison disponible pour l'instant.
+              }
+            </p>
+          </div>
+
+        } @else {
+          <!-- Tableau de résultats -->
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Propriétaire</th>
+                <th>Toons</th>
+                <th>Accès</th>
               </tr>
-            } @empty {
-              <tr><td colspan="4" class="empty-row">Aucun résultat</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <div class="buttons">
-        <button class="filter" [class.active]="filter() === 'PUBLIC'" (click)="setFilter('PUBLIC')" type="button">PUBLIC</button>
-        <button class="filter" [class.active]="filter() === 'TOUS'" (click)="setFilter('TOUS')" type="button">TOUS</button>
-        <button class="filter" [class.active]="filter() === 'MES_MAISONS'" (click)="setFilter('MES_MAISONS')" type="button">MES MAISONS</button>
-      </div>
-    </div>
-  </div>
-</div>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr (click)="joinRow(row)" class="data-row">
+                  <td class="name-cell">
+                    <div class="name-inner">
+                      @if (row.type === 'room') {
+                        <svg class="type-icon type-public" viewBox="0 0 24 24" fill="currentColor" aria-label="Salle publique">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                      } @else {
+                        <svg class="type-icon type-house" viewBox="0 0 24 24" fill="currentColor" aria-label="Maison privée">
+                          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                      }
+                      <span class="row-name" [title]="row.name">{{ row.name }}</span>
+                    </div>
+                  </td>
+                  <td class="owner-cell">{{ row.owner }}</td>
+                  <td class="users-cell">
+                    <span class="users-pill">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                      </svg>
+                      {{ row.users }}
+                    </span>
+                  </td>
+                  <td class="access-cell">
+                    @if (row.access === 'OPEN') {
+                      <span class="access-badge access-open">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                          <rect x="3" y="11" width="18" height="11" rx="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                        </svg>
+                        Ouvert
+                      </span>
+                    } @else if (row.access === 'PASSWORD') {
+                      <span class="access-badge access-password">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                          <rect x="3" y="11" width="18" height="11" rx="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        MDP
+                      </span>
+                    } @else {
+                      <span class="access-badge access-closed">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                          <rect x="3" y="11" width="18" height="11" rx="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Fermé
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+      </div><!-- /list -->
+
+      <!-- ── Pagination ────────────────────────────────────────────────── -->
+      @if (totalPages() > 1 && !loading()) {
+        <div class="pagination">
+          <button class="page-btn" [disabled]="currentPage() === 0"
+                  (click)="prevPage()" type="button" aria-label="Page précédente">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+            </svg>
+          </button>
+          <span class="page-info">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+          <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1"
+                  (click)="nextPage()" type="button" aria-label="Page suivante">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </button>
+        </div>
+      }
+
+    </div><!-- /body -->
+  </div><!-- /content -->
+</div><!-- /navigator -->

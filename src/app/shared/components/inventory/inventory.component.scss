@@ -124,5 +124,57 @@
     width: 50px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+
+    img { width: 44px; height: 44px; object-fit: contain; }
+
+    &.equipped {
+      border-color: #EC038D;
+      background: #fff0f8;
+    }
+    &:hover { border-color: #3B6E75; }
   }
 }
+
+.state-msg {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 14px;
+  font-family: 'Nunito', sans-serif;
+  padding: 20px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+
+  button {
+    background: none;
+    border: 2px solid #3B6E75;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3B6E75;
+
+    &:disabled { opacity: 0.3; cursor: default; }
+    &:hover:not(:disabled) { background: #e8f4f8; }
+  }
+}
+

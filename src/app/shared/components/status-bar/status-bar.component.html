@@ -16,11 +16,11 @@
       </button>
 
       <div class="deditoons">
-        @if (doubledDeditoons().length === 0) {
+        @if (deditoons().length === 0) {
           <span class="empty">Aucune déditoon pour l'instant…</span>
         } @else {
           <div class="ticker-track">
-            @for (d of doubledDeditoons(); track $index) {
+            @for (d of deditoons(); track $index) {
               <div class="deditoon">
                 <span class="pseudo" [ngClass]="genderClass(d.authorGender)">{{ d.authorUsername }}</span>
                 <span>&nbsp;:</span>
@@ -101,9 +101,9 @@
                     </td>
                     <td class="col-status">
                       @if (row.online) {
-                        <span class="status--online">En ligne</span>
+                        <img src="assets/images/el.png" alt="En ligne" class="status-icon" title="En ligne" />
                       } @else {
-                        <span class="status--offline">{{ formatLastLogin(row.lastLoginAt) }}</span>
+                        <img src="assets/images/hl.png" [alt]="formatLastLogin(row.lastLoginAt)" class="status-icon" [title]="formatLastLogin(row.lastLoginAt)" />
                       }
                     </td>
                     <td class="col-join">

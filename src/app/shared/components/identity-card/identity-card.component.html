@@ -1,17 +1,45 @@
 <aside class="identity-card" aria-label="Identité utilisateur">
-  <div class="identity-avatar" aria-hidden="true">
-    <img src="assets/images/avatar.png" alt="Avatar" />
-  </div>
-  <div class="identity-details">
-    <div class="name">{{ auth.user()?.username ?? 'Invité' }}</div>
-    <div class="pez">
-      <img src="assets/images/pez.png" alt="Pez" width="18" height="18" />
-      <span class="stat-value">{{ auth.user()?.pez ?? 0 }}</span>
+  <div class="ic-inner">
+
+    <div class="ic-header">
+      <span class="ic-username">{{ auth.user()?.username ?? 'Invité' }}</span>
     </div>
-    <div class="kred">
-      <img src="assets/images/kred.png" alt="Kred" width="18" height="18" />
-      <span class="stat-value">{{ auth.user()?.kreds ?? 0 }}</span>
+
+    <div class="ic-body">
+      <div class="ic-avatar">
+        <img src="assets/images/avatar.png" alt="Avatar" />
+      </div>
+
+      <div class="ic-stats">
+
+        <div class="ic-stat">
+          <img src="assets/images/pez.png" alt="Pezs" width="18" height="18" />
+          <span class="ic-stat__value">{{ auth.user()?.pez ?? 0 }}</span>
+          @if (showPezDiff() && pezDiff() !== null) {
+            <span class="ic-diff"
+              [class.ic-diff--pos]="(pezDiff() ?? 0) > 0"
+              [class.ic-diff--neg]="(pezDiff() ?? 0) < 0">
+              {{ (pezDiff() ?? 0) > 0 ? '+' : '' }}{{ pezDiff() }}
+            </span>
+          }
+        </div>
+
+        <div class="ic-stat">
+          <img src="assets/images/kred.png" alt="Kreds" width="18" height="18" />
+          <span class="ic-stat__value">{{ auth.user()?.kreds ?? 0 }}</span>
+          @if (showKredsDiff() && kredsDiff() !== null) {
+            <span class="ic-diff"
+              [class.ic-diff--pos]="(kredsDiff() ?? 0) > 0"
+              [class.ic-diff--neg]="(kredsDiff() ?? 0) < 0">
+              {{ (kredsDiff() ?? 0) > 0 ? '+' : '' }}{{ kredsDiff() }}
+            </span>
+          }
+        </div>
+
+        <div class="ic-role">Joueur</div>
+
+      </div>
     </div>
-    <div class="role">Joueur</div>
+
   </div>
 </aside>

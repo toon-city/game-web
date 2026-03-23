@@ -1,41 +1,76 @@
-:host {
-  display: contents;
+$pink:       #EC038D;
+$teal:       #3B6E75;
+$header-background: linear-gradient(180deg, #f0167a 0%, #f0167a 50%, #c90060 50%, #c90060 100%);
+$teal-a08:   rgba(59, 110, 117, 0.08);
+$teal-a12:   rgba(59, 110, 117, 0.12);
+$teal-a20:   rgba(59, 110, 117, 0.20);
+$row-odd:    rgba(236, 3, 141, 0.04);
+$row-hover:  rgba(236, 3, 141, 0.10);
+$row-active: rgba(236, 3, 141, 0.16);
+
+// ─── Squelette shimmer ───────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -500px 0; }
+  100% { background-position:  500px 0; }
 }
 
+// ─── Hôte ────────────────────────────────────────────────────────────────────
+:host { display: contents; }
+
+// ─── Boîte principale ────────────────────────────────────────────────────────
 .ui-block {
   display: block;
-  border: 2px solid #3B6E77;
+  border: 2px solid $teal;
   border-radius: 11px;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
   padding: 5px;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  border: 2px solid #3B6E75;
+  border: 2px solid $teal;
   border-radius: 6px;
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
+.navigator {
+  position: fixed;
+  z-index: 100;
+  top: 80px;
+  left: 16px;
+  height: 600px;
+  width: 555px;
+}
+
+// ─── En-tête ─────────────────────────────────────────────────────────────────
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #EC038D;
+  background: $header-background;
   border-radius: 4px 4px 0 0;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
   padding: 8px 12px;
   cursor: grab;
   user-select: none;
 
   &:active { cursor: grabbing; }
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Nunito', Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.2px;
+
+  svg { width: 18px; height: 18px; flex-shrink: 0; }
 }
 
 .header-actions {
@@ -45,18 +80,23 @@
 }
 
 .header-btn {
-  background: rgba(255, 255, 255, 0.25);
-  border: 2px solid #fff;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
   color: #fff;
   border-radius: 6px;
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 1;
-  padding: 1px 7px;
   cursor: pointer;
+  padding: 0;
+  transition: background 0.15s;
 
-  &:hover { background: rgba(255, 255, 255, 0.4); }
-  &:focus { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4); }
+  svg { width: 16px; height: 16px; }
+
+  &:hover  { background: rgba(255, 255, 255, 0.38); }
+  &:focus  { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35); }
 }
 
 .close-button {
@@ -64,7 +104,7 @@
   height: 20px;
   border-radius: 50%;
   background: #fff;
-  border: 2px solid #3B6E75;
+  border: 2px solid $teal;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -79,7 +119,7 @@
     position: absolute;
     width: 10px;
     height: 2px;
-    background: #3B6E75;
+    background: $teal;
     border-radius: 1px;
     left: 50%;
     top: 50%;
@@ -87,64 +127,172 @@
   }
   &::before { transform: translate(-50%, -50%) rotate(45deg); }
   &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
-  &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+  &:focus   { outline: none; box-shadow: 0 0 0 4px $teal-a12; }
 }
 
-.navigator {
-  position: fixed;
-  z-index: 100;
-  top: 80px;
-  left: 16px;
-  height: 600px;
-  width: 550px;
-}
-
+// ─── Corps ───────────────────────────────────────────────────────────────────
 .body {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  background: #fff;
 }
 
-.search-wrapper {
-  padding: 8px;
+// ─── Onglets ─────────────────────────────────────────────────────────────────
+.tabs {
   display: flex;
-  justify-content: center;
-  background: transparent;
+  border-bottom: 2px solid $teal-a20;
+  background: #fafafa;
+  flex-shrink: 0;
 }
 
-.search {
-  width: calc(100% - 16px);
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #e6e6e6;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
-  font-size: 14px;
-  font-family: 'Nunito', sans-serif;
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 4px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  color: #888;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Nunito', Arial, sans-serif;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
 
-  &:focus {
-    outline: none;
-    border-color: #3B6E75;
-    box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.08);
+  svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  &:hover { color: $teal; background: $teal-a08; }
+
+  &.active {
+    color: $teal;
+    border-bottom-color: $teal;
+    background: #fff;
+  }
+
+  &:focus { outline: none; }
+}
+
+// ─── Recherche ───────────────────────────────────────────────────────────────
+.search-wrapper {
+  padding: 8px 10px;
+  flex-shrink: 0;
+}
+
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    width: 15px;
+    height: 15px;
+    color: #aaa;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .search {
+    width: 100%;
+    padding: 7px 12px 7px 33px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    background: #f7f7f7;
+    font-size: 13px;
+    font-family: 'Nunito', Arial, sans-serif;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: $teal;
+      background: #fff;
+      box-shadow: 0 0 0 3px $teal-a08;
+    }
+
+    &::-webkit-search-cancel-button { cursor: pointer; }
   }
 }
 
+// ─── Zone liste ──────────────────────────────────────────────────────────────
 .list {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+
+  &::-webkit-scrollbar       { width: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $teal-a20; border-radius: 3px; }
+  &::-webkit-scrollbar-thumb:hover { background: rgba(59, 110, 117, 0.45); }
 }
 
+// ─── Squelette ───────────────────────────────────────────────────────────────
+.skeleton-row {
+  td {
+    padding: 11px 10px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+}
+
+.skel {
+  height: 11px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #ececec 25%, #e0e0e0 50%, #ececec 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.7s infinite linear;
+}
+
+// ─── État vide ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 230px;
+  padding: 32px 24px;
+  background: #fff;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 76px;
+  height: 76px;
+  margin-bottom: 18px;
+}
+
+.empty-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #3a3a3a;
+  font-family: 'Nunito', Arial, sans-serif;
+}
+
+.empty-sub {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+  font-family: 'Nunito', Arial, sans-serif;
+}
+
+// ─── Tableau ─────────────────────────────────────────────────────────────────
 .table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  background: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
 
   th, td {
-    padding: 10px 12px;
+    padding: 9px 10px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
@@ -154,54 +302,140 @@
     position: sticky;
     top: 0;
     z-index: 3;
-    background: linear-gradient(180deg, #f8f8f8, #ffffff);
-    font-weight: 700;
-    color: #333;
-    font-size: 14px;
+    background: #f6f6f6;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #aaa;
+    font-family: 'Nunito', Arial, sans-serif;
   }
 
-  tbody td { font-size: 13px; color: #333; }
+  th:first-child,  td:first-child  { width: 38%; }
+  th:nth-child(2), td:nth-child(2) { width: 22%; color: #555; }
+  th:nth-child(3), td:nth-child(3) { width: 18%; }
+  th:nth-child(4), td:nth-child(4) { width: 22%; }
+}
 
-  tbody tr:nth-child(odd) { background-color: #fde3c5; }
-  tbody tr:hover { background-color: rgba(0, 0, 0, 0.04); }
+// ─── Ligne de données ────────────────────────────────────────────────────────
+.data-row {
+  cursor: pointer;
+  transition: background-color 0.1s ease;
 
-  th:first-child, td:first-child { width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  th:nth-child(2), td:nth-child(2) { width: 25%; }
-  th:nth-child(3), td:nth-child(3) { width: 20%; }
-  th:nth-child(4), td:nth-child(4) { width: 10%; text-align: center; }
+  &:nth-child(odd) { background: $row-odd; }
+  &:hover          { background: $row-hover !important; }
+  &:active         { background: $row-active !important; }
+}
 
-  td.lock {
-    text-align: center;
-    svg { width: 18px; height: 18px; vertical-align: middle; display: inline-block; }
+// ─── Cellule Nom ─────────────────────────────────────────────────────────────
+.name-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.type-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+
+  &.type-public { color: $teal; }
+  &.type-house  { color: $pink; }
+}
+
+.row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #222;
+}
+
+// ─── Pastille utilisateurs ───────────────────────────────────────────────────
+.users-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: $teal-a08;
+  color: $teal;
+  border-radius: 10px;
+  padding: 2px 8px 2px 5px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: 'Nunito', Arial, sans-serif;
+
+  svg { width: 12px; height: 12px; flex-shrink: 0; }
+}
+
+// ─── Badge accès ─────────────────────────────────────────────────────────────
+.access-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 10px;
+  padding: 2px 8px 2px 5px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  font-family: 'Nunito', Arial, sans-serif;
+
+  svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+  &.access-open {
+    background: $teal-a12;
+    color: $teal;
   }
 
-  .empty-row {
-    text-align: center;
-    color: #999;
-    font-style: italic;
-    padding: 24px;
+  &.access-password {
+    background: rgba(236, 3, 141, 0.10);
+    color: $pink;
+  }
+
+  &.access-closed {
+    background: rgba(0, 0, 0, 0.07);
+    color: #666;
   }
 }
 
-.buttons {
+// ─── Pagination ──────────────────────────────────────────────────────────────
+.pagination {
   display: flex;
-  gap: 8px;
+  align-items: center;
   justify-content: center;
-  padding: 10px 0;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
 
-  .filter {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 2px solid #3B6E75;
-    background: #fff;
-    color: #3B6E75;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 13px;
-    font-family: 'Nunito', sans-serif;
+.page-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1.5px solid $teal-a20;
+  background: #fff;
+  color: $teal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
 
-    &:hover { background: rgba(59, 110, 117, 0.06); }
-    &.active { background: #3B6E75; color: #fff; }
-    &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
-  }
+  svg { width: 18px; height: 18px; }
+
+  &:hover:not(:disabled) { background: $teal-a08; border-color: $teal; }
+  &:disabled { opacity: 0.30; cursor: default; }
+  &:focus    { outline: none; }
+}
+
+.page-info {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  min-width: 46px;
+  text-align: center;
+  font-family: 'Nunito', Arial, sans-serif;
 }

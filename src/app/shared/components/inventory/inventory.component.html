@@ -7,14 +7,35 @@
     <div class="body">
       <div class="buttons">
         @for (f of filters; track f) {
-          <button class="filter" [class.active]="filter() === f" (click)="filter.set(f)" type="button">{{ f }}</button>
+          <button class="filter" [class.active]="filter() === f" (click)="setFilter(f)" type="button">{{ f }}</button>
         }
       </div>
-      <div class="items">
-        @for (item of emptyItems; track $index) {
-          <div class="item"></div>
-        }
-      </div>
+
+      @if (loading()) {
+        <div class="state-msg">Chargement…</div>
+      } @else if (items().length === 0) {
+        <div class="state-msg">Votre inventaire est vide.</div>
+      } @else {
+        <div class="items">
+          @for (item of items(); track item.id) {
+            <div class="item" [class.equipped]="item.equipped"
+                 [title]="item.item.name"
+                 (click)="item.equipped ? unequip(item) : equip(item)">
+              @if (item.item.displayImage) {
+                <img [src]="item.item.displayImage" [alt]="item.item.name" />
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button (click)="prevPage()" [disabled]="page() === 0" type="button">‹</button>
+          <span>{{ page() + 1 }} / {{ totalPages() }}</span>
+          <button (click)="nextPage()" [disabled]="page() === totalPages() - 1" type="button">›</button>
+        </div>
+      }
     </div>
   </div>
 </div>

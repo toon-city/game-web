@@ -14,6 +14,7 @@ export interface LoginResponse {
   toonizLevel: number;
   kreds: number;
   pez: number;
+  avatarOptionsJson?: string;
 }
 
 const TOKEN_KEY = 'toon_token';
@@ -42,7 +43,12 @@ export class AuthService {
   /** Decode the JWT payload and check the `exp` claim (no signature verification). */
   private _isJwtExpired(token: string): boolean {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      // JWT uses base64url (replaces + with -, / with _, no padding).
+      // atob() requires standard base64 with padding.
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
+      const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+      const payload = JSON.parse(atob(padded));
       return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now();
     } catch {
       return true; // malformed → treat as expired
@@ -58,7 +64,10 @@ export class AuthService {
     const t = this._token();
     if (t && !this._isJwtExpired(t)) {
       try {
-        const payload = JSON.parse(atob(t.split('.')[1]));
+        const base64Url = t.split('.')[1];
+        const base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
+        const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+        const payload = JSON.parse(atob(padded));
         if (!('rank' in payload)) {
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem(USER_KEY);
@@ -93,6 +102,7 @@ export class AuthService {
       kreds: res.kreds ?? 0,
       pez: res.pez ?? 1500,
       avatarOptions: {},
+      avatarOptionsJson: res.avatarOptionsJson ?? '{}',
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     this._user.set(user);

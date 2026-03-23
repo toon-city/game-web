@@ -29,6 +29,14 @@ export class SocketService implements OnDestroy {
   readonly isConnected = signal(false);
   readonly roomState = signal<RoomState | null>(null);
   readonly roomError$ = new Subject<RoomErrorPayload>();
+  readonly kicked$ = new Subject<string>();
+  /** Émis lorsque la connexion est perdue de manière inattendue (serveur injoignable, coupure réseau…). */
+  readonly connectionLost$ = new Subject<void>();
+
+  /** Positionné à true avant un disconnect volontaire pour ne pas déclencher connectionLost$. */
+  private _intentionalDisconnect = false;
+  /** Garantit qu'un seul événement connectionLost$ est émis par session de connexion. */
+  private _connectionLostEmitted = false;
   readonly userJoined$ = new Subject<UserJoinedPayload>();
   readonly userLeft$ = new Subject<UserLeftPayload>();
   readonly remoteMove$ = new Subject<RemoteAvatarMovePayload>();
@@ -44,20 +52,30 @@ export class SocketService implements OnDestroy {
   connect(serverUrl: string): void {
     if (!this.auth.token()) return;
 
+    this._intentionalDisconnect = false;
+    this._connectionLostEmitted = false;
     this.roomState.set(null);
     this.gs = new GameSocket({ serverUrl, token: () => this.auth.token() ?? '', moveThrottleMs: 50 });
 
     this.unsubs = [
       this.gs.on('connected', () => this.isConnected.set(true)),
-      this.gs.on('disconnected', () => this.isConnected.set(false)),
+      this.gs.on('disconnected', () => {
+        this.isConnected.set(false);
+        if (!this._intentionalDisconnect && !this._connectionLostEmitted) {
+          this._connectionLostEmitted = true;
+          this.connectionLost$.next();
+        }
+      }),
       this.gs.on('roomState', (s) => this.roomState.set(s)),
       this.gs.on('roomError', (e) => {
         this.roomError$.next(e);
         if (e.code === 'INVALID_TOKEN') {
-          // JWT was rejected by the server (expired or wrong secret).
-          // Log the user out so they re-authenticate and obtain a fresh token.
           this.auth.logout();
         }
+      }),
+      this.gs.on('kicked', (message) => {
+        this.kicked$.next(message);
+        this.disconnect();
       }),
       this.gs.on('userJoined', (p) => {
         this.userJoined$.next(p);
@@ -101,11 +119,17 @@ export class SocketService implements OnDestroy {
   }
 
   disconnect(): void {
+    this._intentionalDisconnect = true;
     this.unsubs.forEach((fn) => fn());
     this.unsubs = [];
     this.gs?.disconnect();
     this.gs = null;
     this.isConnected.set(false);
+    this.roomState.set(null);
+  }
+
+  /** Vide le roomState pour forcer le canvas à attendre le nouvel état lors d'un changement de room. */
+  clearRoomState(): void {
     this.roomState.set(null);
   }
 

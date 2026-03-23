@@ -8,6 +8,8 @@ export interface UserListItem {
   rank: number;
   toonizLevel: number;
   lastLoginAt: string | null;
+  online: boolean;
+  currentRoomId: number | null;
 }
 
 export interface UserPage {
@@ -16,6 +18,7 @@ export interface UserPage {
   totalPages: number;
   number: number;
   size: number;
+  onlineCount: number;
 }
 
 @Injectable({ providedIn: 'root' })

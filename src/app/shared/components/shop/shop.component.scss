@@ -1,0 +1,320 @@
+:host {
+  display: contents;
+}
+
+.ui-block {
+  display: block;
+  border: 2px solid #3B6E77;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 5px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #3B6E75;
+  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #EC038D;
+  border-radius: 4px 4px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  padding: 8px 12px;
+  cursor: grab;
+  user-select: none;
+
+  &:active { cursor: grabbing; }
+}
+
+.close-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3B6E75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  padding: 0;
+  flex-shrink: 0;
+
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: #3B6E75;
+    border-radius: 1px;
+    left: 50%;
+    top: 50%;
+    transform-origin: center;
+  }
+  &::before { transform: translate(-50%, -50%) rotate(45deg); }
+  &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+}
+
+.shop-tabs {
+  display: flex;
+  gap: 2px;
+  background: #f1f5f6;
+  border-bottom: 2px solid #3B6E75;
+  padding: 4px 8px 0;
+
+  .shop-tab {
+    padding: 6px 16px;
+    border: 2px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: #e0ecef;
+    color: #2b4a5a;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s;
+
+    &.active {
+      background: #fff;
+      border-color: #3B6E75;
+      border-bottom-color: #fff;
+      color: #EC038D;
+    }
+    &:hover:not(.active) { background: #d0e0e4; }
+    &:focus { outline: none; }
+  }
+}
+
+.shop {
+  position: fixed;
+  z-index: 100;
+  top: 80px;
+  left: calc(16px + 550px + 16px);
+  height: 480px;
+  width: 700px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 0;
+
+  .filter {
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 2px solid #3B6E75;
+    background: #fff;
+    color: #3B6E75;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Nunito', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    &:hover { background: rgba(59, 110, 117, 0.06); }
+    &.active { background: #3B6E75; color: #fff; }
+    &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
+  }
+
+  .collection-thumb {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 3px;
+    display: block;
+  }
+}
+
+.buy-error {
+  background: #fff0f0;
+  border: 1px solid #f88;
+  border-radius: 6px;
+  color: #c00;
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+}
+
+.items {
+  flex-grow: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow: auto;
+  padding-bottom: 10px;
+  align-content: flex-start;
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 6px;
+    gap: 4px;
+    transition: border-color 0.15s;
+
+    &:hover { border-color: #3B6E75; }
+  }
+
+  .item-image {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eee;
+    border-radius: 4px;
+    position: relative;
+
+    img { width: 60px; height: 60px; object-fit: contain; }
+  }
+
+  .stock-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: #3B6E75;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    border-radius: 4px;
+    padding: 1px 4px;
+    line-height: 1.4;
+
+    &.out {
+      background: #c00;
+    }
+  }
+
+  &.out-of-stock {
+    opacity: 0.6;
+  }
+
+  .item-name {
+    font-size: 11px;
+    font-family: 'Nunito', sans-serif;
+    text-align: center;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 96px;
+  }
+
+  .item-prices {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .btn-buy {
+    padding: 3px 0;
+    border-radius: 5px;
+    border: none;
+    width: 100%;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.12s;
+
+    &:disabled { opacity: 0.5; cursor: default; }
+
+    &.pez {
+      background: #4caf50;
+      color: #fff;
+      &:hover:not(:disabled) { background: #3d9140; }
+    }
+
+    &.kreds {
+      background: #EC038D;
+      color: #fff;
+      &:hover:not(:disabled) { background: #c40278; }
+    }
+
+    .bonus {
+      font-size: 10px;
+      margin-left: 4px;
+      opacity: 0.85;
+    }
+  }
+  .no-stock-msg {
+    font-size: 11px;
+    font-family: 'Nunito', sans-serif;
+    color: #c00;
+    font-weight: 700;
+    text-align: center;
+    padding: 2px 0;
+  }
+}
+
+.state-msg {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 14px;
+  font-family: 'Nunito', sans-serif;
+  padding: 20px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+
+  button {
+    background: none;
+    border: 2px solid #3B6E75;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3B6E75;
+
+    &:disabled { opacity: 0.3; cursor: default; }
+    &:hover:not(:disabled) { background: #e8f4f8; }
+  }
+}

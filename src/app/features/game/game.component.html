@@ -1,8 +1,10 @@
-<app-game-canvas
-  class="game-canvas"
-  [roomId]="roomId"
-  [editMode]="editMode()"
-/>
+@if (canShowCanvas()) {
+  <app-game-canvas
+    class="game-canvas"
+    [roomId]="roomId"
+    [editMode]="editMode()"
+  />
+}
 
 @if (canEdit()) {
   <div class="edit-overlay">
