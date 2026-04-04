@@ -12,6 +12,7 @@ import {
   RemoteFurniturePlacePayload,
   RemoteFurnitureRemovePayload,
   RemoteFurnitureRotatePayload,
+  AvatarAppearancePayload,
   FurniturePlacePayload,
   FurnitureMovePayload,
   FurnitureRotatePayload,
@@ -42,6 +43,7 @@ export class SocketService implements OnDestroy {
   readonly remoteMove$ = new Subject<RemoteAvatarMovePayload>();
   readonly remoteSay$ = new Subject<RemoteAvatarSayPayload>();
   readonly chatMessage$ = new Subject<RemoteChatMessagePayload>();
+  readonly avatarAppearance$ = new Subject<AvatarAppearancePayload>();
   readonly furniturePlace$ = new Subject<RemoteFurniturePlacePayload>();
   readonly furnitureMove$ = new Subject<RemoteFurnitureMovePayload>();
   readonly furnitureRotate$ = new Subject<RemoteFurnitureRotatePayload>();
@@ -89,9 +91,11 @@ export class SocketService implements OnDestroy {
             users: [...state.users, {
               userId: p.userId,
               username: p.username,
-              avatarOptions: p.avatarOptions,
+              skinColor: p.skinColor,
+              clothing: p.clothing,
               x: p.x,
               y: p.y,
+              direction: p.direction,
               gender: p.gender,
               rank: p.rank,
               toonizLevel: p.toonizLevel,
@@ -109,6 +113,7 @@ export class SocketService implements OnDestroy {
       this.gs.on('remoteAvatarMove', (p) => this.remoteMove$.next(p)),
       this.gs.on('remoteAvatarSay', (p) => this.remoteSay$.next(p)),
       this.gs.on('remoteChatMessage', (p) => this.chatMessage$.next(p)),
+      this.gs.on('avatarAppearance', (p) => this.avatarAppearance$.next(p)),
       this.gs.on('remoteFurniturePlace', (p) => this.furniturePlace$.next(p)),
       this.gs.on('remoteFurnitureMove', (p) => this.furnitureMove$.next(p)),
       this.gs.on('remoteFurnitureRotate', (p) => this.furnitureRotate$.next(p)),
@@ -136,10 +141,13 @@ export class SocketService implements OnDestroy {
   // ── Delegating helpers ───────────────────────────────────────────────────────
 
   joinRoom(roomId: string): void {
-    const avatarOptions = this.auth.user()?.avatarOptions;
-    this.gs?.joinRoom(roomId, avatarOptions);
+    this.gs?.joinRoom(roomId, 1);
   }
   leaveRoom(roomId: string): void { this.gs?.leaveRoom(roomId); }
+
+  clothingRefresh(roomId: string): void {
+    this.gs?.sendClothingRefresh(roomId);
+  }
 
   sendAvatarMove(roomId: string, x: number, y: number, direction: number): void {
     this.gs?.sendAvatarMove(roomId, x, y, direction);

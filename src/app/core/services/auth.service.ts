@@ -14,7 +14,7 @@ export interface LoginResponse {
   toonizLevel: number;
   kreds: number;
   pez: number;
-  avatarOptionsJson?: string;
+  skinColor?: number;
 }
 
 const TOKEN_KEY = 'toon_token';
@@ -101,8 +101,7 @@ export class AuthService {
       toonizLevel: res.toonizLevel ?? 0,
       kreds: res.kreds ?? 0,
       pez: res.pez ?? 1500,
-      avatarOptions: {},
-      avatarOptionsJson: res.avatarOptionsJson ?? '{}',
+      skinColor: res.skinColor ?? 0xf7ceaf,
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     this._user.set(user);
@@ -133,6 +132,7 @@ export class AuthService {
           rank: res.rank ?? current.rank,
           toonizLevel: res.toonizLevel ?? current.toonizLevel,
           gender: res.gender ?? current.gender,
+          skinColor: res.skinColor ?? current.skinColor,
         };
         localStorage.setItem(USER_KEY, JSON.stringify(updated));
         this._user.set(updated);

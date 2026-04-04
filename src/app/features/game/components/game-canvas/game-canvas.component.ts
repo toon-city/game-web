@@ -14,6 +14,8 @@ import { GameCore, LoadingView } from 'game-core';
 import { RoomState } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { InventoryService } from '../../../../core/services/inventory.service';
+import { environment } from '../../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -29,8 +31,9 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  private socket = inject(SocketService);
-  private auth   = inject(AuthService);
+  private socket    = inject(SocketService);
+  private auth      = inject(AuthService);
+  private inventory = inject(InventoryService);
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
@@ -77,6 +80,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       cameraSmoothing: 0.1,
       moveSpeed:       5,
       cameraMode:      'lookahead',
+      assetsUrl:       environment.assetsUrl,
     });
     this.gc.setCameraPosition(400, 300);
 
@@ -132,13 +136,23 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // ── Étape 5 : spawner les avatars ─────────────────────────────────────────
     const myId       = this.auth.user()!.id;
     const myUsername = this.auth.user()!.username;
+    const mySkinColor = this.auth.user()!.skinColor ?? 0xf7ceaf;
+
+    // Trouver les données du joueur courant dans le roomState
+    const myRoomUser = state.users.find(u => u.userId === myId);
 
     this.gc.spawnAvatar(myId, 300, 300, {
       showSocle: true,
-      direction: 1,
+      direction: myRoomUser?.direction ?? 1,
       username:  myUsername,
+      skinColor: myRoomUser?.skinColor ?? mySkinColor,
+      clothing:  myRoomUser?.clothing ?? {},
     });
     this.gc.bindPlayerInput(myId);
+
+    // Wirer l'inventaire pour notifier le serveur après equip/unequip
+    this.inventory.currentRoomId = this.roomId;
+    this.inventory.onClothingChanged = (roomId) => this.socket.clothingRefresh(roomId);
 
     this.gc.on('avatar:walking', ({ id, avatar, direction }) => {
       if (id === myId) {
@@ -149,7 +163,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     for (const u of state.users) {
       if (u.userId !== myId && !this.gc.getAvatar(u.userId)) {
         try {
-          this.gc.spawnAvatar(u.userId, u.x, u.y, { username: u.username });
+          this.gc.spawnAvatar(u.userId, u.x, u.y, {
+            username:  u.username,
+            direction: u.direction,
+            skinColor: u.skinColor,
+            clothing:  u.clothing,
+          });
         } catch (e) {
           console.warn('[GameCanvas] spawnAvatar failed for', u.userId, e);
         }
@@ -160,7 +179,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.subs.push(
       this.socket.userJoined$.subscribe((p) => {
         if (p.userId === myId || this.gc?.getAvatar(p.userId)) return;
-        this.gc?.spawnAvatar(p.userId, p.x, p.y, { username: p.username });
+        this.gc?.spawnAvatar(p.userId, p.x, p.y, {
+          username:  p.username,
+          direction: p.direction,
+          skinColor: p.skinColor,
+          clothing:  p.clothing,
+        });
       }),
       this.socket.userLeft$.subscribe((p) => {
         this.gc?.removeAvatar(p.userId);
@@ -184,6 +208,14 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       }),
       this.socket.chatMessage$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
+      }),
+      this.socket.avatarAppearance$.subscribe((p) => {
+        const avatar = this.gc?.getAvatar(p.userId);
+        if (!avatar) return;
+        avatar.setSkinColor(p.skinColor);
+        for (const [category, id] of Object.entries(p.clothing)) {
+          avatar.changeClothing(category, id);
+        }
       }),
     );
 
@@ -238,6 +270,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   ngOnDestroy(): void {
+    this.inventory.onClothingChanged = null;
+    this.inventory.currentRoomId = null;
     this.subs.forEach((s) => s.unsubscribe());
     this.walkTimers.forEach((t) => clearTimeout(t));
     this.walkTimers.clear();

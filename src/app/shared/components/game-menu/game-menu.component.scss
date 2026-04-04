@@ -65,10 +65,9 @@
   background: white;
   border: 2px solid #2b4a5a;
   border-radius: 11px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-.content {
+#game-menu .content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,14 +75,102 @@
   border: 2px solid #2b4a5a;
   border-radius: 6px;
   background: #82c9e8;
-  gap: 0;
 }
 
-/* ── Connected bar ─────────────────────────────────────────────────────── */
+#game-menu .connected-list {
+  margin-top: 12px;
+  font-family: Arial, sans-serif;
+  border: 2px solid #2b4a5a;
+  width: 250px;
+  height: 300px;
+  background: white;
+  border-radius: 6px;
+  overflow-y: auto;
+}
+
+#game-menu .connected-list table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+#game-menu .connected-list table tbody tr:nth-child(odd) {
+  background-color: #fde3c5;
+}
+
+#game-menu .connected-list table td {
+  border: none;
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+
+#game-menu .connected-list table td:first-child {
+  width: 25px;
+  text-align: center;
+  padding: 0 4px;
+}
+
+#game-menu .connected-list table td img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+#game-menu .connected-list table td.man {
+  font-weight: bold;
+  color: #0c97ba;
+}
+
+#game-menu .connected-list table td.woman {
+  font-weight: bold;
+  color: #d24193;
+}
+
+#game-menu .connected-list table td.no-binary {
+  font-weight: bold;
+  color: #000000;
+}
+
+#game-menu .emojis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px;
+  border: 2px solid #2b4a5a;
+  width: 250px;
+  background: white;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+#game-menu .emojis .emoji {
+  aspect-ratio: 1;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-menu .buttons {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+  justify-content: start;
+}
+
+#game-menu .buttons .action-button:last-child {
+  margin-left: auto;
+}
+
 .connected-bar {
   position: relative;
   width: 220px;
-  margin-bottom: 4px;
+  font-family: Arial, sans-serif;
 }
 
 .connected-bar .bar {
@@ -100,9 +187,9 @@
   left: 0;
   top: 0;
   height: 100%;
+  width: 65%;
   background: white;
   border-radius: 20px;
-  transition: width 0.4s ease;
 }
 
 .connected-bar .count {
@@ -113,7 +200,6 @@
   font-weight: bold;
   color: #2b4a5a;
   font-size: 13px;
-  z-index: 1;
 }
 
 .connected-bar .label {
@@ -121,21 +207,31 @@
   width: 200px;
   top: -17px;
   left: -5px;
+
   font-size: 32px;
   font-weight: 900;
   letter-spacing: -3px;
+
   background: linear-gradient(
     90deg,
-    #ff2f63 0%, #ff5580 30%, #ff2f63 35%,
-    rgba(252, 133, 163, 0.04) 48%, #fc85a3 55%, rgba(252, 133, 163, 0.04) 62%,
-    #ff2f63 67%, #ff5580 75%, #ff2f63 100%
+    #ff2f63  0%,
+    #ff5580  30%,
+    #ff2f63  35%,
+    #fc85a30a 48%,
+    #fc85a3 55%,
+    #fc85a30a 62%,
+    #ff2f63  67%,
+    #ff5580  75%,
+    #ff2f63  100%
   );
   background-size: 400% 100%;
   background-position: 0% center;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+
   transform: rotate(-2deg);
+
   animation: shimmer-rtl 8s linear infinite;
 }
 
@@ -143,84 +239,4 @@
   0%   { background-position: -100% center; }
   13%  { background-position: 0% center; }
   100% { background-position: 0% center; }
-}
-
-/* ── Connected list ────────────────────────────────────────────────────── */
-.connected-list {
-  margin-top: 12px;
-  border: 2px solid #2b4a5a;
-  width: 250px;
-  height: 300px;
-  background: white;
-  border-radius: 6px;
-  overflow-y: auto;
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-
-    tbody tr:nth-child(odd) { background-color: #fde3c5; }
-
-    td {
-      border: none;
-      padding: 6px 8px;
-      vertical-align: middle;
-
-      &:first-child {
-        width: 28px;
-        text-align: center;
-        padding: 0 4px;
-
-        img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-      }
-
-      &.man        { font-weight: bold; color: #0c97ba; }
-      &.woman      { font-weight: bold; color: #d24193; }
-      &.no-binary  { font-weight: bold; color: #1a1a1a; }
-    }
-  }
-}
-
-/* ── Emojis ────────────────────────────────────────────────────────────── */
-.emojis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 8px;
-  border: 2px solid #2b4a5a;
-  width: 250px;
-  background: white;
-  border-radius: 6px;
-  margin-top: 12px;
-
-  .emoji {
-    aspect-ratio: 1;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img { max-width: 100%; height: auto; }
-  }
-}
-
-/* ── Action buttons ────────────────────────────────────────────────────── */
-.buttons {
-  display: flex;
-  width: 100%;
-  gap: 8px;
-  margin-top: 12px;
-  align-items: center;
-  justify-content: flex-start;
-
-  .action-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img { height: 32px; width: auto; display: block; }
-
-    &:last-child { margin-left: auto; }
-  }
 }
