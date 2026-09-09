@@ -6,6 +6,7 @@ import {
   UserJoinedPayload,
   UserLeftPayload,
   RemoteAvatarMovePayload,
+  RemoteAvatarStopPayload,
   RemoteAvatarSayPayload,
   RemoteChatMessagePayload,
   RemoteFurnitureMovePayload,
@@ -41,6 +42,7 @@ export class SocketService implements OnDestroy {
   readonly userJoined$ = new Subject<UserJoinedPayload>();
   readonly userLeft$ = new Subject<UserLeftPayload>();
   readonly remoteMove$ = new Subject<RemoteAvatarMovePayload>();
+  readonly remoteStop$ = new Subject<RemoteAvatarStopPayload>();
   readonly remoteSay$ = new Subject<RemoteAvatarSayPayload>();
   readonly chatMessage$ = new Subject<RemoteChatMessagePayload>();
   readonly avatarAppearance$ = new Subject<AvatarAppearancePayload>();
@@ -111,6 +113,7 @@ export class SocketService implements OnDestroy {
         });
       }),
       this.gs.on('remoteAvatarMove', (p) => this.remoteMove$.next(p)),
+      this.gs.on('remoteAvatarStop', (p) => this.remoteStop$.next(p)),
       this.gs.on('remoteAvatarSay', (p) => this.remoteSay$.next(p)),
       this.gs.on('remoteChatMessage', (p) => this.chatMessage$.next(p)),
       this.gs.on('avatarAppearance', (p) => this.avatarAppearance$.next(p)),
@@ -151,6 +154,9 @@ export class SocketService implements OnDestroy {
 
   sendAvatarMove(roomId: string, x: number, y: number, direction: number): void {
     this.gs?.sendAvatarMove(roomId, x, y, direction);
+  }
+  sendAvatarStop(roomId: string): void {
+    this.gs?.sendAvatarStop(roomId);
   }
   sendAvatarSay(roomId: string, text: string): void {
     this.gs?.sendAvatarSay(roomId, text);

@@ -160,6 +160,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       }
     });
 
+    this.gc.on('avatar:stopped', ({ id }) => {
+      if (id === myId) {
+        this.socket.sendAvatarStop(this.roomId);
+      }
+    });
+
     for (const u of state.users) {
       if (u.userId !== myId && !this.gc.getAvatar(u.userId)) {
         try {
@@ -199,9 +205,17 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         remoteAvatar.changeDirection(p.direction);
         remoteAvatar.walk();
         clearTimeout(this.walkTimers.get(p.userId));
+        // Safety-net only: an explicit 'avatar-stop' (below) normally stops the
+        // walk animation immediately. This fallback just covers a lost/dropped
+        // stop packet, so it can afford a more generous margin.
         this.walkTimers.set(p.userId, setTimeout(() => {
           this.gc?.getAvatar(p.userId)?.stopWalk();
-        }, 250));
+        }, 600));
+      }),
+      this.socket.remoteStop$.subscribe((p) => {
+        clearTimeout(this.walkTimers.get(p.userId));
+        this.walkTimers.delete(p.userId);
+        this.gc?.getAvatar(p.userId)?.stopWalk();
       }),
       this.socket.remoteSay$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
