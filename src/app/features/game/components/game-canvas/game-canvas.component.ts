@@ -40,6 +40,9 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private loadingView: LoadingView | null = null;
   private subs: Subscription[]    = [];
   private initDone = false;
+  private myId = '';
+  /** True once the map is loaded and avatars can be spawned into the scene. */
+  private worldReady = false;
   private walkTimers   = new Map<string, ReturnType<typeof setTimeout>>();
   private remoteTargets = new Map<string, { x: number; y: number }>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,6 +109,15 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       }, 100);
     });
 
+    // Subscribe before any further awaiting. The room events below are plain
+    // Subjects with no replay, so anything emitted while nobody is listening is
+    // lost for good — and the map load further down takes long enough that a
+    // player joining during it would be missed by both the roomState snapshot
+    // (taken before they joined) and their own userJoined event (dropped here),
+    // leaving them invisible for the rest of the session.
+    this.myId = this.auth.user()!.id;
+    this.subscribeToRoomEvents();
+
     this.loadingView.setMessage('Chargement de la room...');
     this.loadingView.setProgress(0.3);
 
@@ -134,104 +146,42 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.loadingView.setProgress(0.8);
 
     // ── Étape 5 : spawner les avatars ─────────────────────────────────────────
-    const myId       = this.auth.user()!.id;
-    const myUsername = this.auth.user()!.username;
+    const myUsername  = this.auth.user()!.username;
     const mySkinColor = this.auth.user()!.skinColor ?? 0xf7ceaf;
 
     // Trouver les données du joueur courant dans le roomState
-    const myRoomUser = state.users.find(u => u.userId === myId);
+    const myRoomUser = state.users.find(u => u.userId === this.myId);
 
-    this.gc.spawnAvatar(myId, 300, 300, {
+    this.gc.spawnAvatar(this.myId, 300, 300, {
       showSocle: true,
       direction: myRoomUser?.direction ?? 1,
       username:  myUsername,
       skinColor: myRoomUser?.skinColor ?? mySkinColor,
       clothing:  myRoomUser?.clothing ?? {},
     });
-    this.gc.bindPlayerInput(myId);
+    this.gc.bindPlayerInput(this.myId);
 
     // Wirer l'inventaire pour notifier le serveur après equip/unequip
     this.inventory.currentRoomId = this.roomId;
     this.inventory.onClothingChanged = (roomId) => this.socket.clothingRefresh(roomId);
 
     this.gc.on('avatar:walking', ({ id, avatar, direction }) => {
-      if (id === myId) {
+      if (id === this.myId) {
         this.socket.sendAvatarMove(this.roomId, avatar.x, avatar.y, direction);
       }
     });
 
     this.gc.on('avatar:stopped', ({ id }) => {
-      if (id === myId) {
+      if (id === this.myId) {
         this.socket.sendAvatarStop(this.roomId);
       }
     });
 
-    for (const u of state.users) {
-      if (u.userId !== myId && !this.gc.getAvatar(u.userId)) {
-        try {
-          this.gc.spawnAvatar(u.userId, u.x, u.y, {
-            username:  u.username,
-            direction: u.direction,
-            skinColor: u.skinColor,
-            clothing:  u.clothing,
-          });
-        } catch (e) {
-          console.warn('[GameCanvas] spawnAvatar failed for', u.userId, e);
-        }
-      }
-    }
-
-    // ── Réagir aux événements réseau ──────────────────────────────────────────
-    this.subs.push(
-      this.socket.userJoined$.subscribe((p) => {
-        if (p.userId === myId || this.gc?.getAvatar(p.userId)) return;
-        this.gc?.spawnAvatar(p.userId, p.x, p.y, {
-          username:  p.username,
-          direction: p.direction,
-          skinColor: p.skinColor,
-          clothing:  p.clothing,
-        });
-      }),
-      this.socket.userLeft$.subscribe((p) => {
-        this.gc?.removeAvatar(p.userId);
-        this.remoteTargets.delete(p.userId);
-        clearTimeout(this.walkTimers.get(p.userId));
-        this.walkTimers.delete(p.userId);
-      }),
-      this.socket.remoteMove$.subscribe((p) => {
-        const remoteAvatar = this.gc?.getAvatar(p.userId);
-        if (!remoteAvatar) return;
-        this.remoteTargets.set(p.userId, { x: p.x, y: p.y });
-        remoteAvatar.changeDirection(p.direction);
-        remoteAvatar.walk();
-        clearTimeout(this.walkTimers.get(p.userId));
-        // Safety-net only: an explicit 'avatar-stop' (below) normally stops the
-        // walk animation immediately. This fallback just covers a lost/dropped
-        // stop packet, so it can afford a more generous margin.
-        this.walkTimers.set(p.userId, setTimeout(() => {
-          this.gc?.getAvatar(p.userId)?.stopWalk();
-        }, 600));
-      }),
-      this.socket.remoteStop$.subscribe((p) => {
-        clearTimeout(this.walkTimers.get(p.userId));
-        this.walkTimers.delete(p.userId);
-        this.gc?.getAvatar(p.userId)?.stopWalk();
-      }),
-      this.socket.remoteSay$.subscribe((p) => {
-        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
-      }),
-      this.socket.chatMessage$.subscribe((p) => {
-        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
-      }),
-      this.socket.avatarAppearance$.subscribe((p) => {
-        const avatar = this.gc?.getAvatar(p.userId);
-        if (!avatar) return;
-        avatar.setSkinColor(p.skinColor);
-        for (const [category, id] of Object.entries(p.clothing)) {
-          avatar.changeClothing(category, id);
-        }
-      }),
-    );
+    // The world can host avatars from here on. Reconcile against the live room
+    // membership rather than the `state` snapshot captured before the map load:
+    // anyone who joined in between is already in the signal.
+    this.worldReady = true;
+    this.reconcileAvatars();
 
     // ── Interpolation lerp pour les avatars distants ─────────────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -281,6 +231,93 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       };
       this.app!.ticker.add(slideOut);
     });
+  }
+
+  /**
+   * Wire every room event. Safe to call before the world exists: membership
+   * changes are reconciled from SocketService's roomState signal (which stays
+   * authoritative on its own), and the per-avatar handlers no-op until their
+   * avatar is in the scene.
+   */
+  private subscribeToRoomEvents(): void {
+    this.subs.push(
+      this.socket.userJoined$.subscribe(() => this.reconcileAvatars()),
+      this.socket.userLeft$.subscribe((p) => {
+        this.remoteTargets.delete(p.userId);
+        clearTimeout(this.walkTimers.get(p.userId));
+        this.walkTimers.delete(p.userId);
+        this.reconcileAvatars();
+      }),
+      this.socket.remoteMove$.subscribe((p) => {
+        const remoteAvatar = this.gc?.getAvatar(p.userId);
+        if (!remoteAvatar) return;
+        this.remoteTargets.set(p.userId, { x: p.x, y: p.y });
+        remoteAvatar.changeDirection(p.direction);
+        remoteAvatar.walk();
+        clearTimeout(this.walkTimers.get(p.userId));
+        // Safety-net only: an explicit 'avatar-stop' normally stops the walk
+        // animation immediately. This fallback just covers a lost/dropped stop
+        // packet, so it can afford a more generous margin.
+        this.walkTimers.set(p.userId, setTimeout(() => {
+          this.gc?.getAvatar(p.userId)?.stopWalk();
+        }, 600));
+      }),
+      this.socket.remoteStop$.subscribe((p) => {
+        clearTimeout(this.walkTimers.get(p.userId));
+        this.walkTimers.delete(p.userId);
+        this.gc?.getAvatar(p.userId)?.stopWalk();
+      }),
+      this.socket.remoteSay$.subscribe((p) => {
+        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
+      }),
+      this.socket.chatMessage$.subscribe((p) => {
+        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
+      }),
+      this.socket.avatarAppearance$.subscribe((p) => {
+        const avatar = this.gc?.getAvatar(p.userId);
+        if (!avatar) return;
+        avatar.setSkinColor(p.skinColor);
+        for (const [category, id] of Object.entries(p.clothing)) {
+          avatar.changeClothing(category, id);
+        }
+      }),
+    );
+  }
+
+  /**
+   * Make the avatars in the scene match the room membership the server last
+   * reported. Spawns whoever is missing and despawns whoever left, so a dropped
+   * or out-of-order join/leave event can never leave a player permanently
+   * invisible (or a ghost behind).
+   */
+  private reconcileAvatars(): void {
+    if (!this.worldReady || !this.gc) return;
+
+    const users = this.socket.roomState()?.users ?? [];
+    const expected = new Set<string>([this.myId]);
+
+    for (const u of users) {
+      expected.add(u.userId);
+      if (u.userId === this.myId || this.gc.getAvatar(u.userId)) continue;
+      try {
+        this.gc.spawnAvatar(u.userId, u.x, u.y, {
+          username:  u.username,
+          direction: u.direction,
+          skinColor: u.skinColor,
+          clothing:  u.clothing,
+        });
+      } catch (e) {
+        console.warn('[GameCanvas] spawnAvatar failed for', u.userId, e);
+      }
+    }
+
+    for (const id of [...this.gc.getAvatars().keys()]) {
+      if (expected.has(id)) continue;
+      this.gc.removeAvatar(id);
+      this.remoteTargets.delete(id);
+      clearTimeout(this.walkTimers.get(id));
+      this.walkTimers.delete(id);
+    }
   }
 
   ngOnDestroy(): void {
