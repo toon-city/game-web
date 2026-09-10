@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { Application } from 'pixi.js';
-import { Avatar, BaseTextureLoader, AssetBaseUrl } from 'game-core';
+import { Avatar, BaseTextureLoader, AssetBaseUrl } from '@toon-live/game-avatar';
 import { AuthService } from '../../../core/services/auth.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { environment } from '../../../../environments/environment';
