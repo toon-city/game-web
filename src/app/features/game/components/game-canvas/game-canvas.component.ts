@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { Application, Assets } from 'pixi.js';
 import { GameCore, LoadingView, FurnitureView } from 'game-core';
-import { RoomState, UserItemInfo } from '@toon-live/game-types';
+import { RoomState, UserItemInfo, RoomErrorPayload } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
@@ -340,6 +340,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const cleanup = () => {
       this.gc?.off('furniture:placed', onPlaced);
       document.removeEventListener('keydown', onKeyDown);
+      errorSub.unsubscribe();
       this.gc?.setEditMode(wasEditMode);
     };
 
@@ -356,6 +357,18 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.gc?.removeFurniture(userItemId);
       cleanup();
     };
+
+    // Placement peut être refusé côté serveur (pas propriétaire de la room —
+    // seuls les admins peuvent placer partout, voir FurnitureStateService).
+    // Sans ça le fantôme local disparaissait déjà (removeFurniture est
+    // toujours appelé côté serveur en échec puisqu'aucun echo furniture-place
+    // n'arrive jamais), mais silencieusement : le joueur ne savait pas pourquoi.
+    const errorSub = this.socket.roomError$.subscribe((e: RoomErrorPayload) => {
+      if (e.code !== 'FURNITURE_ACTION_FAILED') return;
+      this.gc?.removeFurniture(userItemId);
+      this.gc?.getAvatar(this.myId)?.say(e.message, 3000);
+      cleanup();
+    });
 
     this.gc.on('furniture:placed', onPlaced);
     document.addEventListener('keydown', onKeyDown);
