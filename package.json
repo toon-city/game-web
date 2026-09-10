@@ -19,6 +19,7 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
+    "@toon-live/game-avatar": "workspace:*",
     "@toon-live/game-socket": "workspace:*",
     "@toon-live/game-types": "workspace:*",
     "game-core": "workspace:*",

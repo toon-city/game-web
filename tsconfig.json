@@ -20,6 +20,7 @@
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
     "paths": {
+      "@toon-live/game-avatar": ["../game-avatar/src/index.ts"],
       "@toon-live/game-types": ["../game-types/src/index.ts"],
       "@toon-live/game-socket": ["../game-socket/src/index.ts"],
       "game-core": ["../game-core/src/api/index.ts"]

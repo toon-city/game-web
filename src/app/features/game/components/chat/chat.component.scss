@@ -56,6 +56,7 @@
 
       &.mine strong { color: #d24193; }
       &.pm { font-style: italic; color: green; }
+      .mp-tag { font-weight: 700; margin-right: 4px; }
       &.empty { color: rgba(3, 56, 73, 0.45); font-style: italic; font-size: 0.85rem; text-align: center; }
 
       .chat-badge {

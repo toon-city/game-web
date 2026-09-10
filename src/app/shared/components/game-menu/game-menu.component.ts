@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { SocketService } from '../../../core/services/socket.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserActionDialogService } from '../../../core/services/user-action-dialog.service';
 import { RoomUser } from '@toon-live/game-types';
 
 @Component({
@@ -14,6 +15,7 @@ import { RoomUser } from '@toon-live/game-types';
 export class GameMenuComponent {
   private socket = inject(SocketService);
   private auth = inject(AuthService);
+  private userActionDialog = inject(UserActionDialogService);
 
   readonly users = computed<RoomUser[]>(() => this.socket.roomState()?.users ?? []);
   readonly totalConnected = computed(() => this.users().length);
@@ -33,6 +35,11 @@ export class GameMenuComponent {
       case 'NON_BINARY': return 'no-binary';
       default:           return 'man'; // fallback
     }
+  }
+
+  openUserAction(user: RoomUser): void {
+    if (user.userId === this.myUserId()) return;
+    this.userActionDialog.open(user);
   }
 
   fillPercent = computed(() => {

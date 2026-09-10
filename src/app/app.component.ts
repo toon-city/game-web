@@ -12,6 +12,8 @@ import { ShopComponent } from './shared/components/shop/shop.component';
 import { GameMenuComponent } from './shared/components/game-menu/game-menu.component';
 import { ChatComponent } from './features/game/components/chat/chat.component';
 import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
+import { UserActionDialogComponent } from './shared/components/user-action-dialog/user-action-dialog.component';
+import { UserActionDialogService } from './core/services/user-action-dialog.service';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +29,7 @@ import { StatusBarComponent } from './shared/components/status-bar/status-bar.co
     GameMenuComponent,
     ChatComponent,
     StatusBarComponent,
+    UserActionDialogComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -35,6 +38,7 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
   readonly socket = inject(SocketService);
+  readonly userActionDialog = inject(UserActionDialogService);
 
   navOpen  = signal(false);
   invOpen  = signal(false);

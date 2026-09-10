@@ -99,6 +99,14 @@
   background-color: #fde3c5;
 }
 
+#game-menu .connected-list table tbody tr.clickable {
+  cursor: pointer;
+}
+
+#game-menu .connected-list table tbody tr.clickable:hover {
+  filter: brightness(0.95);
+}
+
 #game-menu .connected-list table td {
   border: none;
   padding: 6px 8px;

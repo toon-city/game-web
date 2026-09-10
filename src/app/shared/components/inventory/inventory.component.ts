@@ -76,6 +76,27 @@ export class InventoryComponent implements OnInit {
     });
   }
 
+  /**
+   * Un meuble n'a pas d'état "équipé/pas équipé" binaire — il lui faut une
+   * room + une position + une orientation. Place = fermer le panneau et
+   * démarrer un drag dans la room (voir GameCanvasComponent.startPlacingFurniture).
+   */
+  place(item: UserItemInfo): void {
+    if (!item.id || item.placedInRoomId) return;
+    this.inventoryService.startPlacing(item);
+    this.close.emit();
+  }
+
+  onItemClick(item: UserItemInfo): void {
+    if (item.item.itemType === 'FURNITURE') {
+      this.place(item);
+    } else if (item.equipped) {
+      this.unequip(item);
+    } else {
+      this.equip(item);
+    }
+  }
+
   private load(): void {
     this.loading.set(true);
     const typeFilter = FILTER_MAP[this.filter()];

@@ -10,20 +10,61 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { Application, Assets } from 'pixi.js';
-import { GameCore, LoadingView } from 'game-core';
-import { RoomState } from '@toon-live/game-types';
+import { GameCore, LoadingView, FurnitureView } from 'game-core';
+import { RoomState, UserItemInfo, RoomErrorPayload } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
+import { UserActionDialogService } from '../../../../core/services/user-action-dialog.service';
 import { environment } from '../../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-game-canvas',
   standalone: true,
-  template: `<canvas #canvas class="game-canvas"></canvas>`,
-  styles: [`:host { display:block; width:100%; height:100%; }
-            .game-canvas { display:block; width:100%; height:100%; }`],
+  template: `
+    <canvas #canvas class="game-canvas"></canvas>
+    @if (editMode) {
+      <div class="camera-pad" role="group" aria-label="Déplacer la caméra">
+        <button class="pad-btn pad-up"    (pointerdown)="startPan(0,-1)"  (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra haut">▲</button>
+        <button class="pad-btn pad-left"  (pointerdown)="startPan(-1,0)"  (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra gauche">◀</button>
+        <button class="pad-btn pad-center" (click)="recenterCamera()" aria-label="Recentrer la caméra">⟲</button>
+        <button class="pad-btn pad-right" (pointerdown)="startPan(1,0)"   (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra droite">▶</button>
+        <button class="pad-btn pad-down"  (pointerdown)="startPan(0,1)"   (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra bas">▼</button>
+      </div>
+    }
+  `,
+  styles: [`
+    :host { display:block; width:100%; height:100%; position:relative; }
+    .game-canvas { display:block; width:100%; height:100%; }
+    .camera-pad {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 36px);
+      grid-template-rows: repeat(3, 36px);
+      gap: 2px;
+      z-index: 10;
+    }
+    .pad-btn {
+      background: rgba(20, 40, 50, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      touch-action: none;
+    }
+    .pad-btn:hover { background: rgba(20, 40, 50, 0.9); }
+    .pad-btn:active { background: rgba(255, 255, 255, 0.2); }
+    .pad-up     { grid-column: 2; grid-row: 1; }
+    .pad-left   { grid-column: 1; grid-row: 2; }
+    .pad-center { grid-column: 2; grid-row: 2; }
+    .pad-right  { grid-column: 3; grid-row: 2; }
+    .pad-down   { grid-column: 2; grid-row: 3; }
+  `],
 })
 export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() roomId = '';
@@ -34,12 +75,16 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private socket    = inject(SocketService);
   private auth      = inject(AuthService);
   private inventory = inject(InventoryService);
+  private userActionDialog = inject(UserActionDialogService);
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
   private loadingView: LoadingView | null = null;
   private subs: Subscription[]    = [];
   private initDone = false;
+  private myId = '';
+  /** True once the map is loaded and avatars can be spawned into the scene. */
+  private worldReady = false;
   private walkTimers   = new Map<string, ReturnType<typeof setTimeout>>();
   private remoteTargets = new Map<string, { x: number; y: number }>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +97,35 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['editMode'] && this.gc) {
       this.gc.setEditMode(this.editMode);
+      // The follow-camera tick fights manual panning every frame otherwise —
+      // free the camera while editing, hand it back to the avatar on exit.
+      this.gc.setFollowCamera(!this.editMode);
+      if (!this.editMode) this.stopPan();
     }
+  }
+
+  // ── Camera pad (edit mode) ─────────────────────────────────────────────────
+
+  private panTimer?: ReturnType<typeof setInterval>;
+  private static readonly PAN_STEP = 16;    // px per tick
+  private static readonly PAN_INTERVAL_MS = 30;
+
+  startPan(dx: number, dy: number): void {
+    this.stopPan();
+    this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP);
+    this.panTimer = setInterval(
+      () => this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP),
+      GameCanvasComponent.PAN_INTERVAL_MS,
+    );
+  }
+
+  stopPan(): void {
+    clearInterval(this.panTimer);
+    this.panTimer = undefined;
+  }
+
+  recenterCamera(): void {
+    this.gc?.centerCameraOnAvatar(this.myId);
   }
 
   private async startLoading(): Promise<void> {
@@ -106,6 +179,15 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       }, 100);
     });
 
+    // Subscribe before any further awaiting. The room events below are plain
+    // Subjects with no replay, so anything emitted while nobody is listening is
+    // lost for good — and the map load further down takes long enough that a
+    // player joining during it would be missed by both the roomState snapshot
+    // (taken before they joined) and their own userJoined event (dropped here),
+    // leaving them invisible for the rest of the session.
+    this.myId = this.auth.user()!.id;
+    this.subscribeToRoomEvents();
+
     this.loadingView.setMessage('Chargement de la room...');
     this.loadingView.setProgress(0.3);
 
@@ -130,108 +212,63 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       return;
     }
 
+    // Meubles déjà placés dans la room (snapshot du join — voir subscribeToRoomEvents
+    // pour les placements/déplacements qui arrivent APRÈS, en direct).
+    for (const f of state.furnitures ?? []) {
+      await this.gc.spawnFurniture(
+        Number(f.instanceId), f.baseId, 18, `${f.spriteKey}/${f.spritePath}`,
+        f.x, f.y, f.orientation,
+      );
+    }
+
     this.loadingView.setMessage('Chargement des joueurs...');
     this.loadingView.setProgress(0.8);
 
     // ── Étape 5 : spawner les avatars ─────────────────────────────────────────
-    const myId       = this.auth.user()!.id;
-    const myUsername = this.auth.user()!.username;
+    const myUsername  = this.auth.user()!.username;
     const mySkinColor = this.auth.user()!.skinColor ?? 0xf7ceaf;
 
     // Trouver les données du joueur courant dans le roomState
-    const myRoomUser = state.users.find(u => u.userId === myId);
+    const myRoomUser = state.users.find(u => u.userId === this.myId);
 
-    this.gc.spawnAvatar(myId, 300, 300, {
+    this.gc.spawnAvatar(this.myId, 300, 300, {
       showSocle: true,
       direction: myRoomUser?.direction ?? 1,
       username:  myUsername,
       skinColor: myRoomUser?.skinColor ?? mySkinColor,
       clothing:  myRoomUser?.clothing ?? {},
     });
-    this.gc.bindPlayerInput(myId);
+    this.gc.bindPlayerInput(this.myId);
 
-    // Wirer l'inventaire pour notifier le serveur après equip/unequip
+    // Wirer l'inventaire pour notifier le serveur après equip/unequip, et pour
+    // démarrer un placement meuble (voir startPlacingFurniture).
     this.inventory.currentRoomId = this.roomId;
     this.inventory.onClothingChanged = (roomId) => this.socket.clothingRefresh(roomId);
+    this.inventory.onPlaceFurniture = (item) => this.startPlacingFurniture(item);
 
     this.gc.on('avatar:walking', ({ id, avatar, direction }) => {
-      if (id === myId) {
+      if (id === this.myId) {
         this.socket.sendAvatarMove(this.roomId, avatar.x, avatar.y, direction);
       }
     });
 
     this.gc.on('avatar:stopped', ({ id }) => {
-      if (id === myId) {
+      if (id === this.myId) {
         this.socket.sendAvatarStop(this.roomId);
       }
     });
 
-    for (const u of state.users) {
-      if (u.userId !== myId && !this.gc.getAvatar(u.userId)) {
-        try {
-          this.gc.spawnAvatar(u.userId, u.x, u.y, {
-            username:  u.username,
-            direction: u.direction,
-            skinColor: u.skinColor,
-            clothing:  u.clothing,
-          });
-        } catch (e) {
-          console.warn('[GameCanvas] spawnAvatar failed for', u.userId, e);
-        }
-      }
-    }
+    this.gc.on('avatar:click', ({ id }) => {
+      if (id === this.myId) return;
+      const user = this.socket.roomState()?.users.find(u => u.userId === id);
+      if (user) this.userActionDialog.open(user);
+    });
 
-    // ── Réagir aux événements réseau ──────────────────────────────────────────
-    this.subs.push(
-      this.socket.userJoined$.subscribe((p) => {
-        if (p.userId === myId || this.gc?.getAvatar(p.userId)) return;
-        this.gc?.spawnAvatar(p.userId, p.x, p.y, {
-          username:  p.username,
-          direction: p.direction,
-          skinColor: p.skinColor,
-          clothing:  p.clothing,
-        });
-      }),
-      this.socket.userLeft$.subscribe((p) => {
-        this.gc?.removeAvatar(p.userId);
-        this.remoteTargets.delete(p.userId);
-        clearTimeout(this.walkTimers.get(p.userId));
-        this.walkTimers.delete(p.userId);
-      }),
-      this.socket.remoteMove$.subscribe((p) => {
-        const remoteAvatar = this.gc?.getAvatar(p.userId);
-        if (!remoteAvatar) return;
-        this.remoteTargets.set(p.userId, { x: p.x, y: p.y });
-        remoteAvatar.changeDirection(p.direction);
-        remoteAvatar.walk();
-        clearTimeout(this.walkTimers.get(p.userId));
-        // Safety-net only: an explicit 'avatar-stop' (below) normally stops the
-        // walk animation immediately. This fallback just covers a lost/dropped
-        // stop packet, so it can afford a more generous margin.
-        this.walkTimers.set(p.userId, setTimeout(() => {
-          this.gc?.getAvatar(p.userId)?.stopWalk();
-        }, 600));
-      }),
-      this.socket.remoteStop$.subscribe((p) => {
-        clearTimeout(this.walkTimers.get(p.userId));
-        this.walkTimers.delete(p.userId);
-        this.gc?.getAvatar(p.userId)?.stopWalk();
-      }),
-      this.socket.remoteSay$.subscribe((p) => {
-        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
-      }),
-      this.socket.chatMessage$.subscribe((p) => {
-        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
-      }),
-      this.socket.avatarAppearance$.subscribe((p) => {
-        const avatar = this.gc?.getAvatar(p.userId);
-        if (!avatar) return;
-        avatar.setSkinColor(p.skinColor);
-        for (const [category, id] of Object.entries(p.clothing)) {
-          avatar.changeClothing(category, id);
-        }
-      }),
-    );
+    // The world can host avatars from here on. Reconcile against the live room
+    // membership rather than the `state` snapshot captured before the map load:
+    // anyone who joined in between is already in the signal.
+    this.worldReady = true;
+    this.reconcileAvatars();
 
     // ── Interpolation lerp pour les avatars distants ─────────────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -283,8 +320,185 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     });
   }
 
+  /**
+   * Wire every room event. Safe to call before the world exists: membership
+   * changes are reconciled from SocketService's roomState signal (which stays
+   * authoritative on its own), and the per-avatar handlers no-op until their
+   * avatar is in the scene.
+   */
+  private subscribeToRoomEvents(): void {
+    this.subs.push(
+      this.socket.userJoined$.subscribe(() => this.reconcileAvatars()),
+      this.socket.userLeft$.subscribe((p) => {
+        this.remoteTargets.delete(p.userId);
+        clearTimeout(this.walkTimers.get(p.userId));
+        this.walkTimers.delete(p.userId);
+        this.reconcileAvatars();
+      }),
+      this.socket.remoteMove$.subscribe((p) => {
+        const remoteAvatar = this.gc?.getAvatar(p.userId);
+        if (!remoteAvatar) return;
+        this.remoteTargets.set(p.userId, { x: p.x, y: p.y });
+        remoteAvatar.changeDirection(p.direction);
+        remoteAvatar.walk();
+        clearTimeout(this.walkTimers.get(p.userId));
+        // Safety-net only: an explicit 'avatar-stop' normally stops the walk
+        // animation immediately. This fallback just covers a lost/dropped stop
+        // packet, so it can afford a more generous margin.
+        this.walkTimers.set(p.userId, setTimeout(() => {
+          this.gc?.getAvatar(p.userId)?.stopWalk();
+        }, 600));
+      }),
+      this.socket.remoteStop$.subscribe((p) => {
+        clearTimeout(this.walkTimers.get(p.userId));
+        this.walkTimers.delete(p.userId);
+        this.gc?.getAvatar(p.userId)?.stopWalk();
+      }),
+      this.socket.remoteSay$.subscribe((p) => {
+        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
+      }),
+      this.socket.chatMessage$.subscribe((p) => {
+        this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
+      }),
+      this.socket.avatarAppearance$.subscribe((p) => {
+        const avatar = this.gc?.getAvatar(p.userId);
+        if (!avatar) return;
+        avatar.setSkinColor(p.skinColor);
+        for (const [category, id] of Object.entries(p.clothing)) {
+          avatar.changeClothing(category, id);
+        }
+      }),
+      // Placement/déplacement/rotation/retrait de meuble — diffusé à toute la
+      // room, y compris à soi-même (même principe que l'équipement de
+      // vêtements : celui qui place est juste un abonné de plus au topic, pas
+      // de rendu optimiste séparé — voir startPlacingFurniture qui retire son
+      // propre fantôme local et laisse cet écho créer le vrai meuble).
+      this.socket.furniturePlace$.subscribe((p) => {
+        this.gc?.spawnFurniture(
+          Number(p.instanceId), p.baseId, 18, `${p.spriteKey}/${p.spritePath}`,
+          p.x, p.y, p.orientation,
+        );
+      }),
+      this.socket.furnitureMove$.subscribe((p) => {
+        this.gc?.moveFurniture(Number(p.instanceId), p.x, p.y);
+      }),
+      this.socket.furnitureRotate$.subscribe((p) => {
+        this.gc?.rotateFurniture(Number(p.instanceId), p.orientation);
+      }),
+      this.socket.furnitureRemove$.subscribe((p) => {
+        this.gc?.removeFurniture(Number(p.instanceId));
+      }),
+    );
+  }
+
+  /**
+   * Placement d'un meuble depuis l'inventaire : fait apparaître un fantôme
+   * local à une position par défaut, réutilise le drag déjà câblé sur
+   * FurnitureView (activé par setEditMode(true) — un simple clic sans
+   * bouger suffit aussi à "confirmer", startDrag+endDrag se déclenchent
+   * même sans mouvement). Confirmation = premier relâchement : envoie le
+   * placement réel au serveur puis retire le fantôme local (le vrai meuble
+   * arrive par l'écho broadcast, voir subscribeToRoomEvents). Échap annule
+   * et retire le fantôme sans rien envoyer.
+   */
+  private async startPlacingFurniture(item: UserItemInfo): Promise<void> {
+    if (!this.gc || !item.id || item.placedInRoomId) return;
+    if (!item.item.spriteKey || !item.item.spritePath) return;
+
+    // Le serveur revalide de toute façon (FurnitureStateService.assertCanManageRoom) —
+    // ce garde-fou est là pour donner un retour immédiat plutôt que de laisser
+    // l'utilisateur draguer un fantôme pour rien et voir l'échec après coup.
+    if (!this.editMode) {
+      this.gc.getAvatar(this.myId)?.say(
+        "Passez d'abord en mode édition pour placer un meuble.", 3000);
+      return;
+    }
+
+    const userItemId = item.id;
+    const file = `${item.item.spriteKey}/${item.item.spritePath}`;
+    const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, 400, 300, 1);
+    if (!ghostView || !this.gc) return;
+
+    const wasEditMode = this.editMode;
+    this.gc.setEditMode(true);
+
+    const cleanup = () => {
+      this.gc?.off('furniture:placed', onPlaced);
+      document.removeEventListener('keydown', onKeyDown);
+      errorSub.unsubscribe();
+      this.gc?.setEditMode(wasEditMode);
+    };
+
+    const onPlaced = ({ view }: { view: FurnitureView }) => {
+      if (view !== ghostView) return; // un autre meuble vient d'être déplacé, pas le nôtre
+      const { x, y, orientation } = view.model;
+      this.socket.sendFurniturePlace(this.roomId, { userItemId, x, y, orientation });
+      this.gc?.removeFurniture(userItemId);
+      cleanup();
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      this.gc?.removeFurniture(userItemId);
+      cleanup();
+    };
+
+    // Placement peut être refusé côté serveur (pas propriétaire de la room —
+    // seuls les admins peuvent placer partout, voir FurnitureStateService).
+    // Sans ça le fantôme local disparaissait déjà (removeFurniture est
+    // toujours appelé côté serveur en échec puisqu'aucun echo furniture-place
+    // n'arrive jamais), mais silencieusement : le joueur ne savait pas pourquoi.
+    const errorSub = this.socket.roomError$.subscribe((e: RoomErrorPayload) => {
+      if (e.code !== 'FURNITURE_ACTION_FAILED') return;
+      this.gc?.removeFurniture(userItemId);
+      this.gc?.getAvatar(this.myId)?.say(e.message, 3000);
+      cleanup();
+    });
+
+    this.gc.on('furniture:placed', onPlaced);
+    document.addEventListener('keydown', onKeyDown);
+  }
+
+  /**
+   * Make the avatars in the scene match the room membership the server last
+   * reported. Spawns whoever is missing and despawns whoever left, so a dropped
+   * or out-of-order join/leave event can never leave a player permanently
+   * invisible (or a ghost behind).
+   */
+  private reconcileAvatars(): void {
+    if (!this.worldReady || !this.gc) return;
+
+    const users = this.socket.roomState()?.users ?? [];
+    const expected = new Set<string>([this.myId]);
+
+    for (const u of users) {
+      expected.add(u.userId);
+      if (u.userId === this.myId || this.gc.getAvatar(u.userId)) continue;
+      try {
+        this.gc.spawnAvatar(u.userId, u.x, u.y, {
+          username:  u.username,
+          direction: u.direction,
+          skinColor: u.skinColor,
+          clothing:  u.clothing,
+        });
+      } catch (e) {
+        console.warn('[GameCanvas] spawnAvatar failed for', u.userId, e);
+      }
+    }
+
+    for (const id of [...this.gc.getAvatars().keys()]) {
+      if (expected.has(id)) continue;
+      this.gc.removeAvatar(id);
+      this.remoteTargets.delete(id);
+      clearTimeout(this.walkTimers.get(id));
+      this.walkTimers.delete(id);
+    }
+  }
+
   ngOnDestroy(): void {
+    this.stopPan();
     this.inventory.onClothingChanged = null;
+    this.inventory.onPlaceFurniture = null;
     this.inventory.currentRoomId = null;
     this.subs.forEach((s) => s.unsubscribe());
     this.walkTimers.forEach((t) => clearTimeout(t));

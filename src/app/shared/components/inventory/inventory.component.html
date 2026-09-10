@@ -19,8 +19,9 @@
         <div class="items">
           @for (item of items(); track item.id) {
             <div class="item" [class.equipped]="item.equipped"
+                 [class.placed]="item.placedInRoomId"
                  [title]="item.item.name"
-                 (click)="item.equipped ? unequip(item) : equip(item)">
+                 (click)="onItemClick(item)">
               @if (item.item.displayImage) {
                 <img [src]="item.item.displayImage" [alt]="item.item.name" />
               }
