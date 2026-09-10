@@ -1,9 +1,12 @@
 <div class="chat" [class.history-open]="historyOpen()">
   <div class="messages" #msgList>
     @for (msg of messages(); track msg.id) {
-      <div class="message" [class.mine]="msg.userId === myUserId()">
+      <div class="message" [class.mine]="msg.userId === myUserId()" [class.pm]="msg.isPrivate">
         @if (msg.rank >= 1) {
           <img src="assets/images/modo.png" [alt]="msg.rank >= 2 ? 'Admin' : 'Modo'" class="chat-badge" />
+        }
+        @if (msg.isPrivate) {
+          <span class="mp-tag">[MP]</span>
         }
         <strong>{{ msg.username }}:</strong> {{ msg.text }}
       </div>

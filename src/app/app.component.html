@@ -30,6 +30,14 @@
   @if (inRoom()) {
     <app-game-menu />
     <app-chat [roomId]="roomId()" />
+
+    @if (userActionDialog.target(); as target) {
+      <app-user-action-dialog
+        [target]="target"
+        [roomId]="roomId()"
+        (close)="userActionDialog.close()"
+      />
+    }
   }
 
   <app-status-bar />

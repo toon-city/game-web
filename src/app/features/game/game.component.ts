@@ -53,9 +53,19 @@ export class GameComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.socket.connect(environment.wsUrl || window.location.origin);
 
-    this.kickedSub = this.socket.kicked$.subscribe((message) => {
-      this.snack.open(message, 'OK', { duration: 5000, panelClass: 'snack-error' });
-      this.router.navigate(['/lobby']);
+    this.kickedSub = this.socket.kicked$.subscribe((payload) => {
+      this.snack.open(payload.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
+      if (payload.code === 'SITE_BANNED') {
+        // A room-kick/room-ban just needs you out of that one room — you're still
+        // a legitimate logged-in user elsewhere. A site ban means the account
+        // itself is no longer welcome: the JWT is already rejected server-side
+        // (JwtChannelInterceptor) for any future CONNECT, so staying "logged in"
+        // client-side here would just be a dead end, not a real session.
+        this.auth.logout();
+        this.router.navigate(['/login']);
+      } else {
+        this.router.navigate(['/lobby']);
+      }
     });
 
     this.connectionLostSub = this.socket.connectionLost$.subscribe(() => {

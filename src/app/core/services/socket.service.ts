@@ -13,11 +13,16 @@ import {
   RemoteFurniturePlacePayload,
   RemoteFurnitureRemovePayload,
   RemoteFurnitureRotatePayload,
+  RemotePrivateMessagePayload,
   AvatarAppearancePayload,
   FurniturePlacePayload,
   FurnitureMovePayload,
   FurnitureRotatePayload,
   FurnitureRemovePayload,
+  KickedPayload,
+  RoomKickPayload,
+  RoomBanPayload,
+  PrivateMessagePayload,
 } from '@toon-live/game-types';
 import { Subject } from 'rxjs';
 import { AuthService } from './auth.service';
@@ -31,7 +36,7 @@ export class SocketService implements OnDestroy {
   readonly isConnected = signal(false);
   readonly roomState = signal<RoomState | null>(null);
   readonly roomError$ = new Subject<RoomErrorPayload>();
-  readonly kicked$ = new Subject<string>();
+  readonly kicked$ = new Subject<KickedPayload>();
   /** Émis lorsque la connexion est perdue de manière inattendue (serveur injoignable, coupure réseau…). */
   readonly connectionLost$ = new Subject<void>();
 
@@ -50,6 +55,7 @@ export class SocketService implements OnDestroy {
   readonly furnitureMove$ = new Subject<RemoteFurnitureMovePayload>();
   readonly furnitureRotate$ = new Subject<RemoteFurnitureRotatePayload>();
   readonly furnitureRemove$ = new Subject<RemoteFurnitureRemovePayload>();
+  readonly privateMessage$ = new Subject<RemotePrivateMessagePayload>();
 
   constructor(private auth: AuthService) {}
 
@@ -77,8 +83,8 @@ export class SocketService implements OnDestroy {
           this.auth.logout();
         }
       }),
-      this.gs.on('kicked', (message) => {
-        this.kicked$.next(message);
+      this.gs.on('kicked', (payload) => {
+        this.kicked$.next(payload);
         this.disconnect();
       }),
       this.gs.on('userJoined', (p) => {
@@ -121,6 +127,7 @@ export class SocketService implements OnDestroy {
       this.gs.on('remoteFurnitureMove', (p) => this.furnitureMove$.next(p)),
       this.gs.on('remoteFurnitureRotate', (p) => this.furnitureRotate$.next(p)),
       this.gs.on('remoteFurnitureRemove', (p) => this.furnitureRemove$.next(p)),
+      this.gs.on('remotePrivateMessage', (p) => this.privateMessage$.next(p)),
     ];
 
     this.gs.connect();
@@ -175,6 +182,15 @@ export class SocketService implements OnDestroy {
   }
   sendFurnitureRemove(roomId: string, p: FurnitureRemovePayload): void {
     this.gs?.sendFurnitureRemove(roomId, p);
+  }
+  sendPrivateMessage(roomId: string, p: PrivateMessagePayload): void {
+    this.gs?.sendPrivateMessage(roomId, p);
+  }
+  sendRoomKick(roomId: string, p: RoomKickPayload): void {
+    this.gs?.sendRoomKick(roomId, p);
+  }
+  sendRoomBan(roomId: string, p: RoomBanPayload): void {
+    this.gs?.sendRoomBan(roomId, p);
   }
 
   ngOnDestroy(): void { this.disconnect(); }

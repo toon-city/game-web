@@ -11,10 +11,21 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgFor } from '@angular/common';
-import { RemoteChatMessagePayload } from '@toon-live/game-types';
+import { RemoteChatMessagePayload, RemotePrivateMessagePayload } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
+
+/** Unifies public chat + private messages into one renderable list. */
+interface ChatEntry {
+  id: string;
+  userId: string;
+  username: string;
+  rank: number;
+  text: string;
+  sentAt: number;
+  isPrivate: boolean;
+}
 
 @Component({
   selector: 'app-chat',
@@ -32,7 +43,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private subs: Subscription[] = [];
   private shouldScrollToBottom = false;
 
-  messages = signal<RemoteChatMessagePayload[]>([]);
+  messages = signal<ChatEntry[]>([]);
   historyOpen = signal(false);
   text = '';
 
@@ -47,8 +58,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnInit(): void {
     this.subs.push(
-      this.socket.chatMessage$.subscribe((msg) => {
-        this.messages.update((msgs) => [...msgs, msg]);
+      this.socket.chatMessage$.subscribe((msg: RemoteChatMessagePayload) => {
+        this.messages.update((msgs) => [...msgs, { ...msg, isPrivate: false }]);
+        this.shouldScrollToBottom = true;
+      }),
+      this.socket.privateMessage$.subscribe((msg: RemotePrivateMessagePayload) => {
+        this.messages.update((msgs) => [...msgs, {
+          id: `mp-${msg.fromUserId}-${msg.sentAt}`,
+          userId: msg.fromUserId,
+          username: msg.fromUsername,
+          rank: 0,
+          text: msg.text,
+          sentAt: Date.parse(msg.sentAt) || Date.now(),
+          isPrivate: true,
+        }]);
         this.shouldScrollToBottom = true;
       }),
     );

@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Input, inject } from '@angular/core';
 import { Application } from 'pixi.js';
 import { Avatar, BaseTextureLoader, AssetBaseUrl } from '@toon-live/game-avatar';
 import { AuthService } from '../../../core/services/auth.service';
@@ -29,6 +29,14 @@ const AVATAR_H = 120;
   `],
 })
 export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
+  /**
+   * When set, renders THIS avatar instead of "the current user, live-equipped".
+   * Used by UserActionDialogComponent to preview another player from the
+   * data already in RoomUser — no extra network call, and no subscription
+   * to equippedChanged$ (that only makes sense for your own outfit).
+   */
+  @Input() override?: { skinColor: number; clothing: Record<string, string> };
+
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
   private readonly auth = inject(AuthService);
@@ -66,6 +74,14 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
     this.avatar.y = (BOX - AVATAR_H * zoom) / 2;
 
     this.app.stage.addChild(this.avatar);
+
+    if (this.override) {
+      this.avatar.setSkinColor(this.override.skinColor);
+      for (const [category, id] of Object.entries(this.override.clothing)) {
+        this.avatar.changeClothing(category, id);
+      }
+      return;
+    }
 
     const skinColor = this.auth.user()?.skinColor;
     if (skinColor !== undefined) this.avatar.setSkinColor(skinColor);

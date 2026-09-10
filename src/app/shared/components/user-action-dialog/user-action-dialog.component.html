@@ -1,0 +1,69 @@
+<div class="dialog-wrapper">
+  <div class="content">
+    <div class="header">
+      <span class="title">{{ target.username }}</span>
+      <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="body">
+      <div class="top">
+        <div class="avatar-preview">
+          <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
+        </div>
+
+        <div class="mp-block">
+          <textarea
+            class="mp-textarea"
+            [(ngModel)]="message"
+            placeholder="Écrire un message privé…"
+            rows="3"
+            maxlength="300"
+          ></textarea>
+          <button class="btn btn-mp" (click)="sendMessage()" [disabled]="!message.trim()" type="button">
+            Envoyer
+          </button>
+        </div>
+      </div>
+
+      @if (errorText()) {
+        <p class="error-text">{{ errorText() }}</p>
+      }
+
+      @if (canManageRoom()) {
+        <div class="section room-actions">
+          <div class="section-title">Cette room</div>
+          <div class="buttons-row">
+            <button class="btn btn-warn" (click)="kick()" type="button">Expulser</button>
+            <button class="btn btn-danger" (click)="banRoom()" type="button">Bannir de la room</button>
+          </div>
+        </div>
+      }
+
+      @if (canSiteBan()) {
+        <div class="section site-ban">
+          <div class="section-title">Bannissement du site</div>
+          <input
+            class="reason-input"
+            type="text"
+            [(ngModel)]="siteBanReason"
+            placeholder="Motif du bannissement…"
+            maxlength="500"
+          />
+          <select class="duration-select" [(ngModel)]="selectedDuration">
+            @for (d of durations; track d.label) {
+              <option [ngValue]="d">{{ d.label }}</option>
+            }
+          </select>
+          <button
+            class="btn btn-danger btn-full"
+            (click)="banSite()"
+            [disabled]="sending() || !siteBanReason.trim()"
+            type="button"
+          >
+            @if (sending()) { Bannissement… } @else { Bannir du site }
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

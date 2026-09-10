@@ -21,7 +21,7 @@
       <table>
         <tbody>
           @for (user of users(); track user.userId) {
-            <tr>
+            <tr (click)="openUserAction(user)" [class.clickable]="user.userId !== myUserId()">
               <td class="badge-cell">
                 @if (user.rank >= 1) {
                   <img src="assets/images/modo.png" [alt]="user.rank >= 2 ? 'Admin' : 'Modo'" width="20" />

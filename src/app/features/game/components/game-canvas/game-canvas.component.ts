@@ -15,6 +15,7 @@ import { RoomState, UserItemInfo, RoomErrorPayload } from '@toon-live/game-types
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
+import { UserActionDialogService } from '../../../../core/services/user-action-dialog.service';
 import { environment } from '../../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
@@ -74,6 +75,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private socket    = inject(SocketService);
   private auth      = inject(AuthService);
   private inventory = inject(InventoryService);
+  private userActionDialog = inject(UserActionDialogService);
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
@@ -254,6 +256,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       if (id === this.myId) {
         this.socket.sendAvatarStop(this.roomId);
       }
+    });
+
+    this.gc.on('avatar:click', ({ id }) => {
+      if (id === this.myId) return;
+      const user = this.socket.roomState()?.users.find(u => u.userId === id);
+      if (user) this.userActionDialog.open(user);
     });
 
     // The world can host avatars from here on. Reconcile against the live room
