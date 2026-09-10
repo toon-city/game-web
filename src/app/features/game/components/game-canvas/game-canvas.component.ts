@@ -21,9 +21,49 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-game-canvas',
   standalone: true,
-  template: `<canvas #canvas class="game-canvas"></canvas>`,
-  styles: [`:host { display:block; width:100%; height:100%; }
-            .game-canvas { display:block; width:100%; height:100%; }`],
+  template: `
+    <canvas #canvas class="game-canvas"></canvas>
+    @if (editMode) {
+      <div class="camera-pad" role="group" aria-label="Déplacer la caméra">
+        <button class="pad-btn pad-up"    (pointerdown)="startPan(0,-1)"  (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra haut">▲</button>
+        <button class="pad-btn pad-left"  (pointerdown)="startPan(-1,0)"  (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra gauche">◀</button>
+        <button class="pad-btn pad-center" (click)="recenterCamera()" aria-label="Recentrer la caméra">⟲</button>
+        <button class="pad-btn pad-right" (pointerdown)="startPan(1,0)"   (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra droite">▶</button>
+        <button class="pad-btn pad-down"  (pointerdown)="startPan(0,1)"   (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra bas">▼</button>
+      </div>
+    }
+  `,
+  styles: [`
+    :host { display:block; width:100%; height:100%; position:relative; }
+    .game-canvas { display:block; width:100%; height:100%; }
+    .camera-pad {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 36px);
+      grid-template-rows: repeat(3, 36px);
+      gap: 2px;
+      z-index: 10;
+    }
+    .pad-btn {
+      background: rgba(20, 40, 50, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      touch-action: none;
+    }
+    .pad-btn:hover { background: rgba(20, 40, 50, 0.9); }
+    .pad-btn:active { background: rgba(255, 255, 255, 0.2); }
+    .pad-up     { grid-column: 2; grid-row: 1; }
+    .pad-left   { grid-column: 1; grid-row: 2; }
+    .pad-center { grid-column: 2; grid-row: 2; }
+    .pad-right  { grid-column: 3; grid-row: 2; }
+    .pad-down   { grid-column: 2; grid-row: 3; }
+  `],
 })
 export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() roomId = '';
@@ -55,7 +95,35 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['editMode'] && this.gc) {
       this.gc.setEditMode(this.editMode);
+      // The follow-camera tick fights manual panning every frame otherwise —
+      // free the camera while editing, hand it back to the avatar on exit.
+      this.gc.setFollowCamera(!this.editMode);
+      if (!this.editMode) this.stopPan();
     }
+  }
+
+  // ── Camera pad (edit mode) ─────────────────────────────────────────────────
+
+  private panTimer?: ReturnType<typeof setInterval>;
+  private static readonly PAN_STEP = 16;    // px per tick
+  private static readonly PAN_INTERVAL_MS = 30;
+
+  startPan(dx: number, dy: number): void {
+    this.stopPan();
+    this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP);
+    this.panTimer = setInterval(
+      () => this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP),
+      GameCanvasComponent.PAN_INTERVAL_MS,
+    );
+  }
+
+  stopPan(): void {
+    clearInterval(this.panTimer);
+    this.panTimer = undefined;
+  }
+
+  recenterCamera(): void {
+    this.gc?.centerCameraOnAvatar(this.myId);
   }
 
   private async startLoading(): Promise<void> {
@@ -329,6 +397,15 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     if (!this.gc || !item.id || item.placedInRoomId) return;
     if (!item.item.spriteKey || !item.item.spritePath) return;
 
+    // Le serveur revalide de toute façon (FurnitureStateService.assertCanManageRoom) —
+    // ce garde-fou est là pour donner un retour immédiat plutôt que de laisser
+    // l'utilisateur draguer un fantôme pour rien et voir l'échec après coup.
+    if (!this.editMode) {
+      this.gc.getAvatar(this.myId)?.say(
+        "Passez d'abord en mode édition pour placer un meuble.", 3000);
+      return;
+    }
+
     const userItemId = item.id;
     const file = `${item.item.spriteKey}/${item.item.spritePath}`;
     const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, 400, 300, 1);
@@ -411,6 +488,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   ngOnDestroy(): void {
+    this.stopPan();
     this.inventory.onClothingChanged = null;
     this.inventory.onPlaceFurniture = null;
     this.inventory.currentRoomId = null;
