@@ -14,6 +14,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { StatsService } from '../../../core/services/stats.service';
 import { DeditoonService } from '../../../core/services/deditoon.service';
 import { UserListService, UserListItem } from '../../../core/services/user-list.service';
+import { SocketService } from '../../../core/services/socket.service';
+import { Subscription } from 'rxjs';
 
 /** Ligne dans le tableau joueurs : données API + roomId formaté en string */
 export interface PlayerRow extends UserListItem {
@@ -32,6 +34,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   readonly statsService = inject(StatsService);
   readonly deditoonService = inject(DeditoonService);
   readonly userListService = inject(UserListService);
+  private readonly socket       = inject(SocketService);
   private readonly router       = inject(Router);
 
   // ── État déditoon ──────────────────────────────────────────────────────────
@@ -69,18 +72,33 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   // ── Intervals ──────────────────────────────────────────────────────────────
   private statsInterval?: ReturnType<typeof setInterval>;
   private deditoonInterval?: ReturnType<typeof setInterval>;
+  private statsSubs: Subscription[] = [];
 
   ngOnInit(): void {
     this.statsService.refresh();
     this.deditoonService.refresh();
-    this.statsInterval    = setInterval(() => this.statsService.refresh(), 30_000);
+    // 10s poll (was 30s) is still the only way to see someone join/leave a
+    // room you're not in yourself, and the only way to catch a disconnect
+    // that never got a clean STOMP DISCONNECT (dead network, killed tab) —
+    // that case is only detected server-side once the 10s/10s heartbeat
+    // times out, so a 30s client poll on top of that made the counter look
+    // stuck for up to ~40s after someone actually left.
+    this.statsInterval    = setInterval(() => this.statsService.refresh(), 10_000);
     this.deditoonInterval = setInterval(() => this.deditoonService.refresh(), 60_000);
+
+    // For the room you're actually in, a clean join/leave is known the
+    // instant it's broadcast — no reason to wait out the poll for that case.
+    this.statsSubs.push(
+      this.socket.userJoined$.subscribe(() => this.statsService.refresh()),
+      this.socket.userLeft$.subscribe(() => this.statsService.refresh()),
+    );
   }
 
   ngOnDestroy(): void {
     clearInterval(this.statsInterval);
     clearInterval(this.deditoonInterval);
     clearTimeout(this.searchDebounce);
+    this.statsSubs.forEach(s => s.unsubscribe());
   }
 
   // ── Actions ────────────────────────────────────────────────────────────────
