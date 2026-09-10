@@ -27,6 +27,19 @@ export class InventoryService {
    *  non (ex: le badge avatar de la carte d'identité, affiché partout). */
   readonly equippedChanged$ = new Subject<void>();
 
+  /**
+   * Défini par GameCanvasComponent pendant qu'on est en room : démarre le
+   * placement (fantôme + drag) d'un meuble depuis l'inventaire. Même
+   * indirection que onClothingChanged — le panneau inventaire est un overlay
+   * top-level (app.component.html), pas un enfant du canvas de jeu.
+   */
+  onPlaceFurniture: ((item: UserItemInfo) => void) | null = null;
+
+  /** Pas d'appel réseau ici : le placement se confirme entièrement via STOMP (voir startPlacingFurniture côté GameCanvasComponent). */
+  startPlacing(item: UserItemInfo): void {
+    this.onPlaceFurniture?.(item);
+  }
+
   listItems(type?: ItemType, page = 0): Observable<PagedResult<UserItemInfo>> {
     let params = new HttpParams().set('page', page);
     if (type) params = params.set('type', type);

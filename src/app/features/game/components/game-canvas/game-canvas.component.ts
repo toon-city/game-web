@@ -10,8 +10,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { Application, Assets } from 'pixi.js';
-import { GameCore, LoadingView } from 'game-core';
-import { RoomState } from '@toon-live/game-types';
+import { GameCore, LoadingView, FurnitureView } from 'game-core';
+import { RoomState, UserItemInfo } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
@@ -142,6 +142,15 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       return;
     }
 
+    // Meubles déjà placés dans la room (snapshot du join — voir subscribeToRoomEvents
+    // pour les placements/déplacements qui arrivent APRÈS, en direct).
+    for (const f of state.furnitures ?? []) {
+      await this.gc.spawnFurniture(
+        Number(f.instanceId), f.baseId, 18, `${f.spriteKey}/${f.spritePath}`,
+        f.x, f.y, f.orientation,
+      );
+    }
+
     this.loadingView.setMessage('Chargement des joueurs...');
     this.loadingView.setProgress(0.8);
 
@@ -161,9 +170,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     });
     this.gc.bindPlayerInput(this.myId);
 
-    // Wirer l'inventaire pour notifier le serveur après equip/unequip
+    // Wirer l'inventaire pour notifier le serveur après equip/unequip, et pour
+    // démarrer un placement meuble (voir startPlacingFurniture).
     this.inventory.currentRoomId = this.roomId;
     this.inventory.onClothingChanged = (roomId) => this.socket.clothingRefresh(roomId);
+    this.inventory.onPlaceFurniture = (item) => this.startPlacingFurniture(item);
 
     this.gc.on('avatar:walking', ({ id, avatar, direction }) => {
       if (id === this.myId) {
@@ -281,7 +292,73 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
           avatar.changeClothing(category, id);
         }
       }),
+      // Placement/déplacement/rotation/retrait de meuble — diffusé à toute la
+      // room, y compris à soi-même (même principe que l'équipement de
+      // vêtements : celui qui place est juste un abonné de plus au topic, pas
+      // de rendu optimiste séparé — voir startPlacingFurniture qui retire son
+      // propre fantôme local et laisse cet écho créer le vrai meuble).
+      this.socket.furniturePlace$.subscribe((p) => {
+        this.gc?.spawnFurniture(
+          Number(p.instanceId), p.baseId, 18, `${p.spriteKey}/${p.spritePath}`,
+          p.x, p.y, p.orientation,
+        );
+      }),
+      this.socket.furnitureMove$.subscribe((p) => {
+        this.gc?.moveFurniture(Number(p.instanceId), p.x, p.y);
+      }),
+      this.socket.furnitureRotate$.subscribe((p) => {
+        this.gc?.rotateFurniture(Number(p.instanceId), p.orientation);
+      }),
+      this.socket.furnitureRemove$.subscribe((p) => {
+        this.gc?.removeFurniture(Number(p.instanceId));
+      }),
     );
+  }
+
+  /**
+   * Placement d'un meuble depuis l'inventaire : fait apparaître un fantôme
+   * local à une position par défaut, réutilise le drag déjà câblé sur
+   * FurnitureView (activé par setEditMode(true) — un simple clic sans
+   * bouger suffit aussi à "confirmer", startDrag+endDrag se déclenchent
+   * même sans mouvement). Confirmation = premier relâchement : envoie le
+   * placement réel au serveur puis retire le fantôme local (le vrai meuble
+   * arrive par l'écho broadcast, voir subscribeToRoomEvents). Échap annule
+   * et retire le fantôme sans rien envoyer.
+   */
+  private async startPlacingFurniture(item: UserItemInfo): Promise<void> {
+    if (!this.gc || !item.id || item.placedInRoomId) return;
+    if (!item.item.spriteKey || !item.item.spritePath) return;
+
+    const userItemId = item.id;
+    const file = `${item.item.spriteKey}/${item.item.spritePath}`;
+    const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, 400, 300, 1);
+    if (!ghostView || !this.gc) return;
+
+    const wasEditMode = this.editMode;
+    this.gc.setEditMode(true);
+
+    const cleanup = () => {
+      this.gc?.off('furniture:placed', onPlaced);
+      document.removeEventListener('keydown', onKeyDown);
+      this.gc?.setEditMode(wasEditMode);
+    };
+
+    const onPlaced = ({ view }: { view: FurnitureView }) => {
+      if (view !== ghostView) return; // un autre meuble vient d'être déplacé, pas le nôtre
+      const { x, y, orientation } = view.model;
+      this.socket.sendFurniturePlace(this.roomId, { userItemId, x, y, orientation });
+      this.gc?.removeFurniture(userItemId);
+      cleanup();
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      this.gc?.removeFurniture(userItemId);
+      cleanup();
+    };
+
+    this.gc.on('furniture:placed', onPlaced);
+    document.addEventListener('keydown', onKeyDown);
   }
 
   /**
@@ -322,6 +399,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   ngOnDestroy(): void {
     this.inventory.onClothingChanged = null;
+    this.inventory.onPlaceFurniture = null;
     this.inventory.currentRoomId = null;
     this.subs.forEach((s) => s.unsubscribe());
     this.walkTimers.forEach((t) => clearTimeout(t));
