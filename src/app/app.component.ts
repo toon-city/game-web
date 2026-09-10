@@ -14,6 +14,7 @@ import { ChatComponent } from './features/game/components/chat/chat.component';
 import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
 import { UserActionDialogComponent } from './shared/components/user-action-dialog/user-action-dialog.component';
 import { UserActionDialogService } from './core/services/user-action-dialog.service';
+import { MairieComponent } from './shared/components/mairie/mairie.component';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +31,7 @@ import { UserActionDialogService } from './core/services/user-action-dialog.serv
     ChatComponent,
     StatusBarComponent,
     UserActionDialogComponent,
+    MairieComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -40,9 +42,10 @@ export class AppComponent implements OnInit {
   readonly socket = inject(SocketService);
   readonly userActionDialog = inject(UserActionDialogService);
 
-  navOpen  = signal(false);
-  invOpen  = signal(false);
-  shopOpen = signal(false);
+  navOpen    = signal(false);
+  invOpen    = signal(false);
+  shopOpen   = signal(false);
+  mairieOpen = signal(false);
 
   readonly inRoom = computed(() => this.socket.roomState() !== null);
   readonly roomId = computed(() => this.socket.roomState()?.roomId ?? '');
@@ -50,6 +53,7 @@ export class AppComponent implements OnInit {
   toggleNav():  void { this.navOpen.update(v => !v); }
   toggleInv():  void { this.invOpen.update(v => !v); }
   toggleShop(): void { this.shopOpen.update(v => !v); }
+  toggleMairie(): void { this.mairieOpen.update(v => !v); }
   goHome():     void { this.router.navigate(['/lobby']); }
 
   ngOnInit(): void {

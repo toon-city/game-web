@@ -1,0 +1,133 @@
+<div class="mairie-wrapper">
+  <div class="content">
+    <div class="header">
+      <span class="title">Mairie</span>
+      <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="body">
+      @if (errorText()) {
+        <p class="msg msg-error">{{ errorText() }}</p>
+      }
+      @if (infoText()) {
+        <p class="msg msg-info">{{ infoText() }}</p>
+      }
+
+      <!-- ── Mariage ─────────────────────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">Mariage</div>
+
+        @if (isMarried()) {
+          <p class="married-banner">💍 Marié(e) à <strong>{{ status()?.marriedToUsername }}</strong></p>
+        } @else {
+          @if (!selectedTarget()) {
+            <div class="search-row">
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                (keyup.enter)="search()"
+                placeholder="Chercher un pseudo…"
+                aria-label="Chercher un toon"
+              />
+              <button class="btn" (click)="search()" type="button">Chercher</button>
+            </div>
+
+            @if (searching()) {
+              <p class="hint">Recherche…</p>
+            } @else if (searchQuery.trim() && searchResults().length === 0) {
+              <p class="hint">Aucun toon trouvé.</p>
+            }
+
+            <div class="results">
+              @for (u of searchResults(); track u.id) {
+                <div class="result-row">
+                  <span class="username">{{ u.username }}</span>
+                  @if (u.married) {
+                    <span class="badge badge-married">marié(e)</span>
+                  } @else {
+                    <button class="btn btn-small" (click)="pickTarget(u)" type="button">Proposer</button>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="propose-box">
+              <p>Demander <strong>{{ selectedTarget()!.username }}</strong> en mariage ?</p>
+
+              @if (rings().length === 0) {
+                <p class="hint">Vous n'avez pas de bague. Achetez-en une en boutique.</p>
+              } @else {
+                <label>
+                  Bague à offrir :
+                  <select [(ngModel)]="selectedRingId">
+                    @for (r of rings(); track r.id) {
+                      <option [ngValue]="r.id">{{ r.item.name }}</option>
+                    }
+                  </select>
+                </label>
+              }
+
+              <div class="buttons-row">
+                <button class="btn" (click)="cancelPick()" type="button">Annuler</button>
+                <button
+                  class="btn btn-primary"
+                  (click)="propose()"
+                  [disabled]="busy() || rings().length === 0"
+                  type="button"
+                >
+                  Envoyer la demande
+                </button>
+              </div>
+            </div>
+          }
+        }
+
+        @if (status()?.receivedProposals?.length) {
+          <div class="subsection">
+            <div class="subsection-title">Demandes reçues</div>
+            @for (p of status()!.receivedProposals; track p.id) {
+              <div class="proposal-row">
+                <span>{{ p.otherUsername }}</span>
+                <div class="buttons-row">
+                  <button class="btn btn-small btn-primary" (click)="accept(p.id)" [disabled]="busy()" type="button">Accepter</button>
+                  <button class="btn btn-small" (click)="decline(p.id)" [disabled]="busy()" type="button">Refuser</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (status()?.sentProposals?.length) {
+          <div class="subsection">
+            <div class="subsection-title">Demandes envoyées</div>
+            @for (p of status()!.sentProposals; track p.id) {
+              <div class="proposal-row">
+                <span>{{ p.otherUsername }}</span>
+                <button class="btn btn-small" (click)="cancelProposal(p.id)" [disabled]="busy()" type="button">Annuler</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- ── Conversion ──────────────────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">Convertir des pez en kreds</div>
+        <p class="hint">Taux fixe : 100 pez = 1 kred.</p>
+        <div class="convert-row">
+          <input
+            type="number"
+            step="100"
+            min="100"
+            [(ngModel)]="pezToConvert"
+            placeholder="Montant en pez"
+            aria-label="Montant à convertir"
+          />
+          <button class="btn btn-primary" (click)="convert()" [disabled]="busy() || !pezToConvert" type="button">
+            Convertir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
