@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { MairieStatus } from '@toon-live/game-types';
+import { MairieStatus, JustMarried } from '@toon-live/game-types';
 import { environment } from '../../../environments/environment';
 import { UserListItem, UserPage } from './user-list.service';
 
@@ -17,6 +17,11 @@ export class MairieService {
 
   status(): Observable<MairieStatus> {
     return this.http.get<MairieStatus>(`${this.base}/status`);
+  }
+
+  /** null when nobody has ever gotten married (204 No Content — Angular resolves an empty JSON body to null). */
+  lastMarried(): Observable<JustMarried | null> {
+    return this.http.get<JustMarried | null>(`${this.base}/last-married`);
   }
 
   /**

@@ -83,10 +83,10 @@
         }
 
         @if (status()?.receivedProposals?.length) {
-          <div class="subsection">
-            <div class="subsection-title">Demandes reçues</div>
+          <div class="mairie-bloc">
+            <div class="mairie-bloc-title">Demandes reçues</div>
             @for (p of status()!.receivedProposals; track p.id) {
-              <div class="proposal-row">
+              <div class="proposal-row rose">
                 <span>{{ p.otherUsername }}</span>
                 <div class="buttons-row">
                   <button class="btn btn-small btn-primary" (click)="accept(p.id)" [disabled]="busy()" type="button">Accepter</button>
@@ -98,8 +98,8 @@
         }
 
         @if (status()?.sentProposals?.length) {
-          <div class="subsection">
-            <div class="subsection-title">Demandes envoyées</div>
+          <div class="mairie-bloc">
+            <div class="mairie-bloc-title">Demandes envoyées</div>
             @for (p of status()!.sentProposals; track p.id) {
               <div class="proposal-row">
                 <span>{{ p.otherUsername }}</span>
