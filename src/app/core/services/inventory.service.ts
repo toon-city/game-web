@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { UserItemInfo, ItemType } from '@toon-live/game-types';
 import { environment } from '../../../environments/environment';
 
@@ -23,10 +23,19 @@ export class InventoryService {
   /** Callback appelé après equip/unequip pour notifier le serveur de jeu. */
   onClothingChanged: ((roomId: string) => void) | null = null;
 
+  /** Émis après chaque equip/unequip réussi — indépendant d'être en room ou
+   *  non (ex: le badge avatar de la carte d'identité, affiché partout). */
+  readonly equippedChanged$ = new Subject<void>();
+
   listItems(type?: ItemType, page = 0): Observable<PagedResult<UserItemInfo>> {
     let params = new HttpParams().set('page', page);
     if (type) params = params.set('type', type);
     return this.http.get<PagedResult<UserItemInfo>>(this.base, { params });
+  }
+
+  /** Vêtements actuellement équipés : spriteKey (catégorie) → spritePath (id). */
+  getEquipped(): Observable<Record<string, string>> {
+    return this.http.get<Record<string, string>>(`${this.base}/equipped`);
   }
 
   equip(userItemId: number): Observable<UserItemInfo> {
@@ -45,5 +54,6 @@ export class InventoryService {
     if (this.currentRoomId && this.onClothingChanged) {
       this.onClothingChanged(this.currentRoomId);
     }
+    this.equippedChanged$.next();
   }
 }

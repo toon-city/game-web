@@ -1,10 +1,11 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 @Component({
   selector: 'app-identity-card',
   standalone: true,
-  imports: [],
+  imports: [AvatarBadgeComponent],
   templateUrl: './identity-card.component.html',
   styleUrls: ['./identity-card.component.scss'],
 })
