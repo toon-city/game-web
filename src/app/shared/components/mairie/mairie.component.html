@@ -18,7 +18,11 @@
         <div class="section-title">Mariage</div>
 
         @if (isMarried()) {
-          <p class="married-banner">💍 Marié(e) à <strong>{{ status()?.marriedToUsername }}</strong></p>
+          <div class="married-banner">
+            <span class="ring-icon">💍</span>
+            <span>Marié(e) à <strong>{{ status()?.marriedToUsername }}</strong></span>
+            <button class="btn btn-small btn-danger" (click)="divorce()" [disabled]="busy()" type="button">Divorcer</button>
+          </div>
         } @else {
           @if (!selectedTarget()) {
             <div class="search-row">
@@ -83,11 +87,12 @@
         }
 
         @if (status()?.receivedProposals?.length) {
-          <div class="mairie-bloc">
-            <div class="mairie-bloc-title">Demandes reçues</div>
+          <div class="proposal-block received">
+            <div class="proposal-block-title">Demandes reçues</div>
             @for (p of status()!.receivedProposals; track p.id) {
-              <div class="proposal-row rose">
-                <span>{{ p.otherUsername }}</span>
+              <div class="proposal-row">
+                <img class="ring-thumb" [src]="p.ringDisplayImage" [alt]="p.ringName" [title]="p.ringName" />
+                <span class="proposal-username">{{ p.otherUsername }}</span>
                 <div class="buttons-row">
                   <button class="btn btn-small btn-primary" (click)="accept(p.id)" [disabled]="busy()" type="button">Accepter</button>
                   <button class="btn btn-small" (click)="decline(p.id)" [disabled]="busy()" type="button">Refuser</button>
@@ -98,11 +103,12 @@
         }
 
         @if (status()?.sentProposals?.length) {
-          <div class="mairie-bloc">
-            <div class="mairie-bloc-title">Demandes envoyées</div>
+          <div class="proposal-block">
+            <div class="proposal-block-title">Demandes envoyées</div>
             @for (p of status()!.sentProposals; track p.id) {
               <div class="proposal-row">
-                <span>{{ p.otherUsername }}</span>
+                <img class="ring-thumb" [src]="p.ringDisplayImage" [alt]="p.ringName" [title]="p.ringName" />
+                <span class="proposal-username">{{ p.otherUsername }}</span>
                 <button class="btn btn-small" (click)="cancelProposal(p.id)" [disabled]="busy()" type="button">Annuler</button>
               </div>
             }

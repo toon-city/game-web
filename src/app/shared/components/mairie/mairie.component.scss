@@ -1,11 +1,13 @@
 /* Chrome (ui-block/content/header/close-button + draggable via cdkDrag) is
    the same shared pattern as inventory/shop/navigator — see those
-   components' .scss. Only .body and everything inside it keeps the old
-   CMS palette/typo (old.css, section MAIRIE, lignes 999-1031): fond bleu
-   clair #b6dcee, bordure sarcelle #3b6e75, texte #226981, Arial 12px.
-   .mairie-bloc réutilise l'image d'origine (mairie_bloc.png, 205x210,
-   bandeau rose en haut) pour les listes de demandes — c'est littéralement
-   à ça que .mairie_bloc_liste servait dans le CMS d'origine. */
+   components' .scss. .body and everything inside it keeps the old CMS
+   PALETTE (old.css, section MAIRIE, lignes 999-1031): fond bleu clair
+   #b6dcee, bordure sarcelle #3b6e75, texte #226981, rose #f5b7d1 — but not
+   its raster images. The old .mairie_bloc_liste banner was a PNG
+   (mairie_bloc.png, 205x210, pink ribbon baked into the bitmap);
+   .proposal-block below gets the same "pink ribbon title over a card"
+   read with a CSS gradient + border-radius instead, so it isn't locked to
+   one fixed pixel width/aspect ratio like the image was. */
 
 :host {
   display: contents;
@@ -135,14 +137,21 @@
 }
 
 .married-banner {
-  background: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ffffff, #ffe9f4);
   color: #a33d6f;
   border: 1px solid #3b6e75;
-  border-radius: 6px;
-  padding: 8px;
+  border-radius: 8px;
+  padding: 8px 10px;
   font-size: 13px;
-  margin: 0;
+
+  .ring-icon { font-size: 16px; }
+  span:nth-child(2) { flex: 1; }
 }
+
+.btn-danger { background: #c0392b; }
 
 .search-row, .convert-row {
   display: flex;
@@ -215,37 +224,51 @@
   }
 }
 
-/* ── .mairie-bloc : listes de demandes, dans le cadre d'origine ─────────── */
-.mairie-bloc {
-  background-image: url('/assets/images/mairie_bloc.png');
-  background-repeat: no-repeat;
-  background-size: 100% auto;
-  padding: 30px 12px 10px;
-  min-height: 60px;
+/* ── .proposal-block : listes de demandes — ruban rose en CSS, pas une image ── */
+.proposal-block {
+  background: white;
+  border: 1px solid #8fb9c9;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(34, 105, 129, 0.12);
+
+  &.received { border-color: #e691b7; }
 }
 
-.mairie-bloc-title {
-  position: relative;
-  top: -22px;
-  height: 0;
-  text-align: center;
+.proposal-block-title {
+  background: linear-gradient(135deg, #f5b7d1, #EC038D);
   color: white;
-  font-size: 12px;
+  text-align: center;
+  font-size: 11px;
   font-weight: bold;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 6px 8px;
 }
 
 .proposal-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 4px 6px;
-  border-radius: 4px;
+  gap: 8px;
+  padding: 6px 8px;
   font-size: 12px;
   color: #002034;
   font-weight: bold;
 
-  &.rose { background-color: #f5b7d1; }
+  & + & { border-top: 1px solid #eaf3f7; }
+}
+
+.proposal-username { flex: 1; }
+
+.ring-thumb {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #f4f9fb;
+  border: 1px solid #cfe4ec;
+  padding: 2px;
+  flex-shrink: 0;
 }
 
 .buttons-row {

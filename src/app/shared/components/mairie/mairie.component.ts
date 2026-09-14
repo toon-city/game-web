@@ -129,6 +129,22 @@ export class MairieComponent implements OnInit {
     });
   }
 
+  divorce(): void {
+    this.busy.set(true);
+    this.errorText.set(null);
+    this.mairie.divorce().subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.infoText.set('Divorce prononcé.');
+        this.refreshStatus();
+      },
+      error: (err) => {
+        this.busy.set(false);
+        this.errorText.set(err?.error?.message ?? 'Échec du divorce.');
+      },
+    });
+  }
+
   convert(): void {
     const amount = this.pezToConvert;
     if (!amount || amount <= 0) return;

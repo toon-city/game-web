@@ -51,6 +51,10 @@ export class MairieService {
     return this.http.post<void>(`${this.base}/proposals/${proposalId}/cancel`, {});
   }
 
+  divorce(): Observable<void> {
+    return this.http.post<void>(`${this.base}/divorce`, {});
+  }
+
   convert(pezAmount: number): Observable<void> {
     return this.http.post<void>(`${this.base}/convert`, { pezAmount });
   }

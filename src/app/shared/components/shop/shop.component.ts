@@ -11,9 +11,10 @@ type BuyState = { shopItemId: number; option: 'PEZ' | 'KREDS' } | null;
 type ShopTab = { id: ShopIdType; label: string };
 
 const SHOP_TABS: ShopTab[] = [
-  { id: 'COUPE_TIFF', label: 'Coupe-tiff' },
-  { id: 'IKEBO',      label: 'Ikebo' },
-  { id: 'VESTIS',     label: 'Vestis' },
+  { id: 'COUPE_TIFF',  label: 'Coupe-tiff' },
+  { id: 'IKEBO',       label: 'Ikebo' },
+  { id: 'VESTIS',      label: 'Vestis' },
+  { id: 'BIJOUTERIE',  label: 'Bijouterie' },
 ];
 
 @Component({
