@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { UserItemInfo, MairieStatus } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { MairieService } from '../../../core/services/mairie.service';
@@ -9,7 +10,7 @@ import { UserListItem } from '../../../core/services/user-list.service';
 @Component({
   selector: 'app-mairie',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, DragDropModule],
   templateUrl: './mairie.component.html',
   styleUrls: ['./mairie.component.scss'],
 })

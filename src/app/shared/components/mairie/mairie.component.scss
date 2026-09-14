@@ -1,70 +1,103 @@
-/* Palette/typo reprises de l'ancien old.css (section MAIRIE, lignes 999-1031) :
-   fond bleu clair #b6dcee, bordure sarcelle #3b6e75, texte #226981, Arial 12px.
-   .mairie-bloc réutilise l'image d'origine (mairie_bloc.png, 205x210, bandeau
-   rose en haut) pour les listes de demandes — c'est littéralement à ça que
-   .mairie_bloc_liste servait dans le CMS d'origine. */
+/* Chrome (ui-block/content/header/close-button + draggable via cdkDrag) is
+   the same shared pattern as inventory/shop/navigator — see those
+   components' .scss. Only .body and everything inside it keeps the old
+   CMS palette/typo (old.css, section MAIRIE, lignes 999-1031): fond bleu
+   clair #b6dcee, bordure sarcelle #3b6e75, texte #226981, Arial 12px.
+   .mairie-bloc réutilise l'image d'origine (mairie_bloc.png, 205x210,
+   bandeau rose en haut) pour les listes de demandes — c'est littéralement
+   à ça que .mairie_bloc_liste servait dans le CMS d'origine. */
 
 :host {
   display: contents;
 }
 
-.mairie-wrapper {
-  position: fixed;
-  right: 0;
-  top: 100px;
-  z-index: 80;
-  padding-right: 16px;
-  animation: slide-in 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+.ui-block {
+  display: block;
+  border: 2px solid #3B6E77;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 5px;
 }
 
-@keyframes slide-in {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+.mairie {
+  position: fixed;
+  z-index: 100;
+  top: 80px;
+  left: calc(16px + 550px + 16px + 700px + 16px);
+  height: 560px;
+  width: 380px;
 }
 
 .content {
-  width: 340px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background: #b6dcee;
-  border: 2px solid #3b6e75;
-  border-radius: 10px;
-  box-shadow: -4px 0 14px rgba(0, 0, 0, 0.18);
-  font-family: Arial, sans-serif;
-  color: #226981;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #3B6E75;
+  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .header {
-  position: sticky;
-  top: 0;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  background: #3b6e75;
+  align-items: center;
+  background-color: #EC038D;
+  border-radius: 4px 4px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
   color: white;
+  padding: 8px 12px;
+  cursor: grab;
+  user-select: none;
 
-  .title { font-weight: bold; font-size: 14px; }
+  &:active { cursor: grabbing; }
+}
 
-  .close-button {
-    width: 20px;
-    height: 20px;
-    border: none;
-    background: transparent;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
+.close-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3B6E75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  padding: 0;
+  flex-shrink: 0;
 
-    &::before { content: '✕'; }
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: #3B6E75;
+    border-radius: 1px;
+    left: 50%;
+    top: 50%;
+    transform-origin: center;
   }
+  &::before { transform: translate(-50%, -50%) rotate(45deg); }
+  &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  &:focus { outline: none; box-shadow: 0 0 0 4px rgba(59, 110, 117, 0.12); }
 }
 
 .body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  background: #b6dcee;
+  color: #226981;
+  font-family: Arial, sans-serif;
 }
 
 .msg {
