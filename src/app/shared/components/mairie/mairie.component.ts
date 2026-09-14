@@ -1,16 +1,17 @@
 import { Component, EventEmitter, Output, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { UserItemInfo, MairieStatus } from '@toon-live/game-types';
+import { UserItemInfo, MairieStatus, Spouse } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { MairieService } from '../../../core/services/mairie.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { UserListItem } from '../../../core/services/user-list.service';
+import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 @Component({
   selector: 'app-mairie',
   standalone: true,
-  imports: [FormsModule, DragDropModule],
+  imports: [FormsModule, DragDropModule, AvatarBadgeComponent],
   templateUrl: './mairie.component.html',
   styleUrls: ['./mairie.component.scss'],
 })
@@ -40,6 +41,16 @@ export class MairieComponent implements OnInit {
   infoText = signal<string | null>(null);
 
   readonly isMarried = computed(() => !!this.status()?.marriedToUsername);
+
+  /** For AvatarBadgeComponent's [override] — same convention as just-married-panel. */
+  avatarOverride(spouse: Spouse): { skinColor: number; clothing: Record<string, string> } {
+    return { skinColor: spouse.skinColor ?? 0xf7ceaf, clothing: spouse.clothing };
+  }
+
+  /** "depuis le 12/03/2026" — no DatePipe/locale registered anywhere else in this app yet. */
+  marriedSince(isoDate: string): string {
+    return new Date(isoDate).toLocaleDateString('fr-FR');
+  }
 
   ngOnInit(): void {
     this.refreshStatus();

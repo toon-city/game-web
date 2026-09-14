@@ -19,8 +19,17 @@
 
         @if (isMarried()) {
           <div class="married-banner">
-            <span class="ring-icon">💍</span>
-            <span>Marié(e) à <strong>{{ status()?.marriedToUsername }}</strong></span>
+            @if (status()?.spouse; as spouse) {
+              <div class="married-avatar">
+                <app-avatar-badge [override]="avatarOverride(spouse)" />
+              </div>
+            }
+            <p class="married-text">
+              💍 Marié(e) à <strong>{{ status()?.marriedToUsername }}</strong>
+              @if (status()?.marriedAt; as marriedAt) {
+                <br /><span class="married-since">depuis le {{ marriedSince(marriedAt) }}</span>
+              }
+            </p>
             <button class="btn btn-small btn-danger" (click)="divorce()" [disabled]="busy()" type="button">Divorcer</button>
           </div>
         } @else {
