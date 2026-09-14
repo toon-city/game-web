@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 export interface UserListItem {
+  id: string;
   username: string;
   gender: string | null;
   rank: number;
@@ -10,6 +11,7 @@ export interface UserListItem {
   lastLoginAt: string | null;
   online: boolean;
   currentRoomId: number | null;
+  married: boolean;
 }
 
 export interface UserPage {

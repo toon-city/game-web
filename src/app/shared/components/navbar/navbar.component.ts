@@ -9,6 +9,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
       <img src="assets/images/navbar/navigator.png" alt="Navigateur" class="nav-icon" (click)="navigateur.emit()" role="button" tabindex="0" />
       <img src="assets/images/navbar/inventory.png" alt="Inventaire" class="nav-icon" (click)="inventaire.emit()" role="button" tabindex="0" />
       <img src="assets/images/navbar/shop.png" alt="Boutique" class="nav-icon" (click)="boutique.emit()" role="button" tabindex="0" />
+      <button class="nav-btn" (click)="mairie.emit()" type="button">Mairie</button>
     </nav>
   `,
   styles: [`
@@ -60,4 +61,5 @@ export class NavbarComponent {
   @Output() navigateur = new EventEmitter<void>();
   @Output() inventaire = new EventEmitter<void>();
   @Output() boutique = new EventEmitter<void>();
+  @Output() mairie = new EventEmitter<void>();
 }

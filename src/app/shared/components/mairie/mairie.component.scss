@@ -1,0 +1,238 @@
+/* Palette/typo reprises de l'ancien old.css (section MAIRIE, lignes 999-1031) :
+   fond bleu clair #b6dcee, bordure sarcelle #3b6e75, texte #226981, Arial 12px.
+   .mairie-bloc réutilise l'image d'origine (mairie_bloc.png, 205x210, bandeau
+   rose en haut) pour les listes de demandes — c'est littéralement à ça que
+   .mairie_bloc_liste servait dans le CMS d'origine. */
+
+:host {
+  display: contents;
+}
+
+.mairie-wrapper {
+  position: fixed;
+  right: 0;
+  top: 100px;
+  z-index: 80;
+  padding-right: 16px;
+  animation: slide-in 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.content {
+  width: 340px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #b6dcee;
+  border: 2px solid #3b6e75;
+  border-radius: 10px;
+  box-shadow: -4px 0 14px rgba(0, 0, 0, 0.18);
+  font-family: Arial, sans-serif;
+  color: #226981;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #3b6e75;
+  color: white;
+
+  .title { font-weight: bold; font-size: 14px; }
+
+  .close-button {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+
+    &::before { content: '✕'; }
+  }
+}
+
+.body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.msg {
+  margin: 0;
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.msg-error { color: #c0392b; background: #fdecea; }
+.msg-info  { color: #1e6b3c; background: #e8f7ee; }
+
+.section {
+  border-top: 1px solid #8fb9c9;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &:first-child { border-top: none; padding-top: 0; }
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #226981;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.subsection { margin-top: 6px; }
+.subsection-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #226981;
+  margin-bottom: 4px;
+}
+
+.married-banner {
+  background: white;
+  color: #a33d6f;
+  border: 1px solid #3b6e75;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 13px;
+  margin: 0;
+}
+
+.search-row, .convert-row {
+  display: flex;
+  gap: 6px;
+
+  input {
+    flex: 1;
+    border: 2px solid #3b6e75;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 11px;
+  color: #226981;
+  opacity: 0.75;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 6px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #8fb9c9;
+  font-size: 12px;
+}
+
+.username { font-weight: bold; color: #226981; }
+
+.badge {
+  font-size: 10px;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.badge-married { background: #f5b7d1; color: #7a2148; }
+
+.propose-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+  border: 2px solid #3b6e75;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+
+  select {
+    width: 100%;
+    border: 2px solid #3b6e75;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-family: inherit;
+    box-sizing: border-box;
+    margin-top: 4px;
+  }
+}
+
+/* ── .mairie-bloc : listes de demandes, dans le cadre d'origine ─────────── */
+.mairie-bloc {
+  background-image: url('/assets/images/mairie_bloc.png');
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  padding: 30px 12px 10px;
+  min-height: 60px;
+}
+
+.mairie-bloc-title {
+  position: relative;
+  top: -22px;
+  height: 0;
+  text-align: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+
+.proposal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #002034;
+  font-weight: bold;
+
+  &.rose { background-color: #f5b7d1; }
+}
+
+.buttons-row {
+  display: flex;
+  gap: 6px;
+}
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  background: #3b6e75;
+  font-family: inherit;
+
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.btn-small { padding: 5px 8px; font-size: 11px; }
+.btn-primary { background: #1e8f5a; }

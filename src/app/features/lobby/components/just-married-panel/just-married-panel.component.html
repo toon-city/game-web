@@ -1,0 +1,16 @@
+@if (couple(); as c) {
+  <div class="just-married">
+    <div class="cadre-perso">
+      <div class="cadre-perso-avatar">
+        <app-avatar-badge [override]="avatarOverride(c.spouse1)" />
+      </div>
+      <div class="cadre-perso-nom" [style.color]="genderColor(c.spouse1.gender)">{{ c.spouse1.username }}</div>
+    </div>
+    <div class="cadre-perso">
+      <div class="cadre-perso-avatar">
+        <app-avatar-badge [override]="avatarOverride(c.spouse2)" />
+      </div>
+      <div class="cadre-perso-nom" [style.color]="genderColor(c.spouse2.gender)">{{ c.spouse2.username }}</div>
+    </div>
+  </div>
+}

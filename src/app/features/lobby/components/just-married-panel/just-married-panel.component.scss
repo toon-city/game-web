@@ -1,0 +1,42 @@
+/* Recrée .just_married/.cadre_perso* de l'ancien old.css (lignes 1204-1209) —
+   même image (just-married.png, 203x197), mise en page adaptée à
+   AvatarBadgeComponent (68x68) plutôt qu'au Flash 80x120 d'origine. */
+
+:host {
+  display: block;
+}
+
+.just-married {
+  width: 203px;
+  height: 197px;
+  background-image: url('/assets/images/just-married.png');
+  background-repeat: no-repeat;
+  display: flex;
+  padding-top: 45px;
+  box-sizing: border-box;
+}
+
+.cadre-perso {
+  width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cadre-perso-avatar {
+  width: 68px;
+  height: 68px;
+}
+
+.cadre-perso-nom {
+  width: 84px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
