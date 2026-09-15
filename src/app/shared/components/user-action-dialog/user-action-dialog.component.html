@@ -26,10 +26,10 @@
       </div>
 
       <div class="actions-row">
-        <button class="btn btn-small btn-profile" (click)="viewProfile()" type="button">Voir le profil</button>
+        <button class="btn btn-profile" (click)="viewProfile()" type="button">Voir le profil</button>
         @if (!isSelf()) {
-          <button class="btn btn-small btn-profile" (click)="addFriend()" type="button">Ajouter en ami</button>
-          <button class="btn btn-small btn-danger" (click)="blockUser()" type="button">Bloquer</button>
+          <button class="btn btn-profile" (click)="addFriend()" type="button">Ajouter en ami</button>
+          <button class="btn btn-danger" (click)="blockUser()" type="button">Bloquer</button>
         }
       </div>
 
@@ -42,7 +42,7 @@
 
       @if (canManageRoom()) {
         <div class="section room-actions">
-          <div class="section-title">Cette room</div>
+          <div class="section-title">Cette maison</div>
           <div class="buttons-row">
             <button class="btn btn-warn" (click)="kick()" type="button">Expulser</button>
             <button class="btn btn-danger" (click)="banRoom()" type="button">Bannir de la room</button>
