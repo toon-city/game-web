@@ -134,13 +134,14 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       // the bottom-right corner also visually pulls the eye that way, but
       // the head itself measured a couple px off too.
       const centerNudgeX = -1.5;
+      const centerNudgeY = -1.5;
       this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom + centerNudgeX;
-      this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
+      this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom + centerNudgeY;
 
       const maskW = HEAD_BBOX.w * zoom;
       const maskH = HEAD_BBOX.h * zoom;
       const mask = new Graphics()
-        .rect((box - maskW) / 2 + centerNudgeX, (boxH - maskH) / 2, maskW, maskH)
+        .rect((box - maskW) / 2 + centerNudgeX, (boxH - maskH) / 2 + centerNudgeY, maskW, maskH)
         .fill(0xffffff);
       this.app.stage.addChild(mask);
       this.avatar.mask = mask;
