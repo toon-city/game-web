@@ -52,6 +52,14 @@
         (close)="userActionDialog.close()"
       />
     }
+
+    @if (furniturePreview.target(); as furnitureTarget) {
+      <app-furniture-preview
+        [target]="furnitureTarget"
+        [roomId]="roomId()"
+        (close)="furniturePreview.close()"
+      />
+    }
   }
 
   <app-status-bar />

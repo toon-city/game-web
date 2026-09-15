@@ -1,0 +1,16 @@
+<div class="furniture-preview">
+  <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+
+  <div class="thumb">
+    @if (target.displayImage) {
+      <img [src]="target.displayImage" [alt]="target.name" />
+    }
+  </div>
+
+  <div class="info">
+    <div class="name">{{ target.name }}</div>
+    @if (canTake()) {
+      <button class="btn-take" (click)="take()" type="button">Prendre</button>
+    }
+  </div>
+</div>

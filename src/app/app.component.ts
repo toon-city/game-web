@@ -18,6 +18,8 @@ import { MairieComponent } from './shared/components/mairie/mairie.component';
 import { ProfileComponent } from './shared/components/profile/profile.component';
 import { ProfileService } from './core/services/profile.service';
 import { FriendsComponent } from './shared/components/friends/friends.component';
+import { FurniturePreviewComponent } from './shared/components/furniture-preview/furniture-preview.component';
+import { FurniturePreviewService } from './core/services/furniture-preview.service';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +39,7 @@ import { FriendsComponent } from './shared/components/friends/friends.component'
     MairieComponent,
     ProfileComponent,
     FriendsComponent,
+    FurniturePreviewComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -47,6 +50,7 @@ export class AppComponent implements OnInit {
   readonly socket = inject(SocketService);
   readonly userActionDialog = inject(UserActionDialogService);
   readonly profileService = inject(ProfileService);
+  readonly furniturePreview = inject(FurniturePreviewService);
 
   navOpen    = signal(false);
   invOpen    = signal(false);

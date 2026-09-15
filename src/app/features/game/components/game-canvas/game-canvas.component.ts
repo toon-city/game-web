@@ -16,6 +16,7 @@ import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
 import { UserActionDialogService } from '../../../../core/services/user-action-dialog.service';
+import { FurniturePreviewService } from '../../../../core/services/furniture-preview.service';
 import { environment } from '../../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
@@ -125,6 +126,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private auth      = inject(AuthService);
   private inventory = inject(InventoryService);
   private userActionDialog = inject(UserActionDialogService);
+  private furniturePreview = inject(FurniturePreviewService);
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
@@ -136,6 +138,9 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private worldReady = false;
   private walkTimers   = new Map<string, ReturnType<typeof setTimeout>>();
   private remoteTargets = new Map<string, { x: number; y: number }>();
+  /** instanceId -> catalogue info, for the click-to-preview panel (name/
+   *  displayImage aren't on GameCore's own lightweight Furniture model). */
+  private furnitureMeta = new Map<number, { name: string; displayImage: string | null }>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private lerpTicker: ((ticker: any) => void) | null = null;
 
@@ -321,6 +326,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         Number(f.instanceId), f.baseId, 18, `${f.spriteKey}/${f.spritePath}`,
         f.x, f.y, f.orientation,
       );
+      this.furnitureMeta.set(Number(f.instanceId), { name: f.name, displayImage: f.displayImage });
     }
 
     this.loadingView.setMessage('Chargement des joueurs...');
@@ -364,6 +370,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       if (id === this.myId) return;
       const user = this.socket.roomState()?.users.find(u => u.userId === id);
       if (user) this.userActionDialog.open(user);
+    });
+
+    this.gc.on('furniture:click', ({ instanceId }) => {
+      const meta = this.furnitureMeta.get(instanceId);
+      if (!meta) return;
+      this.furniturePreview.open({ instanceId, name: meta.name, displayImage: meta.displayImage });
     });
 
     // The world can host avatars from here on. Reconcile against the live room
@@ -487,6 +499,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
           Number(p.instanceId), p.baseId, 18, `${p.spriteKey}/${p.spritePath}`,
           p.x, p.y, p.orientation,
         );
+        this.furnitureMeta.set(Number(p.instanceId), { name: p.name, displayImage: p.displayImage });
       }),
       this.socket.furnitureMove$.subscribe((p) => {
         this.gc?.moveFurniture(Number(p.instanceId), p.x, p.y);
@@ -496,6 +509,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       }),
       this.socket.furnitureRemove$.subscribe((p) => {
         this.gc?.removeFurniture(Number(p.instanceId));
+        this.furnitureMeta.delete(Number(p.instanceId));
+        // A "prendre" on the piece currently shown in the preview panel
+        // (or a remove from anyone else while it's open) should close it —
+        // nothing left to take, keeping it open would offer a dead action.
+        if (this.furniturePreview.target()?.instanceId === Number(p.instanceId)) {
+          this.furniturePreview.close();
+        }
       }),
     );
   }
