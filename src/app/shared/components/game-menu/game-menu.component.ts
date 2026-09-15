@@ -3,6 +3,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { SocketService } from '../../../core/services/socket.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserActionDialogService } from '../../../core/services/user-action-dialog.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { RoomUser } from '@toon-live/game-types';
 
 @Component({
@@ -16,6 +17,7 @@ export class GameMenuComponent {
   private socket = inject(SocketService);
   private auth = inject(AuthService);
   private userActionDialog = inject(UserActionDialogService);
+  private profileService = inject(ProfileService);
 
   readonly users = computed<RoomUser[]>(() => this.socket.roomState()?.users ?? []);
   readonly totalConnected = computed(() => this.users().length);
@@ -37,8 +39,18 @@ export class GameMenuComponent {
     }
   }
 
-  openUserAction(user: RoomUser): void {
-    if (user.userId === this.myUserId()) return;
+  /**
+   * Own row: no MP/ban dialog to show (you can't message or moderate
+   * yourself) — was previously a dead click for the local player, which
+   * looks like a bug when testing solo since it's the only row shown.
+   * Opens the profile preview instead. Other rows: unchanged, the
+   * mp/kick/ban dialog (it has its own "Voir le profil" button).
+   */
+  openRow(user: RoomUser): void {
+    if (user.userId === this.myUserId()) {
+      this.profileService.open(user.userId);
+      return;
+    }
     this.userActionDialog.open(user);
   }
 
