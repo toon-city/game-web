@@ -354,7 +354,10 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const myRoomUser = state.users.find(u => u.userId === this.myId);
 
     this.gc.spawnAvatar(this.myId, 300, 300, {
-      showSocle: true,
+      // The socle (pedestal/shadow base) is a preview-badge device — see
+      // AvatarBadgeComponent (identity-card, profile) — not something an
+      // in-room character standing/walking around a house should show.
+      showSocle: false,
       direction: myRoomUser?.direction ?? 1,
       username:  myUsername,
       skinColor: myRoomUser?.skinColor ?? mySkinColor,
@@ -677,6 +680,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       if (u.userId === this.myId || this.gc.getAvatar(u.userId)) continue;
       try {
         this.gc.spawnAvatar(u.userId, u.x, u.y, {
+          showSocle: false, // see the same-reasoning comment on the local avatar's own spawnAvatar call above
           username:  u.username,
           direction: u.direction,
           skinColor: u.skinColor,
