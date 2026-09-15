@@ -26,11 +26,19 @@ import { Subscription } from 'rxjs';
     <canvas #canvas class="game-canvas"></canvas>
     @if (editMode) {
       <div class="camera-pad" role="group" aria-label="Déplacer la caméra">
-        <button class="pad-btn pad-up"    (pointerdown)="startPan(0,-1)"  (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra haut">▲</button>
-        <button class="pad-btn pad-left"  (pointerdown)="startPan(-1,0)"  (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra gauche">◀</button>
-        <button class="pad-btn pad-center" (click)="recenterCamera()" aria-label="Recentrer la caméra">⟲</button>
-        <button class="pad-btn pad-right" (pointerdown)="startPan(1,0)"   (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra droite">▶</button>
-        <button class="pad-btn pad-down"  (pointerdown)="startPan(0,1)"   (pointerup)="stopPan()" (pointerleave)="stopPan()" aria-label="Caméra bas">▼</button>
+        <div
+          #joystickBase
+          class="joystick-base"
+          (pointerdown)="onJoystickDown($event, joystickBase)"
+          (pointermove)="onJoystickMove($event, joystickBase)"
+          (pointerup)="onJoystickUp($event)"
+          (pointercancel)="onJoystickUp($event)"
+        >
+          <div class="joystick-knob" [style.transform]="knobTransform()"></div>
+        </div>
+        <button class="recenter-btn" (click)="recenterCamera()" aria-label="Recentrer la caméra">
+          <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6a6 6 0 0 1-6 6 6 6 0 0 1-6-6H4a8 8 0 0 0 8 8 8 8 0 0 0 8-8 8 8 0 0 0-8-8z"/></svg>
+        </button>
       </div>
     }
   `,
@@ -41,29 +49,70 @@ import { Subscription } from 'rxjs';
       position: absolute;
       left: 16px;
       bottom: 16px;
-      display: grid;
-      grid-template-columns: repeat(3, 36px);
-      grid-template-rows: repeat(3, 36px);
-      gap: 2px;
+      width: 96px;
+      height: 96px;
       z-index: 10;
     }
-    .pad-btn {
-      background: rgba(20, 40, 50, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 4px;
-      color: #fff;
-      font-size: 14px;
-      cursor: pointer;
-      user-select: none;
+    .joystick-base {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 45%, rgba(30, 55, 68, 0.92) 0%, rgba(14, 30, 38, 0.92) 72%);
+      box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+        inset 0 2px 4px rgba(255, 255, 255, 0.08);
       touch-action: none;
+      cursor: pointer;
+      position: relative;
     }
-    .pad-btn:hover { background: rgba(20, 40, 50, 0.9); }
-    .pad-btn:active { background: rgba(255, 255, 255, 0.2); }
-    .pad-up     { grid-column: 2; grid-row: 1; }
-    .pad-left   { grid-column: 1; grid-row: 2; }
-    .pad-center { grid-column: 2; grid-row: 2; }
-    .pad-right  { grid-column: 3; grid-row: 2; }
-    .pad-down   { grid-column: 2; grid-row: 3; }
+    .joystick-base::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+    .joystick-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #4a7f92 0%, #294c58 100%);
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+      pointer-events: none;
+      transition: box-shadow 0.1s;
+    }
+    .joystick-base:active .joystick-knob {
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 213, 92, 0.6);
+    }
+    .recenter-btn {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(20, 40, 50, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .recenter-btn svg { width: 14px; height: 14px; fill: currentColor; }
+    .recenter-btn:hover { color: #fff; background: rgba(20, 40, 50, 1); }
+    .recenter-btn:active { color: #ffd35c; }
   `],
 })
 export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges {
@@ -104,24 +153,77 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
   }
 
-  // ── Camera pad (edit mode) ─────────────────────────────────────────────────
+  // ── Camera joystick (edit mode) ──────────────────────────────────────────
+  // Continuous analog drag instead of the old 8-button D-pad: the knob's
+  // offset from center (clamped to the base's radius) is read every tick by
+  // a single running interval, rather than each pointer event starting/
+  // restarting its own timer — matches a real joystick, and stays smooth as
+  // the knob is dragged around mid-pan instead of snapping between fixed
+  // -1/0/1 directions.
 
   private panTimer?: ReturnType<typeof setInterval>;
-  private static readonly PAN_STEP = 16;    // px per tick
+  private static readonly PAN_STEP = 16;    // px per tick at full deflection
   private static readonly PAN_INTERVAL_MS = 30;
+  private static readonly KNOB_MAX_OFFSET = 28; // px, base radius(48) - knob radius(20)
 
-  startPan(dx: number, dy: number): void {
+  private activePointerId: number | null = null;
+  private panVector = { dx: 0, dy: 0 };     // normalized, -1..1 on each axis
+  private knobOffset = { x: 0, y: 0 };      // px, for the knob's transform
+
+  knobTransform(): string {
+    return `translate(${this.knobOffset.x}px, ${this.knobOffset.y}px)`;
+  }
+
+  onJoystickDown(ev: PointerEvent, baseEl: HTMLElement): void {
+    ev.preventDefault();
+    this.activePointerId = ev.pointerId;
+    baseEl.setPointerCapture(ev.pointerId);
+    this.updateJoystick(ev, baseEl);
+  }
+
+  onJoystickMove(ev: PointerEvent, baseEl: HTMLElement): void {
+    if (this.activePointerId !== ev.pointerId) return;
+    this.updateJoystick(ev, baseEl);
+  }
+
+  onJoystickUp(ev: PointerEvent): void {
+    if (this.activePointerId !== ev.pointerId) return;
+    this.activePointerId = null;
+    this.knobOffset = { x: 0, y: 0 };
     this.stopPan();
-    this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP);
-    this.panTimer = setInterval(
-      () => this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP),
-      GameCanvasComponent.PAN_INTERVAL_MS,
-    );
+  }
+
+  private updateJoystick(ev: PointerEvent, baseEl: HTMLElement): void {
+    const rect = baseEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let dx = ev.clientX - cx;
+    let dy = ev.clientY - cy;
+    const dist = Math.hypot(dx, dy);
+    const max = GameCanvasComponent.KNOB_MAX_OFFSET;
+    if (dist > max) {
+      dx = (dx / dist) * max;
+      dy = (dy / dist) * max;
+    }
+    this.knobOffset = { x: dx, y: dy };
+    this.panVector = { dx: dx / max, dy: dy / max };
+    this.ensurePanTimer();
+  }
+
+  private ensurePanTimer(): void {
+    if (this.panTimer) return;
+    this.panTimer = setInterval(() => {
+      const { dx, dy } = this.panVector;
+      if (dx !== 0 || dy !== 0) {
+        this.gc?.panCamera(dx * GameCanvasComponent.PAN_STEP, dy * GameCanvasComponent.PAN_STEP);
+      }
+    }, GameCanvasComponent.PAN_INTERVAL_MS);
   }
 
   stopPan(): void {
     clearInterval(this.panTimer);
     this.panTimer = undefined;
+    this.panVector = { dx: 0, dy: 0 };
   }
 
   recenterCamera(): void {
