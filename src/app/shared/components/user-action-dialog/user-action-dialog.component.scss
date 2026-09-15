@@ -180,14 +180,16 @@
 .btn-warn {
   background: linear-gradient(90deg, var(--toon-orange), #c94716);
   box-shadow: 0 2px 8px rgba(242, 101, 34, 0.30);
-  flex: 1;
 }
 
 .btn-danger {
   background: linear-gradient(90deg, #c0392b, #8f2a1f);
   box-shadow: 0 2px 8px rgba(192, 57, 43, 0.30);
-  flex: 1;
 }
+
+/* Only the room-actions row (Expulser/Bannir) splits its buttons evenly —
+   .actions-row's Bloquer (btn-small) stays its own natural width. */
+.buttons-row .btn-warn, .buttons-row .btn-danger { flex: 1; }
 
 .btn-full {
   width: 100%;
