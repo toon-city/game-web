@@ -7,15 +7,8 @@
 
     <div class="body">
       <div class="top">
-        <div class="avatar-col">
-          <div class="avatar-preview">
-            <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
-          </div>
-          <button class="btn btn-small btn-profile" (click)="viewProfile()" type="button">Voir le profil</button>
-          @if (!isSelf()) {
-            <button class="btn btn-small btn-profile" (click)="addFriend()" type="button">Ajouter en ami</button>
-            <button class="btn btn-small btn-danger" (click)="blockUser()" type="button">Bloquer</button>
-          }
+        <div class="avatar-preview">
+          <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
         </div>
 
         <div class="mp-block">
@@ -30,6 +23,14 @@
             Envoyer
           </button>
         </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-small btn-profile" (click)="viewProfile()" type="button">Voir le profil</button>
+        @if (!isSelf()) {
+          <button class="btn btn-small btn-profile" (click)="addFriend()" type="button">Ajouter en ami</button>
+          <button class="btn btn-small btn-danger" (click)="blockUser()" type="button">Bloquer</button>
+        }
       </div>
 
       @if (friendActionText()) {
