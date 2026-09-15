@@ -1,6 +1,8 @@
 import {
   Component,
   Input,
+  Output,
+  EventEmitter,
   OnDestroy,
   AfterViewInit,
   ElementRef,
@@ -11,7 +13,7 @@ import {
 } from '@angular/core';
 import { Application, Assets } from 'pixi.js';
 import { GameCore, LoadingView, FurnitureView } from 'game-core';
-import { RoomState, UserItemInfo, RoomErrorPayload } from '@toon-live/game-types';
+import { RoomState, UserItemInfo, RoomErrorPayload, RoomPermission } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
@@ -24,7 +26,12 @@ import { Subscription } from 'rxjs';
   selector: 'app-game-canvas',
   standalone: true,
   template: `
-    <canvas #canvas class="game-canvas"></canvas>
+    <canvas
+      #canvas
+      class="game-canvas"
+      (dragover)="onCanvasDragOver($event)"
+      (drop)="onCanvasDrop($event)"
+    ></canvas>
     @if (editMode) {
       <div class="camera-pad" role="group" aria-label="Déplacer la caméra">
         <div
@@ -119,6 +126,10 @@ import { Subscription } from 'rxjs';
 export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() roomId = '';
   @Input() editMode = false;
+  /** Furniture dropped from the inventory onto the canvas while not editing
+   *  auto-switches edit mode on (see startPlacingFurniture) — the parent
+   *  owns the actual signal, this just reports the change back up. */
+  @Output() editModeChange = new EventEmitter<boolean>();
 
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -533,6 +544,20 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
    * arrive par l'écho broadcast, voir subscribeToRoomEvents). Échap annule
    * et retire le fantôme sans rien envoyer.
    */
+  /** A native browser dragover must call preventDefault() or drop never fires. */
+  onCanvasDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  /** InventoryComponent.onDragStart stashed the item on InventoryService —
+   *  see startPlacingFurniture for the auto-edit-mode-on-drop behaviour. */
+  onCanvasDrop(event: DragEvent): void {
+    event.preventDefault();
+    const item = this.inventory.dragPayload;
+    this.inventory.dragPayload = null;
+    if (item) this.startPlacingFurniture(item);
+  }
+
   private async startPlacingFurniture(item: UserItemInfo): Promise<void> {
     if (!this.gc || !item.id || item.placedInRoomId) return;
     if (!item.item.spriteKey || !item.item.spritePath) return;
@@ -540,10 +565,21 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // Le serveur revalide de toute façon (FurnitureStateService.assertCanManageRoom) —
     // ce garde-fou est là pour donner un retour immédiat plutôt que de laisser
     // l'utilisateur draguer un fantôme pour rien et voir l'échec après coup.
+    // Plus de refus silencieux si le mode édition est OFF : on l'active à la
+    // volée (glisser un meuble depuis l'inventaire vers la room revient à
+    // demander à éditer) tant que l'utilisateur a le droit de le faire —
+    // sinon même message d'erreur qu'avant.
     if (!this.editMode) {
-      this.gc.getAvatar(this.myId)?.say(
-        "Passez d'abord en mode édition pour placer un meuble.", 3000);
-      return;
+      const state = this.socket.roomState();
+      const canEdit = !!state && state.yourPermission >= RoomPermission.OWN;
+      if (!canEdit) {
+        this.gc.getAvatar(this.myId)?.say(
+          "Vous n'avez pas le droit d'éditer cette maison.", 3000);
+        return;
+      }
+      this.editMode = true;
+      this.editModeChange.emit(true);
+      this.gc.setFollowCamera(false);
     }
 
     const userItemId = item.id;
@@ -551,14 +587,15 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, 400, 300, 1);
     if (!ghostView || !this.gc) return;
 
-    const wasEditMode = this.editMode;
     this.gc.setEditMode(true);
 
+    // Edit mode stays on after placing — was already guaranteed on above
+    // (guard either found it on, or just switched it on), no reason to snap
+    // back off right after one piece.
     const cleanup = () => {
       this.gc?.off('furniture:placed', onPlaced);
       document.removeEventListener('keydown', onKeyDown);
       errorSub.unsubscribe();
-      this.gc?.setEditMode(wasEditMode);
     };
 
     const onPlaced = ({ view }: { view: FurnitureView }) => {

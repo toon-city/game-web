@@ -35,6 +35,15 @@ export class InventoryService {
    */
   onPlaceFurniture: ((item: UserItemInfo) => void) | null = null;
 
+  /**
+   * Native HTML5 drag payload while an inventory row is being dragged toward
+   * the canvas — same cross-component indirection as onPlaceFurniture
+   * (inventory panel and game canvas aren't parent/child), just handed off
+   * via dataTransfer's drag lifecycle instead of a click. Set on dragstart,
+   * consumed (and cleared) by GameCanvasComponent's drop handler.
+   */
+  dragPayload: UserItemInfo | null = null;
+
   /** Pas d'appel réseau ici : le placement se confirme entièrement via STOMP (voir startPlacingFurniture côté GameCanvasComponent). */
   startPlacing(item: UserItemInfo): void {
     this.onPlaceFurniture?.(item);
