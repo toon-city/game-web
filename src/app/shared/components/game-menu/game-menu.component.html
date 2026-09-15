@@ -21,7 +21,7 @@
       <table>
         <tbody>
           @for (user of users(); track user.userId) {
-            <tr (click)="openUserAction(user)" [class.clickable]="user.userId !== myUserId()">
+            <tr (click)="openProfile(user)" class="clickable" [title]="'Voir le profil de ' + user.username">
               <td class="badge-cell">
                 @if (user.rank >= 1) {
                   <img src="assets/images/modo.png" [alt]="user.rank >= 2 ? 'Admin' : 'Modo'" width="20" />
@@ -30,9 +30,20 @@
                 }
               </td>
               <td [class]="genderClass(user.gender)">{{ user.username }}</td>
+              <td class="actions-cell">
+                @if (user.userId !== myUserId()) {
+                  <button
+                    class="row-action"
+                    (click)="openUserAction(user, $event)"
+                    [attr.aria-label]="'Actions sur ' + user.username"
+                    title="Message privé / modération"
+                    type="button"
+                  >⋮</button>
+                }
+              </td>
             </tr>
           } @empty {
-            <tr><td colspan="2" style="text-align:center;padding:12px;color:#888;font-size:13px;">Aucun joueur</td></tr>
+            <tr><td colspan="3" style="text-align:center;padding:12px;color:#888;font-size:13px;">Aucun joueur</td></tr>
           }
         </tbody>
       </table>
