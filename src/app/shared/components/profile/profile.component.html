@@ -31,7 +31,17 @@
             </div>
 
             <div class="basic-info">
-              <div class="info-row"><span class="info-label">Pseudo</span><span class="info-value">{{ p.username }}</span></div>
+              <div class="info-row">
+                <span class="info-label">Pseudo</span>
+                <span class="info-value">
+                  {{ p.username }}
+                  @if (p.rank >= 1) {
+                    <img class="rank-badge" src="assets/images/modo.png" [alt]="p.rank >= 2 ? 'Admin' : 'Modo'" width="18" />
+                  } @else if (p.toonizLevel > 0) {
+                    <img class="rank-badge" [src]="'assets/images/tooniz_' + p.toonizLevel + '.png'" [alt]="'Tooniz ' + p.toonizLevel" width="18" />
+                  }
+                </span>
+              </div>
               <div class="info-row"><span class="info-label">Inscrit(e) le</span><span class="info-value">{{ formatDate(p.createdAt) }}</span></div>
               <div class="info-row"><span class="info-label">Métier</span><span class="info-value">{{ p.job || '—' }}</span></div>
               <div class="info-row">

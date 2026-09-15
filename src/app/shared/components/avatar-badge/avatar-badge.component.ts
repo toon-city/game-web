@@ -8,6 +8,15 @@ import { environment } from '../../../../environments/environment';
 const DEFAULT_BOX = 68; // matches .ic-avatar's fixed size (identity-card.component.scss)
 const AVATAR_W = 80;
 const AVATAR_H = 120;
+/**
+ * Headroom reserved above the avatar's nominal y=0, in avatar-local px —
+ * 'full' mode used to fit AVATAR_W x AVATAR_H edge-to-edge with zero
+ * margin, so any hat/hair frame whose spriteSourceSize.y is negative (its
+ * art legitimately extends above the nominal canvas top — e.g.
+ * chapeau_paques4's -7, a normal trimmed-asset thing, not a broken one)
+ * got clipped by the canvas boundary itself, not just a CSS overflow.
+ */
+const HEAD_MARGIN = 16;
 
 /**
  * Head bounding box within the 80x120 direction-1 (front-facing) frame —
@@ -104,11 +113,14 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       // Fit the 80x120 avatar (+socle) into the badge without cropping —
       // "contain", not "cover", so the socle at the feet stays visible. A
       // box matching AVATAR_W:AVATAR_H (via the `height` input) fills edge
-      // to edge with zero letterbox margin on either axis.
-      const zoom = Math.min(box / AVATAR_W, boxH / AVATAR_H);
+      // to edge on the width axis, with HEAD_MARGIN of headroom reserved
+      // above the nominal top (not a true zero-margin fit anymore — a tall
+      // hat needs that room or it clips against the canvas edge).
+      const zoom = Math.min(box / AVATAR_W, boxH / (AVATAR_H + HEAD_MARGIN));
+      const contentH = (AVATAR_H + HEAD_MARGIN) * zoom;
       this.avatar.scale.set(zoom);
       this.avatar.x = (box - AVATAR_W * zoom) / 2;
-      this.avatar.y = (boxH - AVATAR_H * zoom) / 2;
+      this.avatar.y = (boxH - contentH) / 2 + HEAD_MARGIN * zoom;
     }
 
     this.app.stage.addChild(this.avatar);

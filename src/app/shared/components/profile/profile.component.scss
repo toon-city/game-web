@@ -134,9 +134,14 @@
 
 .slot {
   position: absolute;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  // Was 34px — too small to make out the item's own preview image clearly
+  // (object-fit:contain never actually crops it, but a tiny box shrinks an
+  // oddly-shaped thumbnail down to a sliver, which reads the same as
+  // "cut off"). .left is 210px wide, avatar-center 106px, so corner slots
+  // (left/right:8px) still clear the avatar with room at 44px.
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   background: var(--toon-sky-light);
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(3, 56, 73, 0.14);
@@ -180,6 +185,13 @@
 
 .info-label { color: var(--toon-petrol); opacity: 0.7; font-weight: 700; }
 .info-value { color: var(--toon-petrol-dark); font-weight: 800; text-align: right; }
+
+.rank-badge {
+  vertical-align: middle;
+  margin-left: 4px;
+  position: relative;
+  top: -1px;
+}
 
 /* ── Colonne droite ────────────────────────────────────────────────── */
 .right {
