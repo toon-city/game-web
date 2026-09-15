@@ -79,6 +79,30 @@
   text-overflow: ellipsis;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(35, 105, 129, 0.08);
+  color: var(--toon-petrol-dark);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, transform 0.15s;
+
+  &:hover { background: rgba(35, 105, 129, 0.16); transform: rotate(45deg); }
+}
+
 .btn-take {
   align-self: flex-start;
   border: none;

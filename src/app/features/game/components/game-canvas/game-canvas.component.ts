@@ -140,7 +140,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private remoteTargets = new Map<string, { x: number; y: number }>();
   /** instanceId -> catalogue info, for the click-to-preview panel (name/
    *  displayImage aren't on GameCore's own lightweight Furniture model). */
-  private furnitureMeta = new Map<number, { name: string; displayImage: string | null }>();
+  private furnitureMeta = new Map<number, { name: string; displayImage: string | null; orientation: number }>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private lerpTicker: ((ticker: any) => void) | null = null;
 
@@ -326,7 +326,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         Number(f.instanceId), f.baseId, 18, `${f.spriteKey}/${f.spritePath}`,
         f.x, f.y, f.orientation,
       );
-      this.furnitureMeta.set(Number(f.instanceId), { name: f.name, displayImage: f.displayImage });
+      this.furnitureMeta.set(Number(f.instanceId), { name: f.name, displayImage: f.displayImage, orientation: f.orientation });
     }
 
     this.loadingView.setMessage('Chargement des joueurs...');
@@ -375,7 +375,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.gc.on('furniture:click', ({ instanceId }) => {
       const meta = this.furnitureMeta.get(instanceId);
       if (!meta) return;
-      this.furniturePreview.open({ instanceId, name: meta.name, displayImage: meta.displayImage });
+      this.furniturePreview.open({ instanceId, name: meta.name, displayImage: meta.displayImage, orientation: meta.orientation });
     });
 
     // The world can host avatars from here on. Reconcile against the live room
@@ -499,13 +499,16 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
           Number(p.instanceId), p.baseId, 18, `${p.spriteKey}/${p.spritePath}`,
           p.x, p.y, p.orientation,
         );
-        this.furnitureMeta.set(Number(p.instanceId), { name: p.name, displayImage: p.displayImage });
+        this.furnitureMeta.set(Number(p.instanceId), { name: p.name, displayImage: p.displayImage, orientation: p.orientation });
       }),
       this.socket.furnitureMove$.subscribe((p) => {
         this.gc?.moveFurniture(Number(p.instanceId), p.x, p.y);
       }),
       this.socket.furnitureRotate$.subscribe((p) => {
         this.gc?.rotateFurniture(Number(p.instanceId), p.orientation);
+        const meta = this.furnitureMeta.get(Number(p.instanceId));
+        if (meta) meta.orientation = p.orientation;
+        this.furniturePreview.updateOrientation(Number(p.instanceId), p.orientation);
       }),
       this.socket.furnitureRemove$.subscribe((p) => {
         this.gc?.removeFurniture(Number(p.instanceId));

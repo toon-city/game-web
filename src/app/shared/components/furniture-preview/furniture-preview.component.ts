@@ -4,12 +4,13 @@ import { SocketService } from '../../../core/services/socket.service';
 import { FurniturePreviewTarget } from '../../../core/services/furniture-preview.service';
 
 /**
- * Opened by clicking a placed furniture piece outside edit mode (GameCore
- * 'furniture:click', see GameCanvasComponent) — small bottom-right panel,
- * item preview + a "Prendre" action gated the same way as room moderation
- * (owner or admin, RoomAccessService.canManageRoom server-side; "prendre"
- * just reuses the existing furniture/remove action, already permission-
- * checked there — this button is convenience only, not the real boundary).
+ * Opened by clicking (outside edit mode) or placing/moving/rotating/clicking
+ * (in edit mode) a furniture piece — GameCore's 'furniture:click', see
+ * GameCanvasComponent. Small bottom-right panel: item preview, a rotate
+ * button (was right-click-only), and a "Prendre" action — both gated the
+ * same way as room moderation (owner or admin, RoomAccessService.
+ * canManageRoom server-side; these buttons are convenience only, the real
+ * boundary is still enforced on furniture/rotate and furniture/remove).
  */
 @Component({
   selector: 'app-furniture-preview',
@@ -25,10 +26,16 @@ export class FurniturePreviewComponent {
   private readonly socket = inject(SocketService);
 
   /** Room owner or admin — same rule enforced server-side (RoomAccessService). */
-  readonly canTake = computed(() => {
+  readonly canManage = computed(() => {
     const state = this.socket.roomState();
     return !!state && state.yourPermission >= RoomPermission.OWN;
   });
+
+  rotate(): void {
+    // Same 4-step cycle as the old right-click handler (FurnitureView.onRightClick).
+    const next = (this.target.orientation % 4) + 1;
+    this.socket.sendFurnitureRotate(this.roomId, { instanceId: String(this.target.instanceId), orientation: next });
+  }
 
   take(): void {
     this.socket.sendFurnitureRemove(this.roomId, { instanceId: String(this.target.instanceId) });

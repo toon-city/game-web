@@ -9,8 +9,11 @@
 
   <div class="info">
     <div class="name">{{ target.name }}</div>
-    @if (canTake()) {
-      <button class="btn-take" (click)="take()" type="button">Prendre</button>
+    @if (canManage()) {
+      <div class="actions">
+        <button class="btn-icon" (click)="rotate()" aria-label="Tourner" title="Tourner" type="button">⟳</button>
+        <button class="btn-take" (click)="take()" type="button">Prendre</button>
+      </div>
     }
   </div>
 </div>

@@ -4,6 +4,7 @@ export interface FurniturePreviewTarget {
   instanceId: number;
   name: string;
   displayImage: string | null;
+  orientation: number;
 }
 
 /**
@@ -22,5 +23,11 @@ export class FurniturePreviewService {
 
   close(): void {
     this.target.set(null);
+  }
+
+  /** A rotate can be broadcast by anyone with rights (not just whoever has
+   *  the panel open) — keeps the shown orientation live either way. */
+  updateOrientation(instanceId: number, orientation: number): void {
+    this.target.update(t => (t && t.instanceId === instanceId) ? { ...t, orientation } : t);
   }
 }
