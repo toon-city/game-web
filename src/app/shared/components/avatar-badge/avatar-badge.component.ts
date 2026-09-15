@@ -129,13 +129,18 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       // HEAD_FILL's comment for why this replaced canvas-edge clipping.
       const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, HEAD_BBOX.h);
       this.avatar.scale.set(zoom);
-      this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom;
+      // -1.5px nudge: reported (and measured) as sitting slightly right of
+      // center at the bbox-centered position — the presence dot sitting on
+      // the bottom-right corner also visually pulls the eye that way, but
+      // the head itself measured a couple px off too.
+      const centerNudgeX = -1.5;
+      this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom + centerNudgeX;
       this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
 
       const maskW = HEAD_BBOX.w * zoom;
       const maskH = HEAD_BBOX.h * zoom;
       const mask = new Graphics()
-        .rect((box - maskW) / 2, (boxH - maskH) / 2, maskW, maskH)
+        .rect((box - maskW) / 2 + centerNudgeX, (boxH - maskH) / 2, maskW, maskH)
         .fill(0xffffff);
       this.app.stage.addChild(mask);
       this.avatar.mask = mask;
