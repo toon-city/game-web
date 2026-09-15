@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { EquippedItemInfo, UserProfile } from '@toon-live/game-types';
+import { EquippedItemInfo, UserProfile, FriendsStatus } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FriendService } from '../../../core/services/friend.service';
@@ -39,6 +39,22 @@ export class ProfileComponent implements OnInit, OnChanges {
 
   friendActionText = signal<string | null>(null);
   friendActionError = signal<string | null>(null);
+  private friendsStatus = signal<FriendsStatus | null>(null);
+
+  /** 'friend': already friends — 'sent': I've got a pending request out to
+   *  them — 'none': neither, show "Ajouter en ami". Received requests
+   *  aren't handled here (accept/decline already live in the Amis panel's
+   *  requests tab) — only my own outgoing state matters for this button. */
+  readonly friendButtonState = computed<'friend' | 'sent' | 'none'>(() => {
+    const status = this.friendsStatus();
+    if (!status) return 'none';
+    if (status.friends.some(f => f.userId === this.userId)) return 'friend';
+    if (status.sentRequests.some(r => r.otherUserId === this.userId)) return 'sent';
+    return 'none';
+  });
+
+  private readonly pendingRequestId = computed(() =>
+    this.friendsStatus()?.sentRequests.find(r => r.otherUserId === this.userId)?.id ?? null);
 
   readonly slots = SLOTS;
 
@@ -112,8 +128,36 @@ export class ProfileComponent implements OnInit, OnChanges {
 
   addFriend(): void {
     this.friendService.sendRequest(this.userId).subscribe({
-      next: () => { this.friendActionError.set(null); this.friendActionText.set('Demande envoyée.'); },
+      next: () => {
+        this.friendActionError.set(null);
+        this.friendActionText.set('Demande envoyée.');
+        this.refreshFriendsStatus();
+      },
       error: (err) => { this.friendActionText.set(null); this.friendActionError.set(err?.error?.message ?? 'Échec de la demande.'); },
+    });
+  }
+
+  removeFriend(): void {
+    this.friendService.removeFriend(this.userId).subscribe({
+      next: () => {
+        this.friendActionError.set(null);
+        this.friendActionText.set('Retiré de vos amis.');
+        this.refreshFriendsStatus();
+      },
+      error: (err) => { this.friendActionText.set(null); this.friendActionError.set(err?.error?.message ?? 'Échec du retrait.'); },
+    });
+  }
+
+  cancelFriendRequest(): void {
+    const requestId = this.pendingRequestId();
+    if (requestId === null) return;
+    this.friendService.cancel(requestId).subscribe({
+      next: () => {
+        this.friendActionError.set(null);
+        this.friendActionText.set('Demande annulée.');
+        this.refreshFriendsStatus();
+      },
+      error: (err) => { this.friendActionText.set(null); this.friendActionError.set(err?.error?.message ?? 'Échec de l\'annulation.'); },
     });
   }
 
@@ -134,6 +178,14 @@ export class ProfileComponent implements OnInit, OnChanges {
     this.profileService.get(this.userId).subscribe({
       next: (p) => { this.loading.set(false); this.profile.set(p); },
       error: () => { this.loading.set(false); this.errorText.set('Impossible de charger ce profil.'); },
+    });
+    this.refreshFriendsStatus();
+  }
+
+  private refreshFriendsStatus(): void {
+    this.friendService.status().subscribe({
+      next: (s) => this.friendsStatus.set(s),
+      error: () => {}, // button just falls back to "Ajouter en ami" (friendButtonState defaults 'none' on null)
     });
   }
 }

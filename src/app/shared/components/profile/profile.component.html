@@ -58,7 +58,17 @@
 
             @if (!isOwner()) {
               <div class="friend-actions">
-                <button class="btn btn-small btn-primary" (click)="addFriend()" type="button">Ajouter en ami</button>
+                @switch (friendButtonState()) {
+                  @case ('friend') {
+                    <button class="btn btn-small btn-danger" (click)="removeFriend()" type="button">Retirer des amis</button>
+                  }
+                  @case ('sent') {
+                    <button class="btn btn-small" (click)="cancelFriendRequest()" type="button">Annuler la demande</button>
+                  }
+                  @default {
+                    <button class="btn btn-small btn-primary" (click)="addFriend()" type="button">Ajouter en ami</button>
+                  }
+                }
                 <button class="btn btn-small btn-danger" (click)="blockUser()" type="button">Bloquer</button>
               </div>
               @if (friendActionText()) {

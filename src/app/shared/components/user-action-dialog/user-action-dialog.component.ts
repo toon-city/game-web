@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject, signal, computed } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RoomUser, RoomPermission, RoomErrorPayload } from '@toon-live/game-types';
+import { RoomUser, RoomPermission, RoomErrorPayload, FriendsStatus } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ModerationService } from '../../../core/services/moderation.service';
@@ -36,7 +36,7 @@ const DURATIONS: DurationOption[] = [
   templateUrl: './user-action-dialog.component.html',
   styleUrls: ['./user-action-dialog.component.scss'],
 })
-export class UserActionDialogComponent implements OnInit, OnDestroy {
+export class UserActionDialogComponent implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true }) target!: RoomUser;
   @Input({ required: true }) roomId!: string;
   @Output() close = new EventEmitter<void>();
@@ -48,6 +48,19 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
   private readonly friendService = inject(FriendService);
 
   friendActionText = signal<string | null>(null);
+  private friendsStatus = signal<FriendsStatus | null>(null);
+
+  /** Same rule as ProfileComponent's own — see there. */
+  readonly friendButtonState = computed<'friend' | 'sent' | 'none'>(() => {
+    const status = this.friendsStatus();
+    if (!status) return 'none';
+    if (status.friends.some(f => f.userId === this.target.userId)) return 'friend';
+    if (status.sentRequests.some(r => r.otherUserId === this.target.userId)) return 'sent';
+    return 'none';
+  });
+
+  private readonly pendingRequestId = computed(() =>
+    this.friendsStatus()?.sentRequests.find(r => r.otherUserId === this.target.userId)?.id ?? null);
 
   private errorSub?: Subscription;
 
@@ -78,10 +91,30 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
       this.sending.set(false);
       this.errorText.set(e.message);
     });
+    this.refreshFriendsStatus();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Reused instance across a different target (app.component.html's @if
+    // only toggles on the target signal being null vs not, same situation
+    // as ProfileComponent) — the friend-button state needs to match the
+    // NEW target, not whoever this dialog was last opened for.
+    if (changes['target'] && !changes['target'].firstChange) {
+      this.friendActionText.set(null);
+      this.errorText.set(null);
+      this.refreshFriendsStatus();
+    }
   }
 
   ngOnDestroy(): void {
     this.errorSub?.unsubscribe();
+  }
+
+  private refreshFriendsStatus(): void {
+    this.friendService.status().subscribe({
+      next: (s) => this.friendsStatus.set(s),
+      error: () => {},
+    });
   }
 
   viewProfile(): void {
@@ -91,8 +124,36 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
 
   addFriend(): void {
     this.friendService.sendRequest(this.target.userId).subscribe({
-      next: () => { this.errorText.set(null); this.friendActionText.set('Demande envoyée.'); },
+      next: () => {
+        this.errorText.set(null);
+        this.friendActionText.set('Demande envoyée.');
+        this.refreshFriendsStatus();
+      },
       error: (err) => this.errorText.set(err?.error?.message ?? 'Échec de la demande.'),
+    });
+  }
+
+  removeFriend(): void {
+    this.friendService.removeFriend(this.target.userId).subscribe({
+      next: () => {
+        this.errorText.set(null);
+        this.friendActionText.set('Retiré de vos amis.');
+        this.refreshFriendsStatus();
+      },
+      error: (err) => this.errorText.set(err?.error?.message ?? 'Échec du retrait.'),
+    });
+  }
+
+  cancelFriendRequest(): void {
+    const requestId = this.pendingRequestId();
+    if (requestId === null) return;
+    this.friendService.cancel(requestId).subscribe({
+      next: () => {
+        this.errorText.set(null);
+        this.friendActionText.set('Demande annulée.');
+        this.refreshFriendsStatus();
+      },
+      error: (err) => this.errorText.set(err?.error?.message ?? 'Échec de l\'annulation.'),
     });
   }
 
