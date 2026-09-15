@@ -60,7 +60,11 @@
                 }
               } @else if (s.item.itemType === 'CLOTHING') {
                 @if (s.equipped) {
-                  <button class="btn-action" (click)="unequip(s)" type="button">Retirer</button>
+                  @if (isAlwaysWorn(s)) {
+                    <span class="preview-hint">Équipez-en un autre pour le retirer</span>
+                  } @else {
+                    <button class="btn-action" (click)="unequip(s)" type="button">Retirer</button>
+                  }
                 } @else {
                   <button class="btn-action" (click)="equip(s)" type="button">Porter</button>
                 }

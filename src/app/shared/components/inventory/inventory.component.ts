@@ -71,13 +71,21 @@ export class InventoryComponent implements OnInit {
   }
 
   unequip(item: UserItemInfo): void {
-    if (!item.id || !item.equipped) return;
+    if (!item.id || !item.equipped || this.isAlwaysWorn(item)) return;
     this.inventoryService.unequip(item.id).subscribe({
       next: updated => {
         this.items.update(list => list.map(i => i.id === updated.id ? updated : i));
         if (this.selected()?.id === updated.id) this.selected.set(updated);
       },
     });
+  }
+
+  /** TOP/BOTTOM can't be taken off bare — only swapped for another one
+   *  (equip() already unequips the old one automatically). Server-enforced
+   *  (InventoryService.unequipItem); this just keeps the button from
+   *  offering an action that would 400. */
+  isAlwaysWorn(item: UserItemInfo): boolean {
+    return item.item.subType === 'TOP' || item.item.subType === 'BOTTOM';
   }
 
   /**
