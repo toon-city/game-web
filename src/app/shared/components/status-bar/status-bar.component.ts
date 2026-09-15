@@ -16,6 +16,7 @@ import { DeditoonService } from '../../../core/services/deditoon.service';
 import { UserListService, UserListItem } from '../../../core/services/user-list.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ProfileService } from '../../../core/services/profile.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 import { Subscription } from 'rxjs';
 
 /** Ligne dans le tableau joueurs : données API + roomId formaté en string */
@@ -38,6 +39,13 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   private readonly socket       = inject(SocketService);
   private readonly router       = inject(Router);
   private readonly profileService = inject(ProfileService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Player panel joins the same stack as the other dialogs (shop, profile,
+   *  ...) — was a static z-index:201, always above them regardless of which
+   *  was actually opened/moved last, which put a freshly-opened profile
+   *  behind the player list that opened it. */
+  playerPanelZIndex = signal(100);
 
   // ── État déditoon ──────────────────────────────────────────────────────────
   playerPanelOpen   = signal(false);
@@ -108,8 +116,13 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     const next = !this.playerPanelOpen();
     this.playerPanelOpen.set(next);
     if (next) {
+      this.playerPanelZIndex.set(this.dialogStack.bringToFront());
       this.userListService.load('', 0, this.PAGE_SIZE);
     }
+  }
+
+  onPlayerPanelDragStarted(): void {
+    this.playerPanelZIndex.set(this.dialogStack.bringToFront());
   }
 
   onSearchChange(): void {

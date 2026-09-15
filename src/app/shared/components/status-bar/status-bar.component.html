@@ -37,7 +37,7 @@
 
 <!-- ── Panel joueurs ──────────────────────────────────────────────────────── -->
 @if (playerPanelOpen()) {
-  <div class="player-panel" cdkDrag cdkDragBoundary="body">
+  <div class="player-panel" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onPlayerPanelDragStarted()" [style.z-index]="playerPanelZIndex()">
     <div class="pp-inner">
 
       <!-- En-tête / handle de drag -->
