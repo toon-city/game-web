@@ -113,28 +113,6 @@
   vertical-align: middle;
 }
 
-#game-menu .connected-list table td.actions-cell {
-  width: 20px;
-  text-align: center;
-  padding: 0 2px;
-}
-
-#game-menu .connected-list table .row-action {
-  border: none;
-  background: transparent;
-  color: #2b4a5a;
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-#game-menu .connected-list table .row-action:hover {
-  background: rgba(43, 74, 90, 0.15);
-}
-
 #game-menu .connected-list table td:first-child {
   width: 25px;
   text-align: center;
