@@ -265,8 +265,11 @@
 }
 
 .head-badge {
-  width: 36px;
-  height: 36px;
+  /* Matches the [size]="48" on AvatarBadgeComponent — below MIN_HEAD_SIZE
+     (avatar-badge.component.ts) the head crop starts minifying and the
+     nearest-neighbor filtering aliases badly ("très pixelisé"). */
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   border-radius: 50%;
   background: #eef5f7;

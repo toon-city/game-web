@@ -15,8 +15,18 @@ const AVATAR_H = 120;
  * direction 1, so this one crop rect is enough for 'head' mode.
  */
 const HEAD_BBOX = { x: 17, y: 23, w: 41, h: 42 };
-/** Head fills this fraction of the box — the rest is breathing room so the crop doesn't hug the pixel edges. */
-const HEAD_FILL = 0.82;
+/**
+ * Head fills this fraction of the box — the rest is breathing room so the
+ * crop doesn't hug the pixel edges. Picked so zoom lands at ~1:1 (source
+ * texel : screen pixel) at the intended head-badge size (~48px, see
+ * MIN_HEAD_SIZE) — nearest-neighbor filtering MINIFYING a texture (zoom < 1)
+ * aliases badly (looked "très pixelisé" — noisy, not the clean big-pixel
+ * look the rest of this pixel-art game has), so 'head' mode should never be
+ * rendered much smaller than that or the crop starts minifying again.
+ */
+const HEAD_FILL = 0.88;
+/** Below this, zoom drops under ~1 and nearest-neighbor minification aliasing creeps back in. */
+export const MIN_HEAD_SIZE = 44;
 
 /**
  * Small live badge: the current user's real avatar (front-facing, with
