@@ -47,8 +47,18 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
    */
   @Input() override?: { skinColor: number; clothing: Record<string, string> };
 
-  /** Square canvas size in px — defaults to the identity-card badge's 68px, bump it for a bigger avatar (e.g. the profile page). */
+  /** Canvas width in px (and height too, unless `height` is set) — defaults to the identity-card badge's 68px, bump it for a bigger avatar (e.g. the profile page). */
   @Input() size = DEFAULT_BOX;
+
+  /**
+   * Canvas height in px, when it should differ from `size` — e.g. a
+   * non-square box matching the avatar's own 80:120 aspect ratio so 'full'
+   * mode fills it edge-to-edge with no letterbox margin on either axis
+   * (a square box always leaves one axis under-filled, which reads as the
+   * avatar sitting off-center even though it's centered within its own
+   * empty margin). Defaults to `size` (square), the original behaviour.
+   */
+  @Input() height?: number;
 
   /** 'full' = whole body + socle (contain-fit, the original behaviour). 'head' = zoomed/cropped to just the head, circular — for compact list rows (friends, requests, blacklist). */
   @Input() mode: 'full' | 'head' = 'full';
@@ -64,11 +74,12 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
     const box = this.size;
+    const boxH = this.height ?? this.size;
     this.app = new Application();
     await this.app.init({
       canvas: this.canvasRef.nativeElement,
       width: box,
-      height: box,
+      height: boxH,
       backgroundAlpha: 0,
       antialias: false,
       resolution: window.devicePixelRatio ?? 1,
@@ -88,15 +99,16 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, HEAD_BBOX.h);
       this.avatar.scale.set(zoom);
       this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom;
-      this.avatar.y = box / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
+      this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
     } else {
-      // Fit the 80x120 avatar (+socle, already within that box) into the
-      // square badge without cropping — "contain", not "cover", so the socle
-      // at the feet stays visible.
-      const zoom = Math.min(box / AVATAR_W, box / AVATAR_H);
+      // Fit the 80x120 avatar (+socle) into the badge without cropping —
+      // "contain", not "cover", so the socle at the feet stays visible. A
+      // box matching AVATAR_W:AVATAR_H (via the `height` input) fills edge
+      // to edge with zero letterbox margin on either axis.
+      const zoom = Math.min(box / AVATAR_W, boxH / AVATAR_H);
       this.avatar.scale.set(zoom);
       this.avatar.x = (box - AVATAR_W * zoom) / 2;
-      this.avatar.y = (box - AVATAR_H * zoom) / 2;
+      this.avatar.y = (boxH - AVATAR_H * zoom) / 2;
     }
 
     this.app.stage.addChild(this.avatar);

@@ -124,8 +124,12 @@
 }
 
 .avatar-center {
-  width: 120px;
-  height: 120px;
+  /* Matches AVATAR_W:AVATAR_H (80:120) exactly — AvatarBadgeComponent's
+     'full' mode then fills this edge-to-edge with zero letterbox margin,
+     instead of a square box leaving empty space on one axis that reads as
+     the avatar sitting off-center. */
+  width: 106px;
+  height: 159px;
 }
 
 .slot {
