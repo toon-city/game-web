@@ -534,16 +534,13 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
 
-  // Was a plain <h3> in body padding, no close button at all — every other
-  // dialog in the app (shop/inventory/profile/mairie/friends/navigator) has
-  // a proper gradient header bar + X button; this one just never got one.
-  > *:not(.deditoon-overlay__header) {
-    padding-left: 28px;
-    padding-right: 28px;
-  }
-  > *:last-child { padding-bottom: 24px; }
+.deditoon-overlay__body {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  padding: 16px 28px 24px;
 }
 
 .deditoon-overlay__header {
