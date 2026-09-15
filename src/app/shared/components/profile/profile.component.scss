@@ -102,7 +102,16 @@
 .layout {
   display: flex;
   gap: 18px;
-  height: 100%;
+  // Was height:100% — a hard cap, not a floor. .left's content (avatar
+  // slots + info rows + friend actions) fits within that on its own, but
+  // the friend-action-msg/-error banner is conditional and wasn't part of
+  // that budget: once it appeared, .left's content overflowed straight
+  // past .body's own bottom padding, flush against the dialog's edge.
+  // min-height keeps both columns still filling the dialog when short
+  // (the original intent — .right's description area) without capping
+  // them when content genuinely needs more room (.body's overflow-y:auto
+  // scrolls it instead).
+  min-height: 100%;
 }
 
 /* ── Colonne gauche ────────────────────────────────────────────────── */
@@ -291,7 +300,7 @@
   &:disabled { opacity: 0.5; cursor: default; }
 }
 
-.btn-small { padding: 7px 12px; font-size: 11px; }
+.btn-small { padding: 5px 10px; font-size: 10.5px; }
 .btn-primary {
   background: linear-gradient(90deg, #1e8f5a 0%, #146b43 100%);
   box-shadow: 0 3px 10px rgba(30, 143, 90, 0.35);
@@ -305,9 +314,11 @@
 
 .friend-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-
-  .btn { flex: 1; }
+  // Was .btn{flex:1} — with 2-3 buttons stretched to fill a 210px column,
+  // even short labels like "Bloquer" ended up wide/chunky. Natural width
+  // now, wraps if it doesn't fit on one line.
 }
 
 .friend-action-msg {
