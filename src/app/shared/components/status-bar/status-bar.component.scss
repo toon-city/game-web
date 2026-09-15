@@ -158,6 +158,11 @@
   &.man       { color: var(--toon-sky-dark); }
   &.woman     { color: var(--toon-pink); }
   &.no-binary { color: var(--toon-petrol); }
+
+  &.clickable {
+    cursor: pointer;
+    &:hover { text-decoration: underline; }
+  }
 }
 
 .message {

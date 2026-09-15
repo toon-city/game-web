@@ -92,7 +92,8 @@
                       }
                     </td>
                     <td class="col-pseudo">
-                      <span class="pseudo" [ngClass]="genderClass(row.gender)">
+                      <span class="pseudo clickable" [ngClass]="genderClass(row.gender)"
+                            (click)="openProfile(row)" title="Voir le profil">
                         @if (row.online) {
                           <span class="dot"></span>
                         }

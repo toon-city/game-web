@@ -15,6 +15,7 @@ import { StatsService } from '../../../core/services/stats.service';
 import { DeditoonService } from '../../../core/services/deditoon.service';
 import { UserListService, UserListItem } from '../../../core/services/user-list.service';
 import { SocketService } from '../../../core/services/socket.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { Subscription } from 'rxjs';
 
 /** Ligne dans le tableau joueurs : données API + roomId formaté en string */
@@ -36,6 +37,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   readonly userListService = inject(UserListService);
   private readonly socket       = inject(SocketService);
   private readonly router       = inject(Router);
+  private readonly profileService = inject(ProfileService);
 
   // ── État déditoon ──────────────────────────────────────────────────────────
   playerPanelOpen   = signal(false);
@@ -125,6 +127,10 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   joinRoom(roomId: string): void {
     this.playerPanelOpen.set(false);
     this.router.navigate(['/room', roomId]);
+  }
+
+  openProfile(row: PlayerRow): void {
+    this.profileService.open(row.id);
   }
 
   openDeditoonInput(): void {
