@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Input, inject } from '@angular/core';
-import { Application } from 'pixi.js';
+import { Application, Graphics } from 'pixi.js';
 import { Avatar, BaseTextureLoader, AssetBaseUrl } from '@toon-live/game-avatar';
 import { AuthService } from '../../../core/services/auth.service';
 import { InventoryService } from '../../../core/services/inventory.service';
@@ -25,15 +25,21 @@ const HEAD_MARGIN = 16;
  */
 const HEAD_BBOX = { x: 17, y: 23, w: 41, h: 42 };
 /**
- * Head fills this fraction of the box — the rest is breathing room so the
- * crop doesn't hug the pixel edges. Was 0.82 — nowhere near enough margin:
- * the face filled the circle edge-to-edge (chin/forehead touching the ring
- * border) and any hat got cut off outright, no headroom at all. Verified
- * against a rendered composite (bare head and with a tall hat) before
- * landing on this value — see the rest of this file's history for why
- * that's the bar for touching this crop at all.
+ * Head fills this fraction of the box's largest dimension. Both 0.82 and a
+ * later 0.5 were tried and still looked wrong live (reported: head looks
+ * huge, spilling past the ring) despite an offline composite of the HEAD
+ * ALONE looking correctly margined at either value — the composite was
+ * misleading because it only rendered the head bbox crop, not what this
+ * code actually did: position/scale the WHOLE avatar and let the CANVAS
+ * EDGE do the cropping. The neck/shoulders sit immediately below the head
+ * in the source art, same skin tone, and were bleeding into the space
+ * below the chin — reading as "the head fills the whole circle" even
+ * though the head itself was sized correctly. Fixed by actually masking to
+ * the head's own bbox (see below) instead of relying on canvas-edge
+ * clipping; 0.78 is deliberately generous now that nothing but real head
+ * pixels can render inside that mask.
  */
-const HEAD_FILL = 0.5;
+const HEAD_FILL = 0.78;
 
 /**
  * Small live badge: the current user's real avatar (front-facing, with
@@ -111,22 +117,24 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
     this.avatar = new Avatar(this.app, { showSocle: true, direction: 1 });
 
     if (this.mode === 'head') {
-      // Cover-crop on the head's own bbox instead of the whole 80x120 frame
-      // — the canvas' render bounds do the clipping, no PIXI mask needed.
-      //
-      // Reverted back to the exact pre-existing formula (no HEAD_MARGIN) —
-      // this file has a documented history of head-crop zoom/centering
-      // tuning (see git log: 0031b12, c51320d + its revert 4ba381b) and my
-      // own attempt at extending it for hat headroom (this session)
-      // regressed centering live (reported: head ended up bottom-right,
-      // overflowing past the ring border) despite checking out correctly
-      // in an offline render — something about this crop is more fragile
-      // than the math alone captures. Not worth re-guessing blind; leaving
-      // it at the known-good original rather than compounding the risk.
+      // Position/scale the whole avatar so the head bbox centers in the
+      // box, same as before — but that alone isn't a crop, it just leaves
+      // the neck/shoulders (right below the head, same skin tone) to spill
+      // into the canvas below the chin. Mask to the head's own bbox
+      // (scaled) so only real head pixels can ever render here — see
+      // HEAD_FILL's comment for why this replaced canvas-edge clipping.
       const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, HEAD_BBOX.h);
       this.avatar.scale.set(zoom);
       this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom;
       this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
+
+      const maskW = HEAD_BBOX.w * zoom;
+      const maskH = HEAD_BBOX.h * zoom;
+      const mask = new Graphics()
+        .rect((box - maskW) / 2, (boxH - maskH) / 2, maskW, maskH)
+        .fill(0xffffff);
+      this.app.stage.addChild(mask);
+      this.avatar.mask = mask;
     } else {
       // Fit the 80x120 avatar (+socle) into the badge without cropping —
       // "contain", not "cover", so the socle at the feet stays visible. A
