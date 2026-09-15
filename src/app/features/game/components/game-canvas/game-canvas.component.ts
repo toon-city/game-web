@@ -607,6 +607,14 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, x, y, 1);
     if (!ghostView || !this.gc) return;
 
+    // Seed furnitureMeta right away instead of waiting for the server's
+    // furniturePlace$ echo — the ghost's own confirm click can fire
+    // 'furniture:click' synchronously (a plain click with zero movement
+    // never even leaves this tick), which is well before that round-trip
+    // could possibly land, so the preview panel would silently no-op on
+    // the very first click and need a second, separate one to catch up.
+    this.furnitureMeta.set(userItemId, { name: item.item.name, displayImage: item.item.displayImage, orientation: 1 });
+
     this.gc.setEditMode(true);
 
     // Edit mode stays on after placing — was already guaranteed on above
@@ -629,6 +637,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       this.gc?.removeFurniture(userItemId);
+      this.furnitureMeta.delete(userItemId); // never actually placed — drop the meta seeded above
+      if (this.furniturePreview.target()?.instanceId === userItemId) this.furniturePreview.close();
       cleanup();
     };
 
@@ -640,6 +650,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const errorSub = this.socket.roomError$.subscribe((e: RoomErrorPayload) => {
       if (e.code !== 'FURNITURE_ACTION_FAILED') return;
       this.gc?.removeFurniture(userItemId);
+      this.furnitureMeta.delete(userItemId); // never actually placed — drop the meta seeded above
+      if (this.furniturePreview.target()?.instanceId === userItemId) this.furniturePreview.close();
       this.gc?.getAvatar(this.myId)?.say(e.message, 3000);
       cleanup();
     });
