@@ -82,11 +82,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       }),
       this.socket.privateMessage$.subscribe((msg: RemotePrivateMessagePayload) => {
         if (this.blockedIds.has(msg.fromUserId)) return;
+        // RemotePrivateMessagePayload carries no rank — mp can reach someone
+        // who isn't the sender's neighbour in the room list, so look it up
+        // from the shared room roster instead of a second HTTP round-trip.
+        // Missing (sender already left) just falls back to no badge.
+        const senderRank = this.socket.roomState()?.users.find(u => u.userId === msg.fromUserId)?.rank ?? 0;
         this.messages.update((msgs) => [...msgs, {
           id: `mp-${msg.fromUserId}-${msg.sentAt}`,
           userId: msg.fromUserId,
           username: msg.fromUsername,
-          rank: 0,
+          rank: senderRank,
           text: msg.text,
           sentAt: Date.parse(msg.sentAt) || Date.now(),
           isPrivate: true,

@@ -462,6 +462,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.socket.chatMessage$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
       }),
+      // Only the sender's and recipient's own sockets ever receive this
+      // (RoomModerationService.sendPrivateMessage — two individual sends,
+      // not a topic broadcast), so showing it above the sender's head can't
+      // leak the mp to anyone else in the room.
+      this.socket.privateMessage$.subscribe((p) => {
+        this.gc?.getAvatar(p.fromUserId)?.say(p.text, 2500, true);
+      }),
       this.socket.avatarAppearance$.subscribe((p) => {
         const avatar = this.gc?.getAvatar(p.userId);
         if (!avatar) return;
