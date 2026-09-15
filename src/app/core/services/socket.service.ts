@@ -88,8 +88,14 @@ export class SocketService implements OnDestroy {
         this.disconnect();
       }),
       this.gs.on('userJoined', (p) => {
-        this.userJoined$.next(p);
-        // Maintain the live users list inside roomState
+        // roomState must be updated BEFORE emitting userJoined$ — game-canvas's
+        // subscriber synchronously calls reconcileAvatars(), which diffs
+        // against roomState().users right then. Emitting first meant that
+        // diff ran against the STILL-stale array (the new user not added
+        // yet), so a join only "took" once some LATER event happened to
+        // trigger another reconcile — normally masked by other room chatter,
+        // but visible as a genuinely missing avatar when two joins landed
+        // back to back with nothing in between to paper over the second one.
         this.roomState.update(state => {
           if (!state) return state;
           const already = state.users.some(u => u.userId === p.userId);
@@ -110,13 +116,19 @@ export class SocketService implements OnDestroy {
             }],
           };
         });
+        this.userJoined$.next(p);
       }),
       this.gs.on('userLeft', (p) => {
-        this.userLeft$.next(p);
+        // Same ordering fix as userJoined above — a kick/ban/disconnect
+        // broadcasts this same event, and reconcileAvatars() needs the
+        // departed user already gone from roomState().users to actually
+        // remove their avatar; otherwise it stayed in the scene (kicked
+        // players kept appearing in the room to everyone but themselves).
         this.roomState.update(state => {
           if (!state) return state;
           return { ...state, users: state.users.filter(u => u.userId !== p.userId) };
         });
+        this.userLeft$.next(p);
       }),
       this.gs.on('remoteAvatarMove', (p) => this.remoteMove$.next(p)),
       this.gs.on('remoteAvatarStop', (p) => this.remoteStop$.next(p)),
