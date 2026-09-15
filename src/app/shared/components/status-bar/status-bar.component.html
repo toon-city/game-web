@@ -145,32 +145,38 @@
 @if (deditoonInputOpen()) {
   <div class="deditoon-overlay" aria-modal="true" aria-label="Écrire une déditoon">
     <div class="deditoon-overlay__box">
-      <h3 class="deditoon-overlay__title">Écrire une déditoon</h3>
-      <p class="deditoon-overlay__cost">Coûte <strong>10 kreds</strong></p>
+      <div class="deditoon-overlay__header">
+        <span class="deditoon-overlay__title">Écrire une déditoon</span>
+        <button class="close-button" (click)="cancelDeditoon()" [disabled]="submitting()" aria-label="Fermer" title="Fermer" type="button"></button>
+      </div>
 
-      <textarea
-        class="deditoon-overlay__input"
-        [(ngModel)]="deditoonText"
-        maxlength="150"
-        rows="3"
-        placeholder="Votre message (150 car. max)…"
-      ></textarea>
+      <div class="deditoon-overlay__body">
+        <p class="deditoon-overlay__cost">Coûte <strong>10 kreds</strong></p>
 
-      @if (submitError()) {
-        <p class="deditoon-overlay__error">{{ submitError() }}</p>
-      }
+        <textarea
+          class="deditoon-overlay__input"
+          [(ngModel)]="deditoonText"
+          maxlength="150"
+          rows="3"
+          placeholder="Votre message (150 car. max)…"
+        ></textarea>
 
-      <div class="deditoon-overlay__actions">
-        <button class="btn btn--ghost" (click)="cancelDeditoon()" [disabled]="submitting()">
-          Annuler
-        </button>
-        <button
-          class="btn btn--primary"
-          (click)="submitDeditoon()"
-          [disabled]="submitting() || !deditoonText.trim()"
-        >
-          @if (submitting()) { Envoi… } @else { Envoyer }
-        </button>
+        @if (submitError()) {
+          <p class="deditoon-overlay__error">{{ submitError() }}</p>
+        }
+
+        <div class="deditoon-overlay__actions">
+          <button class="btn btn--ghost" (click)="cancelDeditoon()" [disabled]="submitting()">
+            Annuler
+          </button>
+          <button
+            class="btn btn--primary"
+            (click)="submitDeditoon()"
+            [disabled]="submitting() || !deditoonText.trim()"
+          >
+            @if (submitting()) { Envoi… } @else { Envoyer }
+          </button>
+        </div>
       </div>
     </div>
   </div>

@@ -530,29 +530,65 @@
   background: white;
   border-radius: 20px;
   box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30);
-  padding: 24px 28px;
   width: min(420px, 95vw);
   display: flex;
   flex-direction: column;
-  position: relative;
   overflow: hidden;
 
-  /* Gradient top border as a pseudo-element, not border-image — border-image
-     ignores border-radius and squares off the rounded corners. */
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, var(--toon-pink), var(--toon-petrol));
+  // Was a plain <h3> in body padding, no close button at all — every other
+  // dialog in the app (shop/inventory/profile/mairie/friends/navigator) has
+  // a proper gradient header bar + X button; this one just never got one.
+  > *:not(.deditoon-overlay__header) {
+    padding-left: 28px;
+    padding-right: 28px;
   }
+  > *:last-child { padding-bottom: 24px; }
   gap: 12px;
+}
+
+.deditoon-overlay__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 14px 20px;
+  background: linear-gradient(90deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
+  color: #fff;
+
+  .close-button {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(255, 255, 255, 0.38); }
+    &:disabled { opacity: 0.5; cursor: default; }
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 11px;
+      height: 2px;
+      background: #fff;
+      border-radius: 1px;
+    }
+
+    &::before { transform: translate(-50%, -50%) rotate(45deg); }
+    &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  }
 }
 
 .deditoon-overlay__title {
   font-size: 17px;
   font-weight: 900;
-  color: var(--toon-petrol-dark);
   margin: 0;
 }
 
