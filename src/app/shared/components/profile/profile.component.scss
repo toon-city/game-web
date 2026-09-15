@@ -16,17 +16,6 @@
   box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30), 0 2px 8px rgba(3, 56, 73, 0.14);
   padding: 0;
   overflow: hidden;
-  position: relative;
-
-  /* Gradient top border as a pseudo-element, not border-image — border-image
-     ignores border-radius and squares off the rounded corners. */
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, var(--toon-pink), var(--toon-petrol));
-  }
 }
 
 .profile {
