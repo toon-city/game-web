@@ -61,15 +61,17 @@
                   <button class="btn-buy pez"
                           [disabled]="buying()?.shopItemId === item.id"
                           (click)="buy(item, 'PEZ', $event)" type="button">
-                    {{ item.pezPrice }} pez
-                    @if (item.kredBonus > 0) { <span class="bonus">+{{ item.kredBonus }}K</span> }
+                    {{ item.pezPrice }} <img class="price-icon" src="assets/images/pez.png" alt="pez" />
+                    @if (item.kredBonus > 0) {
+                      <span class="bonus">+{{ item.kredBonus }} <img class="price-icon" src="assets/images/kred.png" alt="kreds" /></span>
+                    }
                   </button>
                 }
                 @if (canBuyKreds(item)) {
                   <button class="btn-buy kreds"
                           [disabled]="buying()?.shopItemId === item.id"
                           (click)="buy(item, 'KREDS', $event)" type="button">
-                    {{ item.kredPrice }} kreds
+                    {{ item.kredPrice }} <img class="price-icon" src="assets/images/kred.png" alt="kreds" />
                   </button>
                 }
                 @if (isOutOfStock(item)) {
@@ -118,7 +120,11 @@
         }
 
         <p class="confirm-text">
-          pour <strong>{{ confirmTotal(c) }} {{ c.option === 'PEZ' ? 'pez' : 'kreds' }}</strong> ?
+          pour <strong>{{ confirmTotal(c) }} <img class="price-icon" [src]="c.option === 'PEZ' ? 'assets/images/pez.png' : 'assets/images/kred.png'" [alt]="c.option === 'PEZ' ? 'pez' : 'kreds'" /></strong>
+          @if (confirmBonus(c) > 0) {
+            <span class="bonus">+{{ confirmBonus(c) }} <img class="price-icon" src="assets/images/kred.png" alt="kreds" /></span>
+          }
+          ?
         </p>
         <div class="confirm-actions">
           <button class="btn-confirm cancel" (click)="cancelBuy()" type="button">Annuler</button>

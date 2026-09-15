@@ -127,6 +127,13 @@ export class ShopComponent implements OnInit {
     return (c.option === 'PEZ' ? c.item.pezPrice! : c.item.kredPrice!) * c.quantity;
   }
 
+  /** kredBonus only ever applies to the PEZ option (see the buy buttons'
+   *  own "+X kred" — KREDS purchases have no separate bonus, you're already
+   *  paying in kreds). Missing from the confirm dialog entirely before. */
+  confirmBonus(c: NonNullable<ConfirmState>): number {
+    return c.option === 'PEZ' ? c.item.kredBonus * c.quantity : 0;
+  }
+
   confirmBuy(): void {
     const c = this.confirming();
     if (!c || this.buying()) return;
