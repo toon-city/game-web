@@ -43,7 +43,8 @@
   font-size: 19px;
   font-weight: 900;
   letter-spacing: 0.2px;
-  color: var(--toon-petrol-dark);
+  color: #fff;
+  background: linear-gradient(90deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
   cursor: grab;
   user-select: none;
 
@@ -54,7 +55,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: rgba(3, 56, 73, 0.06);
+  background: rgba(255, 255, 255, 0.22);
   border: none;
   display: inline-flex;
   align-items: center;
@@ -66,14 +67,14 @@
   flex-shrink: 0;
   transition: background 0.12s;
 
-  &:hover { background: rgba(3, 56, 73, 0.12); }
+  &:hover { background: rgba(255, 255, 255, 0.38); }
 
   &::before, &::after {
     content: "";
     position: absolute;
     width: 11px;
     height: 2.5px;
-    background: var(--toon-petrol-dark);
+    background: #fff;
     border-radius: 2px;
     left: 50%;
     top: 50%;
