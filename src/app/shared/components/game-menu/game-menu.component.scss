@@ -1,3 +1,6 @@
+/* Palette/type are the real project identity (see login.component.scss /
+   styles.scss's --toon-* tokens) — same recipe as the other shared panels. */
+
 :host {
   display: contents;
 }
@@ -25,9 +28,7 @@
   width: 28px;
   padding: 24px 0;
   background: white;
-  border: 2px solid #2b4a5a;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
+  border-radius: 14px 0 0 14px;
   margin-right: -2px; /* recouvre le bord gauche du panel */
   z-index: 1;
   cursor: pointer;
@@ -36,15 +37,15 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.12);
+  box-shadow: -6px 0 16px rgba(3, 56, 73, 0.20);
   user-select: none;
   transition: background 0.15s;
 
-  &:hover { background: #eef8fb; }
+  &:hover { background: var(--toon-sky-light); }
 
   .tab-icon {
     font-size: 13px;
-    color: #2b4a5a;
+    color: var(--toon-petrol-dark);
     font-weight: 900;
     line-height: 1;
   }
@@ -52,8 +53,8 @@
   .tab-count {
     font-size: 11px;
     font-weight: 900;
-    color: #d24193;
-    font-family: 'Nunito', Arial, sans-serif;
+    color: var(--toon-pink);
+    font-family: 'Nunito', sans-serif;
     writing-mode: vertical-lr;
     transform: rotate(180deg);
     line-height: 1;
@@ -61,30 +62,30 @@
 }
 
 #game-menu {
-  padding: 5px;
-  background: white;
-  border: 2px solid #2b4a5a;
-  border-radius: 11px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30);
+  border-top: 5px solid transparent;
+  border-image: linear-gradient(90deg, var(--toon-pink), var(--toon-petrol)) 1;
+  overflow: hidden;
 }
 
 #game-menu .content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
-  border: 2px solid #2b4a5a;
-  border-radius: 6px;
-  background: #82c9e8;
+  padding: 14px;
+  background: linear-gradient(160deg, var(--toon-sky-light), var(--toon-sky));
 }
 
 #game-menu .connected-list {
   margin-top: 12px;
-  font-family: Arial, sans-serif;
-  border: 2px solid #2b4a5a;
+  border-radius: 14px;
   width: 250px;
   height: 300px;
   background: white;
-  border-radius: 6px;
+  box-shadow: 0 3px 12px rgba(3, 56, 73, 0.10);
   overflow-y: auto;
 }
 
@@ -96,7 +97,7 @@
 }
 
 #game-menu .connected-list table tbody tr:nth-child(odd) {
-  background-color: #fde3c5;
+  background-color: rgba(35, 105, 129, 0.04);
 }
 
 #game-menu .connected-list table tbody tr.clickable {
@@ -104,12 +105,12 @@
 }
 
 #game-menu .connected-list table tbody tr.clickable:hover {
-  filter: brightness(0.95);
+  background: rgba(240, 3, 127, 0.06);
 }
 
 #game-menu .connected-list table td {
   border: none;
-  padding: 6px 8px;
+  padding: 7px 9px;
   vertical-align: middle;
 }
 
@@ -128,38 +129,42 @@
 
 #game-menu .connected-list table td.man {
   font-weight: bold;
-  color: #0c97ba;
+  color: var(--toon-sky-dark);
 }
 
 #game-menu .connected-list table td.woman {
   font-weight: bold;
-  color: #d24193;
+  color: var(--toon-pink);
 }
 
 #game-menu .connected-list table td.no-binary {
   font-weight: bold;
-  color: #000000;
+  color: var(--toon-petrol-dark);
 }
 
 #game-menu .emojis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  padding: 8px;
-  border: 2px solid #2b4a5a;
+  padding: 10px;
   width: 250px;
   background: white;
-  border-radius: 6px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(3, 56, 73, 0.10);
   margin-top: 12px;
 }
 
 #game-menu .emojis .emoji {
   aspect-ratio: 1;
   padding: 4px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.12s;
+
+  &:hover { background: rgba(35, 105, 129, 0.08); }
 }
 
 #game-menu .buttons {
@@ -178,14 +183,13 @@
 .connected-bar {
   position: relative;
   width: 220px;
-  font-family: Arial, sans-serif;
 }
 
 .connected-bar .bar {
   background: white;
-  border-radius: 20px;
-  height: 22px;
-  border: 2px solid #2b4a5a;
+  border-radius: 999px;
+  height: 24px;
+  box-shadow: 0 2px 8px rgba(3, 56, 73, 0.14);
   position: relative;
   overflow: hidden;
 }
@@ -196,17 +200,17 @@
   top: 0;
   height: 100%;
   width: 65%;
-  background: white;
-  border-radius: 20px;
+  background: linear-gradient(90deg, var(--toon-sky-light), var(--toon-sky));
+  border-radius: 999px;
 }
 
 .connected-bar .count {
   position: absolute;
-  right: 8px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  font-weight: bold;
-  color: #2b4a5a;
+  font-weight: 800;
+  color: var(--toon-petrol-dark);
   font-size: 13px;
 }
 

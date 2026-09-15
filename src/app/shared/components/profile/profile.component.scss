@@ -1,8 +1,9 @@
-/* Chrome (ui-block/content/header/close-button + draggable) is the same
-   shared pattern as inventory/shop/navigator/mairie — no reference material
-   for a profile page existed in the old CMS dump (only mairie/accueil/
-   inscription/appart/menu templates did), so this is designed fresh,
-   consistent with the rest of the app rather than reusing an old style. */
+/* Chrome (ui-block/content/header/close-button + draggable) and the
+   palette/type are the real project identity (see login.component.scss /
+   styles.scss's --toon-* tokens) — same recipe as mairie/friends/shop.
+   No reference material for a profile page existed in the old CMS dump
+   (only mairie/accueil/inscription/appart/menu templates did), so this is
+   designed fresh, consistent with the rest of the app. */
 
 :host {
   display: contents;
@@ -10,11 +11,13 @@
 
 .ui-block {
   display: block;
-  border: 2px solid #3B6E77;
-  border-radius: 11px;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  padding: 5px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30), 0 2px 8px rgba(3, 56, 73, 0.14);
+  border-top: 5px solid transparent;
+  border-image: linear-gradient(90deg, var(--toon-pink), var(--toon-petrol)) 1;
+  padding: 0;
+  overflow: hidden;
 }
 
 .profile {
@@ -29,8 +32,6 @@
 .content {
   display: flex;
   flex-direction: column;
-  border: 2px solid #3B6E75;
-  border-radius: 6px;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -40,13 +41,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #EC038D;
-  border-radius: 4px 4px 0 0;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  padding: 8px 12px;
+  padding: 14px 16px 10px;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: var(--toon-petrol-dark);
   cursor: grab;
   user-select: none;
 
@@ -54,11 +53,11 @@
 }
 
 .close-button {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: #fff;
-  border: 2px solid #3B6E75;
+  background: rgba(3, 56, 73, 0.06);
+  border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -67,14 +66,17 @@
   box-sizing: border-box;
   padding: 0;
   flex-shrink: 0;
+  transition: background 0.12s;
+
+  &:hover { background: rgba(3, 56, 73, 0.12); }
 
   &::before, &::after {
     content: "";
     position: absolute;
-    width: 10px;
-    height: 2px;
-    background: #3B6E75;
-    border-radius: 1px;
+    width: 11px;
+    height: 2.5px;
+    background: var(--toon-petrol-dark);
+    border-radius: 2px;
     left: 50%;
     top: 50%;
     transform-origin: center;
@@ -87,13 +89,13 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 16px;
-  font-family: Arial, sans-serif;
+  padding: 6px 18px 18px;
 }
 
 .state-msg {
   text-align: center;
-  color: #888;
+  color: var(--toon-petrol);
+  opacity: 0.6;
   font-size: 13px;
   margin-top: 40px;
 }
@@ -131,9 +133,10 @@
   position: absolute;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
-  background: #f4f9fb;
-  border: 2px solid #cfe4ec;
+  border-radius: 10px;
+  background: var(--toon-sky-light);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(3, 56, 73, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,9 +146,10 @@
 }
 
 .slot-empty {
-  color: #b7cdd6;
+  color: var(--toon-petrol);
+  opacity: 0.4;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 800;
 }
 
 .slot-tl { top: 4px;  left: 8px; }
@@ -166,13 +170,13 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  padding: 4px 8px;
-  background: #f4f9fb;
-  border-radius: 6px;
+  padding: 6px 10px;
+  background: rgba(35, 105, 129, 0.06);
+  border-radius: 10px;
 }
 
-.info-label { color: #6d8b96; font-weight: 600; }
-.info-value { color: #226981; font-weight: bold; text-align: right; }
+.info-label { color: var(--toon-petrol); opacity: 0.7; font-weight: 700; }
+.info-value { color: var(--toon-petrol-dark); font-weight: 800; text-align: right; }
 
 /* ── Colonne droite ────────────────────────────────────────────────── */
 .right {
@@ -190,16 +194,18 @@
 }
 
 .section-title {
-  font-size: 12px;
-  font-weight: bold;
-  color: #226981;
+  font-size: 12.5px;
+  font-weight: 900;
+  color: var(--toon-petrol);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .description-text {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #333;
+  color: var(--toon-petrol-dark);
   white-space: pre-wrap;
   overflow-y: auto;
 }
@@ -208,12 +214,15 @@
   flex: 1 1 auto;
   min-height: 160px;
   resize: none;
-  border: 2px solid #3b6e75;
-  border-radius: 6px;
-  padding: 8px;
+  border: 2px solid rgba(35, 105, 129, 0.25);
+  border-radius: 14px;
+  padding: 10px 12px;
   font-family: inherit;
   font-size: 13px;
   box-sizing: border-box;
+  transition: border-color 0.15s;
+
+  &:focus { outline: none; border-color: var(--toon-petrol); }
 }
 
 .job-edit-row {
@@ -221,17 +230,20 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #226981;
-  font-weight: 600;
+  color: var(--toon-petrol);
+  font-weight: 700;
 
   input {
     flex: 1;
-    border: 2px solid #3b6e75;
-    border-radius: 4px;
-    padding: 5px 8px;
+    border: 2px solid rgba(35, 105, 129, 0.25);
+    border-radius: 999px;
+    padding: 6px 12px;
     font-size: 12px;
     font-family: inherit;
     box-sizing: border-box;
+    transition: border-color 0.15s;
+
+    &:focus { outline: none; border-color: var(--toon-petrol); }
   }
 }
 
@@ -243,21 +255,33 @@
 
 .btn {
   border: none;
-  border-radius: 6px;
-  padding: 7px 10px;
+  border-radius: 999px;
+  padding: 9px 16px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 800;
   cursor: pointer;
   color: white;
-  background: #3b6e75;
+  background: linear-gradient(90deg, var(--toon-petrol) 0%, var(--toon-petrol-dark) 100%);
+  box-shadow: 0 3px 10px rgba(35, 105, 129, 0.35);
   font-family: inherit;
+  transition: transform 0.12s, box-shadow 0.12s;
 
+  &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(35, 105, 129, 0.45); }
+  &:active:not(:disabled) { transform: scale(0.97); }
   &:disabled { opacity: 0.5; cursor: default; }
 }
 
-.btn-small { padding: 5px 8px; font-size: 11px; }
-.btn-primary { background: #1e8f5a; }
-.btn-danger { background: #c0392b; }
+.btn-small { padding: 7px 12px; font-size: 11px; }
+.btn-primary {
+  background: linear-gradient(90deg, #1e8f5a 0%, #146b43 100%);
+  box-shadow: 0 3px 10px rgba(30, 143, 90, 0.35);
+  &:hover:not(:disabled) { box-shadow: 0 5px 14px rgba(30, 143, 90, 0.45); }
+}
+.btn-danger {
+  background: linear-gradient(90deg, var(--toon-orange) 0%, #c94716 100%);
+  box-shadow: 0 3px 10px rgba(242, 101, 34, 0.35);
+  &:hover:not(:disabled) { box-shadow: 0 5px 14px rgba(242, 101, 34, 0.45); }
+}
 
 .friend-actions {
   display: flex;
@@ -269,8 +293,9 @@
 .friend-action-msg {
   margin: 0;
   font-size: 11px;
-  border-radius: 6px;
-  padding: 5px 8px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 6px 10px;
 }
 .friend-action-ok { color: #1e6b3c; background: #e8f7ee; }
-.friend-action-error { color: #c0392b; background: #fdecea; }
+.friend-action-error { color: var(--toon-pink-dark); background: #fdecea; }

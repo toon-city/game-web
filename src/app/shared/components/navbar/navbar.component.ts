@@ -29,6 +29,8 @@ const FRIENDS_POLL_MS = 20_000;
     </nav>
   `,
   styles: [`
+    /* Palette/type are the real project identity (see login.component.scss /
+       styles.scss's --toon-* tokens) — same recipe as the other shared panels. */
     :host { display: contents; }
 
     .navbar {
@@ -36,59 +38,62 @@ const FRIENDS_POLL_MS = 20_000;
       right: 16px;
       bottom: 16px;
       display: flex;
-      padding: 10px;
+      padding: 8px;
       gap: 8px;
-      background: white;
-      border: 2px solid #2b4a5a;
-      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: 999px;
       z-index: 150;
       align-items: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 24px rgba(3, 56, 73, 0.28);
     }
 
     .nav-icon {
       height: 36px;
-      width: auto;
+      width: 36px;
+      object-fit: contain;
       cursor: pointer;
-      border-radius: 4px;
-      transition: transform 0.15s;
+      border-radius: 50%;
+      padding: 4px;
+      box-sizing: border-box;
+      transition: transform 0.15s, background 0.15s;
 
-      &:hover { transform: scale(1.1); }
+      &:hover { transform: scale(1.1); background: rgba(35, 105, 129, 0.08); }
     }
 
     .nav-btn {
       position: relative;
-      padding: 6px 14px;
-      border: 2px solid #2b4a5a;
-      border-radius: 8px;
-      background: #fff;
-      color: #2b4a5a;
-      font-weight: 700;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 999px;
+      background: rgba(35, 105, 129, 0.07);
+      color: var(--toon-petrol-dark);
+      font-weight: 800;
       font-size: 13px;
       font-family: 'Nunito', sans-serif;
       cursor: pointer;
+      transition: background 0.12s, transform 0.12s;
 
-      &:hover { background: #e8f4f8; }
-      &:focus { outline: none; box-shadow: 0 0 0 3px rgba(43, 74, 90, 0.12); }
+      &:hover { background: rgba(240, 3, 127, 0.10); color: var(--toon-pink-dark); transform: translateY(-1px); }
+      &:focus { outline: none; box-shadow: 0 0 0 3px rgba(35, 105, 129, 0.15); }
     }
 
     .mairie-btn { overflow: visible; }
 
     .badge {
       position: absolute;
-      top: -7px;
-      right: -7px;
-      min-width: 17px;
-      height: 17px;
-      padding: 0 3px;
+      top: -6px;
+      right: -6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
       border-radius: 999px;
-      background: #EC038D;
+      background: linear-gradient(90deg, var(--toon-pink), var(--toon-pink-dark));
       color: white;
       font-size: 10px;
       font-weight: 800;
-      line-height: 17px;
+      line-height: 18px;
       text-align: center;
-      box-shadow: 0 0 0 2px white;
+      box-shadow: 0 0 0 2px white, 0 2px 6px rgba(240, 3, 127, 0.5);
     }
   `],
 })
