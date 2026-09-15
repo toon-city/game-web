@@ -12,9 +12,10 @@
 
 .edit-overlay {
   position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  // top-left, clear of the status-bar (fixed, top:8px, spans the full
+  // width) — centered at top:16px it sat right underneath/behind that bar.
+  top: 60px;
+  left: 16px;
   z-index: 200;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 24px;
