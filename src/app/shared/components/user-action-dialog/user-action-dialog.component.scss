@@ -24,9 +24,18 @@
   background: rgba(255, 255, 255, 0.97);
   border-radius: 18px;
   box-shadow: 0 12px 32px rgba(3, 56, 73, 0.28);
-  border-top: 5px solid transparent;
-  border-image: linear-gradient(90deg, var(--toon-pink), var(--toon-petrol)) 1;
   overflow: hidden;
+  position: relative;
+
+  /* Gradient top border as a pseudo-element, not border-image — border-image
+     ignores border-radius and squares off the rounded corners. */
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--toon-pink), var(--toon-petrol));
+  }
 }
 
 .header {
