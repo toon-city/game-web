@@ -1,4 +1,4 @@
-<div class="ui-block friends" cdkDrag cdkDragBoundary="body" aria-label="Amis">
+<div class="ui-block friends" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Amis">
   <div class="content">
     <div class="header" cdkDragHandle>
       Amis

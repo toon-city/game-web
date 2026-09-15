@@ -10,6 +10,7 @@ import { debounceTime, distinctUntilChanged, finalize, takeUntil } from 'rxjs/op
 import { HouseInfo, RoomInfo } from '@toon-live/game-types';
 import { HouseService } from '../../../core/services/house.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 import { environment } from '../../../../environments/environment';
 import { CreateHouseDialogComponent } from '../../../features/lobby/components/create-house-dialog/create-house-dialog.component';
 import { EnterHouseDialogComponent } from '../../../features/lobby/components/enter-house-dialog/enter-house-dialog.component';
@@ -41,6 +42,10 @@ export class NavigatorComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private snack = inject(MatSnackBar);
   readonly auth = inject(AuthService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
+  zIndex = signal(100);
 
   filter = signal<FilterMode>('PUBLIC');
   searchQuery = '';
@@ -56,7 +61,12 @@ export class NavigatorComponent implements OnInit, OnDestroy {
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
+  }
+
   ngOnInit(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
     this.searchSubject.pipe(
       debounceTime(250),
       distinctUntilChanged(),

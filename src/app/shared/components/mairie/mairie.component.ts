@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { MairieService } from '../../../core/services/mairie.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { UserListItem } from '../../../core/services/user-list.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 @Component({
@@ -21,6 +22,10 @@ export class MairieComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly mairie = inject(MairieService);
   private readonly inventory = inject(InventoryService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
+  zIndex = signal(100);
 
   readonly myId = computed(() => this.auth.user()?.id ?? '');
 
@@ -53,8 +58,13 @@ export class MairieComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
     this.refreshStatus();
     this.refreshRings();
+  }
+
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
   }
 
   private refreshStatus(): void {

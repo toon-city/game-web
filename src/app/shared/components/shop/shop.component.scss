@@ -348,7 +348,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 110; // above .shop (100)
+  z-index: 110; // fallback only — actual value is zIndex()+10 (inline style), always above the dialog's own dynamic z-index
 }
 
 .confirm-box {

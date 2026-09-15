@@ -6,6 +6,7 @@ import { FriendsStatus } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { FriendService } from '../../../core/services/friend.service';
 import { UserListItem } from '../../../core/services/user-list.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 type FriendsTab = 'friends' | 'requests' | 'search' | 'blocked';
@@ -22,6 +23,10 @@ export class FriendsComponent implements OnInit {
 
   private readonly auth = inject(AuthService);
   private readonly friendService = inject(FriendService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
+  zIndex = signal(100);
 
   readonly myId = () => this.auth.user()?.id ?? '';
 
@@ -37,7 +42,12 @@ export class FriendsComponent implements OnInit {
   infoText = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
     this.refreshStatus();
+  }
+
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
   }
 
   selectTab(tab: FriendsTab): void {

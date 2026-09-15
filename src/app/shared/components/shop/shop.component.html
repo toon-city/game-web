@@ -1,4 +1,4 @@
-<div class="ui-block shop" cdkDrag cdkDragBoundary="body" aria-label="Boutique">
+<div class="ui-block shop" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Boutique">
   <div class="content">
     <div class="header" cdkDragHandle>
       Boutique
@@ -95,7 +95,7 @@
   </div>
 
   @if (confirming(); as c) {
-    <div class="confirm-backdrop" (click)="cancelBuy()">
+    <div class="confirm-backdrop" [style.z-index]="zIndex() + 10" (click)="cancelBuy()">
       <div class="confirm-box" (click)="$event.stopPropagation()">
         <img class="confirm-thumb" [src]="c.item.item.displayImage" [alt]="c.item.item.name" />
         <p class="confirm-text">

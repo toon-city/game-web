@@ -1,4 +1,4 @@
-<div class="ui-block navigator" cdkDrag cdkDragBoundary="body" aria-label="Navigateur">
+<div class="ui-block navigator" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Navigateur">
   <div class="content">
 
     <!-- ── En-tête ──────────────────────────────────────────────────────── -->

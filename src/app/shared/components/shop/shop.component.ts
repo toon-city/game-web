@@ -5,6 +5,7 @@ import { finalize } from 'rxjs/operators';
 import { ShopItemInfo, ShopIdType, CollectionInfo } from '@toon-live/game-types';
 import { ShopService } from '../../../core/services/shop.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 
 type BuyState = { shopItemId: number; option: 'PEZ' | 'KREDS' } | null;
 type ConfirmState = { item: ShopItemInfo; option: 'PEZ' | 'KREDS'; sourceEl: HTMLElement; quantity: number } | null;
@@ -35,6 +36,10 @@ export class ShopComponent implements OnInit {
 
   private readonly shopService = inject(ShopService);
   readonly auth = inject(AuthService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
+  zIndex = signal(100);
 
   readonly shopTabs = SHOP_TABS;
 
@@ -50,7 +55,12 @@ export class ShopComponent implements OnInit {
   confirming        = signal<ConfirmState>(null);
 
   ngOnInit(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
     this.loadCollections();
+  }
+
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
   }
 
   selectShop(shopId: ShopIdType): void {

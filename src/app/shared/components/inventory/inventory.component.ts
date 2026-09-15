@@ -4,6 +4,7 @@ import { NgClass } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 import { UserItemInfo, ItemType } from '@toon-live/game-types';
 import { InventoryService } from '../../../core/services/inventory.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 
 type InvFilter = 'TOUS' | 'MEUBLES' | 'VETEMENTS' | 'DIVERS';
 
@@ -25,6 +26,10 @@ export class InventoryComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
 
   private readonly inventoryService = inject(InventoryService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
+  zIndex = signal(100);
 
   filter = signal<InvFilter>('TOUS');
   readonly filters: InvFilter[] = ['TOUS', 'MEUBLES', 'VETEMENTS', 'DIVERS'];
@@ -38,7 +43,12 @@ export class InventoryComponent implements OnInit {
   selected = signal<UserItemInfo | null>(null);
 
   ngOnInit(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
     this.load(false);
+  }
+
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
   }
 
   setFilter(f: InvFilter): void {

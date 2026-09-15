@@ -5,6 +5,7 @@ import { EquippedItemInfo, UserProfile } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FriendService } from '../../../core/services/friend.service';
+import { DialogStackService } from '../../../core/services/dialog-stack.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 /** Fixed slot layout around the avatar — always these 6 positions, filled or empty. */
@@ -30,6 +31,10 @@ export class ProfileComponent implements OnInit, OnChanges {
 
   private readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly dialogStack = inject(DialogStackService);
+
+  /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
+  zIndex = signal(100);
   private readonly friendService = inject(FriendService);
 
   friendActionText = signal<string | null>(null);
@@ -55,11 +60,21 @@ export class ProfileComponent implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
     this.load();
+  }
+
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['userId'] && !changes['userId'].firstChange) {
+      // Same component instance reused for a different profile (the @if
+      // in app.component.html only toggles on openUserId() being null vs
+      // not) — switching to someone else's profile counts as "displayed"
+      // just as much as the very first open did.
+      this.zIndex.set(this.dialogStack.bringToFront());
       this.editing.set(false);
       this.friendActionText.set(null);
       this.friendActionError.set(null);

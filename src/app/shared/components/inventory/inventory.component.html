@@ -1,4 +1,4 @@
-<div class="ui-block inventory" cdkDrag cdkDragBoundary="body" aria-label="Inventaire">
+<div class="ui-block inventory" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Inventaire">
   <div class="content">
     <div class="header" cdkDragHandle>
       Inventaire
