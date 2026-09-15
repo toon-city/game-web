@@ -60,7 +60,7 @@
                 @if (canBuyPez(item)) {
                   <button class="btn-buy pez"
                           [disabled]="buying()?.shopItemId === item.id"
-                          (click)="buy(item, 'PEZ')" type="button">
+                          (click)="buy(item, 'PEZ', $event)" type="button">
                     {{ item.pezPrice }} pez
                     @if (item.kredBonus > 0) { <span class="bonus">+{{ item.kredBonus }}K</span> }
                   </button>
@@ -68,7 +68,7 @@
                 @if (canBuyKreds(item)) {
                   <button class="btn-buy kreds"
                           [disabled]="buying()?.shopItemId === item.id"
-                          (click)="buy(item, 'KREDS')" type="button">
+                          (click)="buy(item, 'KREDS', $event)" type="button">
                     {{ item.kredPrice }} kreds
                   </button>
                 }
@@ -91,4 +91,40 @@
       }
     </div>
   </div>
+
+  @if (confirming(); as c) {
+    <div class="confirm-backdrop" (click)="cancelBuy()">
+      <div class="confirm-box" (click)="$event.stopPropagation()">
+        <img class="confirm-thumb" [src]="c.item.item.displayImage" [alt]="c.item.item.name" />
+        <p class="confirm-text">
+          Acheter <strong>{{ c.item.item.name }}</strong>
+        </p>
+
+        @if (canPickQuantity(c.item)) {
+          <div class="qty-picker">
+            <button type="button" (click)="adjustQty(-1)" [disabled]="c.quantity <= 1">−</button>
+            <input
+              type="number"
+              [min]="1"
+              [max]="maxQty(c.item)"
+              [value]="c.quantity"
+              (change)="setQty($any($event.target).valueAsNumber)"
+            />
+            <button type="button" (click)="adjustQty(1)" [disabled]="c.quantity >= maxQty(c.item)">+</button>
+          </div>
+          @if (c.item.stock !== null) {
+            <p class="qty-stock-hint">{{ c.item.stock }} en stock</p>
+          }
+        }
+
+        <p class="confirm-text">
+          pour <strong>{{ confirmTotal(c) }} {{ c.option === 'PEZ' ? 'pez' : 'kreds' }}</strong> ?
+        </p>
+        <div class="confirm-actions">
+          <button class="btn-confirm cancel" (click)="cancelBuy()" type="button">Annuler</button>
+          <button class="btn-confirm ok" (click)="confirmBuy()" type="button">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

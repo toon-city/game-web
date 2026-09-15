@@ -7,6 +7,12 @@ import { ShopService } from '../../../core/services/shop.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 type BuyState = { shopItemId: number; option: 'PEZ' | 'KREDS' } | null;
+type ConfirmState = { item: ShopItemInfo; option: 'PEZ' | 'KREDS'; sourceEl: HTMLElement; quantity: number } | null;
+
+/** Sane UI cap for unlimited-stock items — nobody's buying 500 benches in
+ *  one click, and it keeps the request payload (one UserItem/PurchaseLog
+ *  row per unit, server-side) bounded. */
+const MAX_QTY_UNLIMITED = 99;
 
 type ShopTab = { id: ShopIdType; label: string };
 
@@ -41,6 +47,7 @@ export class ShopComponent implements OnInit {
   totalPages        = signal(0);
   buyError          = signal<string | null>(null);
   buying            = signal<BuyState>(null);
+  confirming        = signal<ConfirmState>(null);
 
   ngOnInit(): void {
     this.loadCollections();
@@ -67,15 +74,71 @@ export class ShopComponent implements OnInit {
     if (this.page() < this.totalPages() - 1) { this.page.update(p => p + 1); this.load(); }
   }
 
-  buy(item: ShopItemInfo, option: 'PEZ' | 'KREDS'): void {
+  /** Buy button click — asks for confirmation first, doesn't purchase yet.
+   *  Captures the clicked card's image element now (for the fly-to-inventory
+   *  effect on confirm) since it's still trivially reachable from the event,
+   *  rather than re-querying the DOM after the dialog closes. */
+  buy(item: ShopItemInfo, option: 'PEZ' | 'KREDS', event: MouseEvent): void {
     if (this.buying()) return;
+    const card = (event.currentTarget as HTMLElement).closest('.item');
+    const img = card?.querySelector<HTMLElement>('.item-image img');
+    if (!img) return;
     this.buyError.set(null);
-    this.buying.set({ shopItemId: item.id, option });
+    this.confirming.set({ item, option, sourceEl: img, quantity: 1 });
+  }
 
-    this.shopService.buy(this.activeShop(), item.id, option)
+  cancelBuy(): void {
+    this.confirming.set(null);
+  }
+
+  /** null stock = unlimited, capped at MAX_QTY_UNLIMITED for the UI; a
+   *  limited stock caps the quantity picker exactly there — can't ask for
+   *  more than what's actually available. */
+  maxQty(item: ShopItemInfo): number {
+    return item.stock === null ? MAX_QTY_UNLIMITED : item.stock;
+  }
+
+  /** Item without `possessable` can't stack (equipping N hairstyles makes
+   *  no sense) — same rule the backend clamps to, just surfaced in the UI
+   *  instead of silently discarding whatever quantity was picked. */
+  canPickQuantity(item: ShopItemInfo): boolean {
+    return item.item.possessable && this.maxQty(item) > 1;
+  }
+
+  adjustQty(delta: number): void {
+    this.confirming.update(c => {
+      if (!c) return c;
+      const max = this.maxQty(c.item);
+      const q = Math.min(max, Math.max(1, c.quantity + delta));
+      return { ...c, quantity: q };
+    });
+  }
+
+  setQty(raw: number): void {
+    this.confirming.update(c => {
+      if (!c) return c;
+      const max = this.maxQty(c.item);
+      const q = Math.min(max, Math.max(1, Math.round(raw) || 1));
+      return { ...c, quantity: q };
+    });
+  }
+
+  confirmTotal(c: NonNullable<ConfirmState>): number {
+    return (c.option === 'PEZ' ? c.item.pezPrice! : c.item.kredPrice!) * c.quantity;
+  }
+
+  confirmBuy(): void {
+    const c = this.confirming();
+    if (!c || this.buying()) return;
+    this.confirming.set(null);
+    this.buyError.set(null);
+    this.buying.set({ shopItemId: c.item.id, option: c.option });
+
+    this.shopService.buy(this.activeShop(), c.item.id, c.option, c.quantity)
       .pipe(finalize(() => this.buying.set(null)))
       .subscribe({
         next: () => {
+          this.flyToInventory(c.sourceEl);
           this.auth.refreshUser();
           this.load();
         },
@@ -83,6 +146,48 @@ export class ShopComponent implements OnInit {
           this.buyError.set(err?.error?.message ?? 'Achat échoué. Veuillez réessayer.');
         },
       });
+  }
+
+  /** Clones the bought item's image, flies it from the shop card to the
+   *  navbar's inventory icon, then discards it — purely visual, the real
+   *  inventory update already happened via load()/refreshUser(). */
+  private flyToInventory(sourceEl: HTMLElement): void {
+    const target = document.getElementById('nav-inventory-icon');
+    if (!target) return;
+
+    const srcRect = sourceEl.getBoundingClientRect();
+    const tgtRect = target.getBoundingClientRect();
+
+    const clone = sourceEl.cloneNode(true) as HTMLElement;
+    clone.style.position = 'fixed';
+    clone.style.left = `${srcRect.left}px`;
+    clone.style.top = `${srcRect.top}px`;
+    clone.style.width = `${srcRect.width}px`;
+    clone.style.height = `${srcRect.height}px`;
+    clone.style.margin = '0';
+    clone.style.zIndex = '9999';
+    clone.style.pointerEvents = 'none';
+    clone.style.borderRadius = '8px';
+    clone.style.transition = 'transform 0.55s cubic-bezier(0.55, 0, 0.85, 0.35), opacity 0.55s ease-in';
+    clone.style.willChange = 'transform, opacity';
+    document.body.appendChild(clone);
+
+    const dx = (tgtRect.left + tgtRect.width / 2) - (srcRect.left + srcRect.width / 2);
+    const dy = (tgtRect.top + tgtRect.height / 2) - (srcRect.top + srcRect.height / 2);
+
+    // Force layout before transitioning, otherwise the browser can coalesce
+    // the initial position + the transform into one paint and skip the
+    // animation entirely.
+    void clone.getBoundingClientRect();
+
+    requestAnimationFrame(() => {
+      clone.style.transform = `translate(${dx}px, ${dy}px) scale(0.1)`;
+      clone.style.opacity = '0.15';
+    });
+
+    clone.addEventListener('transitionend', () => clone.remove(), { once: true });
+    // Safety net in case transitionend never fires (e.g. tab backgrounded).
+    setTimeout(() => clone.remove(), 900);
   }
 
   canBuyPez(item: ShopItemInfo): boolean {

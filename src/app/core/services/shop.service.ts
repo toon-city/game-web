@@ -23,10 +23,10 @@ export class ShopService {
     return this.http.get<CollectionInfo[]>(`${this.base}/shops/${shopId}/collections`);
   }
 
-  buy(shopId: ShopIdType, shopItemId: number, option: BuyOption): Observable<UserItemInfo> {
+  buy(shopId: ShopIdType, shopItemId: number, option: BuyOption, quantity = 1): Observable<UserItemInfo> {
     return this.http.post<UserItemInfo>(
       `${this.base}/shops/${shopId}/items/${shopItemId}/buy`,
-      { option }
+      { option, quantity }
     );
   }
 }
