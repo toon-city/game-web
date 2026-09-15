@@ -188,7 +188,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.myId = this.auth.user()!.id;
     this.subscribeToRoomEvents();
 
-    this.loadingView.setMessage('Chargement de la room...');
+    this.loadingView.setMessage('Chargement de la maison...');
     this.loadingView.setProgress(0.3);
 
     // ── Étape 3 : attendre le roomState ──────────────────────────────────────
