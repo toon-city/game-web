@@ -126,6 +126,11 @@
   gap: 6px;
   overflow: auto;
   padding-bottom: 10px;
+  // Without this, flex-wrap's default align-content stretches the wrapped
+  // rows to fill .items' full height (it flex-grows to fill .body) — rows
+  // pack tight now instead of spreading out whenever there's spare vertical
+  // space (few items, tall panel). Shop's own .items already had this.
+  align-content: flex-start;
 
   .item {
     background: #fff;
