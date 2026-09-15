@@ -1,8 +1,10 @@
 /* Chrome (ui-block/content/header/close-button + draggable) and the .body
-   palette are the same shared conventions as mairie/shop — tabs copy
-   shop.component.scss's .shop-tabs, list cards copy mairie's
-   .proposal-block (renamed .list-block, same "ribbon title over a card"
-   read, no raster image). */
+   palette are the same shared conventions as mairie/shop — tabs are a
+   softer pill style (rounder, icon prefix) than shop's file-folder tabs,
+   list cards copy mairie's .proposal-block (renamed .list-block, same
+   "ribbon title over a card" read, no raster image), each row fronted by
+   a head-crop avatar (AvatarBadgeComponent mode="head") instead of bare
+   username text. */
 
 :host {
   display: contents;
@@ -22,8 +24,8 @@
   z-index: 100;
   top: 80px;
   left: 16px;
-  height: 480px;
-  width: 360px;
+  height: 500px;
+  width: 380px;
 }
 
 .content {
@@ -86,42 +88,61 @@
 
 .friends-tabs {
   display: flex;
-  gap: 2px;
-  background: #f1f5f6;
+  gap: 6px;
+  background: #eef5f7;
   border-bottom: 2px solid #3B6E75;
-  padding: 4px 8px 0;
-
-  .friends-tab {
-    position: relative;
-    padding: 6px 10px;
-    border: 2px solid transparent;
-    border-bottom: none;
-    border-radius: 6px 6px 0 0;
-    background: #e0ecef;
-    color: #2b4a5a;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.12s;
-
-    &.active {
-      background: #fff;
-      border-color: #3B6E75;
-      border-bottom-color: #fff;
-      color: #EC038D;
-    }
-    &:hover:not(.active) { background: #d0e0e4; }
-    &:focus { outline: none; }
-  }
+  padding: 8px 8px 8px;
 }
+
+.friends-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: #6d8b96;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(34, 105, 129, 0.15);
+  transition: background 0.12s, color 0.12s, transform 0.1s;
+
+  &.active {
+    background: linear-gradient(135deg, #f5b7d1, #EC038D);
+    color: white;
+    box-shadow: 0 2px 6px rgba(236, 3, 141, 0.35);
+  }
+  &:hover:not(.active) { background: #fce4f0; color: #a33d6f; transform: translateY(-1px); }
+  &:focus { outline: none; }
+}
+
+.tab-icon { font-size: 12px; line-height: 1; }
+
+.tab-count {
+  display: inline-flex;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: rgba(34, 105, 129, 0.12);
+  color: #226981;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 15px;
+  text-align: center;
+  justify-content: center;
+}
+.friends-tab.active .tab-count { background: rgba(255, 255, 255, 0.3); color: white; }
 
 .tab-badge {
   display: inline-flex;
   min-width: 15px;
   height: 15px;
   padding: 0 3px;
-  margin-left: 4px;
   border-radius: 999px;
   background: #EC038D;
   color: white;
@@ -130,7 +151,9 @@
   line-height: 15px;
   text-align: center;
   justify-content: center;
+  box-shadow: 0 0 0 2px white;
 }
+.friends-tab.active .tab-badge { box-shadow: 0 0 0 2px #EC038D; }
 
 .body {
   flex: 1 1 auto;
@@ -168,8 +191,8 @@
   input {
     flex: 1;
     border: 2px solid #3b6e75;
-    border-radius: 4px;
-    padding: 5px 8px;
+    border-radius: 999px;
+    padding: 6px 12px;
     font-size: 12px;
     font-family: inherit;
     box-sizing: border-box;
@@ -179,26 +202,27 @@
 .results {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .result-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 6px;
-  border-radius: 6px;
+  padding: 7px 10px;
+  border-radius: 10px;
   background: white;
   border: 1px solid #8fb9c9;
   font-size: 12px;
+  box-shadow: 0 1px 3px rgba(34, 105, 129, 0.1);
 }
 
-.username { font-weight: bold; color: #226981; }
+.username { font-weight: bold; color: #226981; flex: 1; }
 
 .badge {
   font-size: 10px;
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 999px;
+  padding: 3px 8px;
   background: #eef5f7;
   color: #6d8b96;
   align-self: center;
@@ -209,7 +233,7 @@
 .list-block {
   background: white;
   border: 1px solid #8fb9c9;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(34, 105, 129, 0.12);
 
@@ -230,13 +254,25 @@
 .list-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 10px;
+  padding: 8px 10px;
   font-size: 12px;
   color: #002034;
+  transition: background 0.1s;
 
   & + & { border-top: 1px solid #eaf3f7; }
+  &:hover { background: #f7fbfc; }
+}
+
+.head-badge {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #eef5f7;
+  border: 2px solid #cfe4ec;
+  box-shadow: 0 1px 3px rgba(34, 105, 129, 0.15);
+  overflow: hidden;
 }
 
 .buttons-row {
@@ -247,18 +283,20 @@
 
 .btn {
   border: none;
-  border-radius: 6px;
-  padding: 7px 10px;
+  border-radius: 999px;
+  padding: 7px 12px;
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
   color: white;
   background: #3b6e75;
   font-family: inherit;
+  transition: filter 0.1s;
 
+  &:hover:not(:disabled) { filter: brightness(1.08); }
   &:disabled { opacity: 0.5; cursor: default; }
 }
 
-.btn-small { padding: 5px 8px; font-size: 11px; }
+.btn-small { padding: 6px 10px; font-size: 11px; }
 .btn-primary { background: #1e8f5a; }
 .btn-danger { background: #c0392b; }

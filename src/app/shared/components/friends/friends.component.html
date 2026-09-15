@@ -7,16 +7,21 @@
 
     <div class="friends-tabs">
       <button class="friends-tab" [class.active]="activeTab() === 'friends'" (click)="selectTab('friends')" type="button">
-        Amis @if (status()?.friends?.length) { ({{ status()!.friends.length }}) }
+        <span class="tab-icon">👥</span> Amis
+        @if (status()?.friends?.length) { <span class="tab-count">{{ status()!.friends.length }}</span> }
       </button>
       <button class="friends-tab" [class.active]="activeTab() === 'requests'" (click)="selectTab('requests')" type="button">
-        Demandes
+        <span class="tab-icon">✉️</span> Demandes
         @if (status()?.receivedRequests?.length) {
           <span class="tab-badge">{{ status()!.receivedRequests.length }}</span>
         }
       </button>
-      <button class="friends-tab" [class.active]="activeTab() === 'search'" (click)="selectTab('search')" type="button">Chercher</button>
-      <button class="friends-tab" [class.active]="activeTab() === 'blocked'" (click)="selectTab('blocked')" type="button">Liste noire</button>
+      <button class="friends-tab" [class.active]="activeTab() === 'search'" (click)="selectTab('search')" type="button">
+        <span class="tab-icon">🔍</span> Chercher
+      </button>
+      <button class="friends-tab" [class.active]="activeTab() === 'blocked'" (click)="selectTab('blocked')" type="button">
+        <span class="tab-icon">⛔</span> Liste noire
+      </button>
     </div>
 
     <div class="body">
@@ -34,6 +39,7 @@
           <div class="list-block">
             @for (f of status()!.friends; track f.userId) {
               <div class="list-row">
+                <div class="head-badge"><app-avatar-badge mode="head" [size]="36" [override]="avatarOverride(f)" /></div>
                 <span class="username">{{ f.username }}</span>
                 <button class="btn btn-small" (click)="removeFriend(f.userId)" [disabled]="busy()" type="button">Retirer</button>
               </div>
@@ -48,6 +54,7 @@
             <div class="list-block-title">Demandes reçues</div>
             @for (r of status()!.receivedRequests; track r.id) {
               <div class="list-row">
+                <div class="head-badge"><app-avatar-badge mode="head" [size]="36" [override]="avatarOverride(r)" /></div>
                 <span class="username">{{ r.otherUsername }}</span>
                 <div class="buttons-row">
                   <button class="btn btn-small btn-primary" (click)="accept(r.id)" [disabled]="busy()" type="button">Accepter</button>
@@ -63,6 +70,7 @@
             <div class="list-block-title">Demandes envoyées</div>
             @for (r of status()!.sentRequests; track r.id) {
               <div class="list-row">
+                <div class="head-badge"><app-avatar-badge mode="head" [size]="36" [override]="avatarOverride(r)" /></div>
                 <span class="username">{{ r.otherUsername }}</span>
                 <button class="btn btn-small" (click)="cancelRequest(r.id)" [disabled]="busy()" type="button">Annuler</button>
               </div>
@@ -123,6 +131,7 @@
           <div class="list-block">
             @for (b of status()!.blocked; track b.userId) {
               <div class="list-row">
+                <div class="head-badge"><app-avatar-badge mode="head" [size]="36" [override]="avatarOverride(b)" /></div>
                 <span class="username">{{ b.username }}</span>
                 <button class="btn btn-small" (click)="unblock(b.userId)" [disabled]="busy()" type="button">Débloquer</button>
               </div>

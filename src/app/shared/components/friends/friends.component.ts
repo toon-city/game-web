@@ -6,13 +6,14 @@ import { FriendsStatus } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { FriendService } from '../../../core/services/friend.service';
 import { UserListItem } from '../../../core/services/user-list.service';
+import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 type FriendsTab = 'friends' | 'requests' | 'search' | 'blocked';
 
 @Component({
   selector: 'app-friends',
   standalone: true,
-  imports: [FormsModule, DragDropModule],
+  imports: [FormsModule, DragDropModule, AvatarBadgeComponent],
   templateUrl: './friends.component.html',
   styleUrls: ['./friends.component.scss'],
 })
@@ -55,6 +56,11 @@ export class FriendsComponent implements OnInit {
 
   hasSentRequest(userId: string): boolean {
     return this.status()?.sentRequests.some(r => r.otherUserId === userId) ?? false;
+  }
+
+  /** For AvatarBadgeComponent's [override] — same convention as mairie/just-married. */
+  avatarOverride(entry: { skinColor: number | null; clothing: Record<string, string> }): { skinColor: number; clothing: Record<string, string> } {
+    return { skinColor: entry.skinColor ?? 0xf7ceaf, clothing: entry.clothing };
   }
 
   search(): void {

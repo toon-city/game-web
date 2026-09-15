@@ -10,6 +10,15 @@ const AVATAR_W = 80;
 const AVATAR_H = 120;
 
 /**
+ * Head bounding box within the 80x120 direction-1 (front-facing) frame —
+ * measured from human_hd_1_0.png's trimmed bbox. Badges only ever render
+ * direction 1, so this one crop rect is enough for 'head' mode.
+ */
+const HEAD_BBOX = { x: 17, y: 23, w: 41, h: 42 };
+/** Head fills this fraction of the box — the rest is breathing room so the crop doesn't hug the pixel edges. */
+const HEAD_FILL = 0.82;
+
+/**
  * Small live badge: the current user's real avatar (front-facing, with
  * socle) — hair/hat/tshirt/etc. as actually equipped, not a static picture.
  * Used in the identity card HUD in place of the old assets/images/avatar.png
@@ -22,10 +31,11 @@ const AVATAR_H = 120;
 @Component({
   selector: 'app-avatar-badge',
   standalone: true,
-  template: `<canvas #canvas class="avatar-badge-canvas"></canvas>`,
+  template: `<canvas #canvas class="avatar-badge-canvas" [class.head-crop]="mode === 'head'"></canvas>`,
   styles: [`
     :host { display: block; width: 100%; height: 100%; }
     .avatar-badge-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .avatar-badge-canvas.head-crop { border-radius: 50%; }
   `],
 })
 export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
@@ -39,6 +49,9 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
 
   /** Square canvas size in px — defaults to the identity-card badge's 68px, bump it for a bigger avatar (e.g. the profile page). */
   @Input() size = DEFAULT_BOX;
+
+  /** 'full' = whole body + socle (contain-fit, the original behaviour). 'head' = zoomed/cropped to just the head, circular — for compact list rows (friends, requests, blacklist). */
+  @Input() mode: 'full' | 'head' = 'full';
 
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -69,13 +82,22 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
     // the direction diagram at the top of game-core's Avatar.ts).
     this.avatar = new Avatar(this.app, { showSocle: true, direction: 1 });
 
-    // Fit the 80x120 avatar (+socle, already within that box) into the
-    // square badge without cropping — "contain", not "cover", so the socle
-    // at the feet stays visible.
-    const zoom = Math.min(box / AVATAR_W, box / AVATAR_H);
-    this.avatar.scale.set(zoom);
-    this.avatar.x = (box - AVATAR_W * zoom) / 2;
-    this.avatar.y = (box - AVATAR_H * zoom) / 2;
+    if (this.mode === 'head') {
+      // Cover-crop on the head's own bbox instead of the whole 80x120 frame
+      // — the canvas' render bounds do the clipping, no PIXI mask needed.
+      const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, HEAD_BBOX.h);
+      this.avatar.scale.set(zoom);
+      this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom;
+      this.avatar.y = box / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
+    } else {
+      // Fit the 80x120 avatar (+socle, already within that box) into the
+      // square badge without cropping — "contain", not "cover", so the socle
+      // at the feet stays visible.
+      const zoom = Math.min(box / AVATAR_W, box / AVATAR_H);
+      this.avatar.scale.set(zoom);
+      this.avatar.x = (box - AVATAR_W * zoom) / 2;
+      this.avatar.y = (box - AVATAR_H * zoom) / 2;
+    }
 
     this.app.stage.addChild(this.avatar);
 
