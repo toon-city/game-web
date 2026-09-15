@@ -89,23 +89,23 @@
 
 .friends-tabs {
   display: flex;
-  gap: 6px;
-  padding: 2px 16px 12px;
+  gap: 4px;
+  padding: 2px 16px 10px;
 }
 
 .friends-tab {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 7px 12px;
+  gap: 3px;
+  padding: 5px 9px;
   border: none;
   border-radius: 999px;
   background: rgba(35, 105, 129, 0.07);
   color: var(--toon-petrol);
   font-family: 'Nunito', sans-serif;
   font-weight: 800;
-  font-size: 11px;
+  font-size: 10px;
   cursor: pointer;
   transition: background 0.12s, color 0.12s, transform 0.1s;
 
@@ -118,7 +118,7 @@
   &:focus { outline: none; }
 }
 
-.tab-icon { font-size: 12px; line-height: 1; }
+.tab-icon { font-size: 10px; line-height: 1; }
 
 .tab-count {
   display: inline-flex;
