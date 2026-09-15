@@ -24,8 +24,16 @@ const HEAD_MARGIN = 16;
  * direction 1, so this one crop rect is enough for 'head' mode.
  */
 const HEAD_BBOX = { x: 17, y: 23, w: 41, h: 42 };
-/** Head fills this fraction of the box — the rest is breathing room so the crop doesn't hug the pixel edges. */
-const HEAD_FILL = 0.82;
+/**
+ * Head fills this fraction of the box — the rest is breathing room so the
+ * crop doesn't hug the pixel edges. Was 0.82 — nowhere near enough margin:
+ * the face filled the circle edge-to-edge (chin/forehead touching the ring
+ * border) and any hat got cut off outright, no headroom at all. Verified
+ * against a rendered composite (bare head and with a tall hat) before
+ * landing on this value — see the rest of this file's history for why
+ * that's the bar for touching this crop at all.
+ */
+const HEAD_FILL = 0.5;
 
 /**
  * Small live badge: the current user's real avatar (front-facing, with
