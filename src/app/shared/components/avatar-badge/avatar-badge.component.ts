@@ -105,10 +105,28 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
     if (this.mode === 'head') {
       // Cover-crop on the head's own bbox instead of the whole 80x120 frame
       // — the canvas' render bounds do the clipping, no PIXI mask needed.
-      const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, HEAD_BBOX.h);
+      // HEAD_BBOX alone is the bare head/face (measured off human_hd_1_0.png,
+      // no hat) — same HEAD_MARGIN as 'full' mode extends the window
+      // upward only (bottom edge unchanged) so a hat/hair frame reaching
+      // above it isn't cut off outright.
+      //
+      // centerY must shift UP by half the added margin, not stay on the
+      // original bbox center — center - MARGIN/2, window height BBOX.h+
+      // MARGIN: top = center-effH/2 = BBOX.y-MARGIN (extended), bottom =
+      // center+effH/2 = BBOX.y+BBOX.h (unchanged). An earlier version of
+      // this computed the unshifted center (the -MARGIN/2 and +effH/2
+      // terms canceled out algebraically) — same center, only zoom
+      // shrank, which stretched the window symmetrically in BOTH
+      // directions instead of just up: bottom crept past BBOX.y+BBOX.h
+      // into the shoulders, pushing the head up near the ring border
+      // instead of properly centered.
+      const effH = HEAD_BBOX.h + HEAD_MARGIN;
+      const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, effH);
+      const centerX = HEAD_BBOX.x + HEAD_BBOX.w / 2;
+      const centerY = HEAD_BBOX.y + HEAD_BBOX.h / 2 - HEAD_MARGIN / 2;
       this.avatar.scale.set(zoom);
-      this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom;
-      this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom;
+      this.avatar.x = box / 2 - centerX * zoom;
+      this.avatar.y = boxH / 2 - centerY * zoom;
     } else {
       // Fit the 80x120 avatar (+socle) into the badge without cropping —
       // "contain", not "cover", so the socle at the feet stays visible. A

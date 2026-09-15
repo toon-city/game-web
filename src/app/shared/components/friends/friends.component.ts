@@ -1,12 +1,14 @@
 import { Component, EventEmitter, Output, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { FriendsStatus } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { FriendService } from '../../../core/services/friend.service';
 import { UserListItem } from '../../../core/services/user-list.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 type FriendsTab = 'friends' | 'requests' | 'search' | 'blocked';
@@ -24,6 +26,8 @@ export class FriendsComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly friendService = inject(FriendService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly router = inject(Router);
+  private readonly profileService = inject(ProfileService);
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
@@ -104,6 +108,15 @@ export class FriendsComponent implements OnInit {
 
   removeFriend(userId: string): void {
     this.run(this.friendService.removeFriend(userId), null);
+  }
+
+  joinRoom(roomId: number): void {
+    this.close.emit();
+    this.router.navigate(['/room', roomId]);
+  }
+
+  openProfile(userId: string): void {
+    this.profileService.open(userId);
   }
 
   block(userId: string): void {

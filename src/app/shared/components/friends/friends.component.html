@@ -39,8 +39,16 @@
           <div class="list-block">
             @for (f of status()!.friends; track f.userId) {
               <div class="list-row">
-                <div class="head-badge"><app-avatar-badge mode="head" [size]="36" [override]="avatarOverride(f)" /></div>
-                <span class="username">{{ f.username }}</span>
+                <div class="identity clickable" (click)="openProfile(f.userId)" title="Voir le profil">
+                  <div class="head-badge">
+                    <app-avatar-badge mode="head" [size]="36" [override]="avatarOverride(f)" />
+                    <span class="presence-dot" [class.online]="f.online" [title]="f.online ? 'En ligne' : 'Hors ligne'"></span>
+                  </div>
+                  <span class="username">{{ f.username }}</span>
+                </div>
+                @if (f.online && f.currentRoomId) {
+                  <button class="btn btn-small btn-primary" (click)="joinRoom(f.currentRoomId)" type="button">Rejoindre</button>
+                }
                 <button class="btn btn-small" (click)="removeFriend(f.userId)" [disabled]="busy()" type="button">Retirer</button>
               </div>
             }

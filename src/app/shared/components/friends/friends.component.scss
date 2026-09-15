@@ -263,7 +263,21 @@
   &:hover { background: rgba(35, 105, 129, 0.03); }
 }
 
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+
+  &.clickable {
+    cursor: pointer;
+    &:hover .username { text-decoration: underline; }
+  }
+}
+
 .head-badge {
+  position: relative;
   width: 36px;
   height: 36px;
   flex-shrink: 0;
@@ -271,7 +285,23 @@
   background: linear-gradient(160deg, var(--toon-sky-light), var(--toon-sky));
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(3, 56, 73, 0.18);
-  overflow: hidden;
+  // No overflow:hidden here — AvatarBadgeComponent's own canvas already
+  // clips itself to a circle in 'head' mode (.avatar-badge-canvas.head-crop),
+  // and the presence dot below needs to sit half outside this box's edge.
+}
+
+.presence-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ef4444; // offline — red
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(3, 56, 73, 0.3);
+
+  &.online { background: #22c55e; }
 }
 
 .buttons-row {
