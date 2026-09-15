@@ -38,26 +38,25 @@ export class InventoryComponent implements OnInit {
   selected = signal<UserItemInfo | null>(null);
 
   ngOnInit(): void {
-    this.load();
+    this.load(false);
   }
 
   setFilter(f: InvFilter): void {
     this.filter.set(f);
     this.page.set(0);
-    this.load();
+    this.load(false);
   }
 
-  prevPage(): void {
-    if (this.page() > 0) {
-      this.page.update(p => p - 1);
-      this.load();
-    }
-  }
-
-  nextPage(): void {
-    if (this.page() < this.totalPages() - 1) {
+  /** Bound to .items' (scroll) — infinite scroll instead of prev/next
+   *  buttons: load and append the next page once within one row's height
+   *  of the bottom. */
+  onItemsScroll(event: Event): void {
+    if (this.loading() || this.page() >= this.totalPages() - 1) return;
+    const el = event.target as HTMLElement;
+    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (remaining < 60) {
       this.page.update(p => p + 1);
-      this.load();
+      this.load(true);
     }
   }
 
@@ -110,6 +109,24 @@ export class InventoryComponent implements OnInit {
     // handoff is InventoryService.dragPayload (cross-component, see there).
     event.dataTransfer?.setData('text/plain', 'furniture');
     this.inventoryService.dragPayload = item;
+
+    // Left alone, the native drag image is a snapshot of the whole tile
+    // (white card, shadow, rounded corners) — swap it for just the item's
+    // own sprite, bigger, so it reads as "holding the actual piece" instead
+    // of dragging a UI chip around. A throwaway <img>, positioned off-
+    // screen so it still paints for setDragImage to snapshot, removed right
+    // after — same technique as any custom-drag-image workaround.
+    if (item.item.displayImage && event.dataTransfer) {
+      const ghost = new Image();
+      ghost.src = item.item.displayImage;
+      ghost.style.width = '64px';
+      ghost.style.height = '64px';
+      ghost.style.position = 'fixed';
+      ghost.style.top = '-1000px';
+      document.body.appendChild(ghost);
+      event.dataTransfer.setDragImage(ghost, 32, 32);
+      setTimeout(() => ghost.remove(), 0);
+    }
   }
 
   onDragEnd(): void {
@@ -118,17 +135,17 @@ export class InventoryComponent implements OnInit {
     this.inventoryService.dragPayload = null;
   }
 
-  private load(): void {
+  private load(append: boolean): void {
     this.loading.set(true);
     const typeFilter = FILTER_MAP[this.filter()];
     this.inventoryService.listItems(typeFilter, this.page())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: page => {
-          this.items.set(page.content);
+          this.items.update(list => append ? [...list, ...page.content] : page.content);
           this.totalPages.set(page.totalPages);
         },
-        error: () => this.items.set([]),
+        error: () => { if (!append) this.items.set([]); },
       });
   }
 }

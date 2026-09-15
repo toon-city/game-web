@@ -152,6 +152,9 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   /** instanceId -> catalogue info, for the click-to-preview panel (name/
    *  displayImage aren't on GameCore's own lightweight Furniture model). */
   private furnitureMeta = new Map<number, { name: string; displayImage: string | null; orientation: number }>();
+  /** userId -> last clothing map applied, so avatarAppearance$ can detect a
+   *  category that dropped out (unequip) and actually clear it — see there. */
+  private lastClothingByAvatar = new Map<string, Record<string, string>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private lerpTicker: ((ticker: any) => void) | null = null;
 
@@ -496,9 +499,20 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         const avatar = this.gc?.getAvatar(p.userId);
         if (!avatar) return;
         avatar.setSkinColor(p.skinColor);
+        // p.clothing only lists what's currently equipped — an unequip just
+        // drops that category from the map, it's never sent back with an
+        // empty value. Without diffing against what was last shown, a
+        // category missing from the new payload never gets a changeClothing
+        // call at all, so the old sprite for it just stays on screen
+        // forever (looked like the 'Retirer' button did nothing).
+        const previous = this.lastClothingByAvatar.get(p.userId) ?? {};
+        for (const category of Object.keys(previous)) {
+          if (!(category in p.clothing)) avatar.changeClothing(category);
+        }
         for (const [category, id] of Object.entries(p.clothing)) {
           avatar.changeClothing(category, id);
         }
+        this.lastClothingByAvatar.set(p.userId, p.clothing);
       }),
       // Placement/déplacement/rotation/retrait de meuble — diffusé à toute la
       // room, y compris à soi-même (même principe que l'équipement de
@@ -555,10 +569,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     event.preventDefault();
     const item = this.inventory.dragPayload;
     this.inventory.dragPayload = null;
-    if (item) this.startPlacingFurniture(item);
+    if (!item) return;
+    const pos = this.gc?.screenToHouseLocal(event.clientX, event.clientY) ?? undefined;
+    this.startPlacingFurniture(item, pos);
   }
 
-  private async startPlacingFurniture(item: UserItemInfo): Promise<void> {
+  private async startPlacingFurniture(item: UserItemInfo, spawnPos?: { x: number; y: number }): Promise<void> {
     if (!this.gc || !item.id || item.placedInRoomId) return;
     if (!item.item.spriteKey || !item.item.spritePath) return;
 
@@ -584,7 +600,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     const userItemId = item.id;
     const file = `${item.item.spriteKey}/${item.item.spritePath}`;
-    const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, 400, 300, 1);
+    // Dropped from the inventory: appear where the drag actually ended
+    // instead of a fixed spot the player then had to drag again from
+    // scratch. Click-to-place (no drag) keeps the old default.
+    const { x, y } = spawnPos ?? { x: 400, y: 300 };
+    const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, x, y, 1);
     if (!ghostView || !this.gc) return;
 
     this.gc.setEditMode(true);

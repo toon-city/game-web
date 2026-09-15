@@ -115,7 +115,9 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 0 14px;
+  // Was 0 14px — no bottom padding, same gap as inventory.component.scss
+  // had (both share this .body pattern, mairie/friends already had it right).
+  padding: 0 14px 14px;
 }
 
 .buttons {

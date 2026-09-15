@@ -11,63 +11,66 @@
         }
       </div>
 
-      @if (loading()) {
-        <div class="state-msg">Chargement…</div>
-      } @else if (items().length === 0) {
-        <div class="state-msg">Votre inventaire est vide.</div>
-      } @else {
-        <div class="items">
-          @for (item of items(); track item.id) {
-            <div class="item" [class.equipped]="item.equipped"
-                 [class.placed]="item.placedInRoomId"
-                 [class.selected]="selected()?.id === item.id"
-                 [title]="item.item.name"
-                 [draggable]="canDrag(item)"
-                 (dragstart)="onDragStart($event, item)"
-                 (dragend)="onDragEnd()"
-                 (click)="select(item)">
-              @if (item.item.displayImage) {
-                <img [src]="item.item.displayImage" [alt]="item.item.name" />
+      <div class="main-row">
+        <div class="items-col">
+          @if (loading() && items().length === 0) {
+            <div class="state-msg">Chargement…</div>
+          } @else if (items().length === 0) {
+            <div class="state-msg">Votre inventaire est vide.</div>
+          } @else {
+            <!-- Scroll infini : (scroll) charge/ajoute la page suivante à
+                 l'approche du bas, plus de boutons précédent/suivant. -->
+            <div class="items" (scroll)="onItemsScroll($event)">
+              @for (item of items(); track item.id) {
+                <div class="item" [class.equipped]="item.equipped"
+                     [class.placed]="item.placedInRoomId"
+                     [class.selected]="selected()?.id === item.id"
+                     [title]="item.item.name"
+                     [draggable]="canDrag(item)"
+                     (dragstart)="onDragStart($event, item)"
+                     (dragend)="onDragEnd()"
+                     (click)="select(item)">
+                  @if (item.item.displayImage) {
+                    <img [src]="item.item.displayImage" [alt]="item.item.name" />
+                  }
+                </div>
+              }
+              @if (loading()) {
+                <div class="loading-more">Chargement…</div>
               }
             </div>
           }
         </div>
-      }
 
-      <!-- Aperçu + actions — plus d'action immédiate au clic sur l'icône. -->
-      @if (selected(); as s) {
-        <div class="preview">
-          <div class="preview-thumb">
-            @if (s.item.displayImage) {
-              <img [src]="s.item.displayImage" [alt]="s.item.name" />
-            }
-          </div>
-          <div class="preview-info">
-            <div class="preview-name">{{ s.item.name }}</div>
-            @if (s.item.itemType === 'FURNITURE') {
-              @if (s.placedInRoomId) {
-                <span class="preview-hint">Déjà placé dans cette maison</span>
-              } @else {
-                <button class="btn-action" (click)="place(s)" type="button">Placer</button>
+        <!-- Aperçu + actions — plus d'action immédiate au clic sur l'icône. -->
+        <div class="preview" [class.empty]="!selected()">
+          @if (selected(); as s) {
+            <div class="preview-thumb">
+              @if (s.item.displayImage) {
+                <img [src]="s.item.displayImage" [alt]="s.item.name" />
               }
-            } @else if (s.item.itemType === 'CLOTHING') {
-              @if (s.equipped) {
-                <button class="btn-action" (click)="unequip(s)" type="button">Retirer</button>
-              } @else {
-                <button class="btn-action" (click)="equip(s)" type="button">Porter</button>
+            </div>
+            <div class="preview-info">
+              <div class="preview-name">{{ s.item.name }}</div>
+              @if (s.item.itemType === 'FURNITURE') {
+                @if (s.placedInRoomId) {
+                  <span class="preview-hint">Déjà placé dans cette maison</span>
+                } @else {
+                  <button class="btn-action" (click)="place(s)" type="button">Placer</button>
+                }
+              } @else if (s.item.itemType === 'CLOTHING') {
+                @if (s.equipped) {
+                  <button class="btn-action" (click)="unequip(s)" type="button">Retirer</button>
+                } @else {
+                  <button class="btn-action" (click)="equip(s)" type="button">Porter</button>
+                }
               }
-            }
-          </div>
+            </div>
+          } @else {
+            <span class="preview-placeholder">Sélectionne un objet</span>
+          }
         </div>
-      }
-
-      @if (totalPages() > 1) {
-        <div class="pagination">
-          <button (click)="prevPage()" [disabled]="page() === 0" type="button">‹</button>
-          <span>{{ page() + 1 }} / {{ totalPages() }}</span>
-          <button (click)="nextPage()" [disabled]="page() === totalPages() - 1" type="button">›</button>
-        </div>
-      }
+      </div>
     </div>
   </div>
 </div>

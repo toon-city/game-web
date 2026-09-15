@@ -79,7 +79,7 @@
   top: 80px;
   left: calc(16px + 550px + 16px);
   height: 380px;
-  width: 680px;
+  width: 820px; // was 680px — +140px for the preview sidebar, now to the right instead of stacked below
 }
 
 .body {
@@ -88,7 +88,10 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 0 14px;
+  // Was 0 14px — no bottom padding at all, so anything flex-filling .body's
+  // height (the preview sidebar, .items) sat flush against the panel's
+  // bottom edge. mairie/friends already had this right.
+  padding: 0 14px 14px;
 }
 
 .buttons {
@@ -119,18 +122,32 @@
   }
 }
 
+.main-row {
+  display: flex;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.items-col {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .items {
   flex-grow: 1;
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 6px;
   overflow: auto;
-  padding-bottom: 10px;
-  // Without this, flex-wrap's default align-content stretches the wrapped
-  // rows to fill .items' full height (it flex-grows to fill .body) — rows
-  // pack tight now instead of spreading out whenever there's spare vertical
-  // space (few items, tall panel). Shop's own .items already had this.
-  align-content: flex-start;
+  // Room for the .selected/.equipped ring (a 2px outset box-shadow, not a
+  // real border) on every edge — without this the scroll viewport clipped
+  // it flush on the top row / left-most column.
+  padding: 3px;
 
   .item {
     background: #fff;
@@ -158,60 +175,66 @@
 }
 
 .preview {
-  flex-shrink: 0;
+  flex: 0 0 160px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-top: 10px;
-  padding: 10px;
+  padding: 14px 10px;
   border-radius: 14px;
   background: rgba(35, 105, 129, 0.06);
-  animation: preview-in 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.empty {
+    align-items: center;
+    justify-content: center;
+  }
 }
 
-@keyframes preview-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+.preview-placeholder {
+  font-size: 12px;
+  color: rgba(3, 56, 73, 0.4);
+  font-family: 'Nunito', sans-serif;
+  text-align: center;
 }
 
 .preview-thumb {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  img { width: 40px; height: 40px; object-fit: contain; }
+  img { width: 60px; height: 60px; object-fit: contain; }
 }
 
 .preview-info {
-  flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
 }
 
 .preview-name {
   font-weight: 800;
   font-size: 13px;
   color: var(--toon-petrol-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
 }
 
 .preview-hint {
   font-size: 11px;
   color: rgba(3, 56, 73, 0.5);
   font-style: italic;
+  text-align: center;
 }
 
 .btn-action {
-  align-self: flex-start;
   border: none;
   border-radius: 999px;
   padding: 5px 16px;
@@ -238,32 +261,11 @@
   padding: 20px;
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 8px 0;
+.loading-more {
+  flex: 1 1 100%;
+  text-align: center;
+  padding: 6px 0 2px;
+  font-size: 11px;
   font-family: 'Nunito', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--toon-petrol-dark);
-
-  button {
-    background: rgba(35, 105, 129, 0.07);
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--toon-petrol);
-    transition: background 0.12s;
-
-    &:disabled { opacity: 0.3; cursor: default; }
-    &:hover:not(:disabled) { background: rgba(35, 105, 129, 0.14); }
-  }
+  color: rgba(3, 56, 73, 0.4);
 }
