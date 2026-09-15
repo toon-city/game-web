@@ -45,6 +45,19 @@
                 </span>
               </div>
             </div>
+
+            @if (!isOwner()) {
+              <div class="friend-actions">
+                <button class="btn btn-small btn-primary" (click)="addFriend()" type="button">Ajouter en ami</button>
+                <button class="btn btn-small btn-danger" (click)="blockUser()" type="button">Bloquer</button>
+              </div>
+              @if (friendActionText()) {
+                <p class="friend-action-msg friend-action-ok">{{ friendActionText() }}</p>
+              }
+              @if (friendActionError()) {
+                <p class="friend-action-msg friend-action-error">{{ friendActionError() }}</p>
+              }
+            }
           </div>
 
           <!-- ── Colonne droite : description ─────────────────────────── -->

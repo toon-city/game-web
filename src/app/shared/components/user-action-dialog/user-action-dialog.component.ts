@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ModerationService } from '../../../core/services/moderation.service';
 import { ProfileService } from '../../../core/services/profile.service';
+import { FriendService } from '../../../core/services/friend.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 import { Subscription } from 'rxjs';
 
@@ -44,6 +45,9 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
   private readonly socket = inject(SocketService);
   private readonly moderation = inject(ModerationService);
   private readonly profileService = inject(ProfileService);
+  private readonly friendService = inject(FriendService);
+
+  friendActionText = signal<string | null>(null);
 
   private errorSub?: Subscription;
 
@@ -82,6 +86,20 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
   viewProfile(): void {
     this.profileService.open(this.target.userId);
     this.close.emit();
+  }
+
+  addFriend(): void {
+    this.friendService.sendRequest(this.target.userId).subscribe({
+      next: () => { this.errorText.set(null); this.friendActionText.set('Demande envoyée.'); },
+      error: (err) => this.errorText.set(err?.error?.message ?? 'Échec de la demande.'),
+    });
+  }
+
+  blockUser(): void {
+    this.friendService.block(this.target.userId).subscribe({
+      next: () => { this.errorText.set(null); this.friendActionText.set('Toon bloqué.'); },
+      error: (err) => this.errorText.set(err?.error?.message ?? 'Échec du blocage.'),
+    });
   }
 
   sendMessage(): void {

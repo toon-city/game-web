@@ -14,6 +14,7 @@
     (inventaire)="toggleInv()"
     (boutique)="toggleShop()"
     (mairie)="toggleMairie()"
+    (amis)="toggleAmis()"
   />
 
   @if (navOpen()) {
@@ -30,6 +31,10 @@
 
   @if (mairieOpen()) {
     <app-mairie (close)="mairieOpen.set(false)" />
+  }
+
+  @if (amisOpen()) {
+    <app-friends (close)="amisOpen.set(false)" />
   }
 
   @if (profileService.openUserId(); as profileUserId) {

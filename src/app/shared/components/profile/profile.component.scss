@@ -257,3 +257,20 @@
 
 .btn-small { padding: 5px 8px; font-size: 11px; }
 .btn-primary { background: #1e8f5a; }
+.btn-danger { background: #c0392b; }
+
+.friend-actions {
+  display: flex;
+  gap: 6px;
+
+  .btn { flex: 1; }
+}
+
+.friend-action-msg {
+  margin: 0;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+.friend-action-ok { color: #1e6b3c; background: #e8f7ee; }
+.friend-action-error { color: #c0392b; background: #fdecea; }

@@ -1,0 +1,135 @@
+<div class="ui-block friends" cdkDrag cdkDragBoundary="body" aria-label="Amis">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      Amis
+      <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="friends-tabs">
+      <button class="friends-tab" [class.active]="activeTab() === 'friends'" (click)="selectTab('friends')" type="button">
+        Amis @if (status()?.friends?.length) { ({{ status()!.friends.length }}) }
+      </button>
+      <button class="friends-tab" [class.active]="activeTab() === 'requests'" (click)="selectTab('requests')" type="button">
+        Demandes
+        @if (status()?.receivedRequests?.length) {
+          <span class="tab-badge">{{ status()!.receivedRequests.length }}</span>
+        }
+      </button>
+      <button class="friends-tab" [class.active]="activeTab() === 'search'" (click)="selectTab('search')" type="button">Chercher</button>
+      <button class="friends-tab" [class.active]="activeTab() === 'blocked'" (click)="selectTab('blocked')" type="button">Liste noire</button>
+    </div>
+
+    <div class="body">
+      @if (errorText()) {
+        <p class="msg msg-error">{{ errorText() }}</p>
+      }
+      @if (infoText()) {
+        <p class="msg msg-info">{{ infoText() }}</p>
+      }
+
+      @if (activeTab() === 'friends') {
+        @if (!status()?.friends?.length) {
+          <p class="hint">Vous n'avez pas encore d'amis. Cherchez un toon dans l'onglet "Chercher".</p>
+        } @else {
+          <div class="list-block">
+            @for (f of status()!.friends; track f.userId) {
+              <div class="list-row">
+                <span class="username">{{ f.username }}</span>
+                <button class="btn btn-small" (click)="removeFriend(f.userId)" [disabled]="busy()" type="button">Retirer</button>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      @if (activeTab() === 'requests') {
+        @if (status()?.receivedRequests?.length) {
+          <div class="list-block received">
+            <div class="list-block-title">Demandes reçues</div>
+            @for (r of status()!.receivedRequests; track r.id) {
+              <div class="list-row">
+                <span class="username">{{ r.otherUsername }}</span>
+                <div class="buttons-row">
+                  <button class="btn btn-small btn-primary" (click)="accept(r.id)" [disabled]="busy()" type="button">Accepter</button>
+                  <button class="btn btn-small" (click)="decline(r.id)" [disabled]="busy()" type="button">Refuser</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (status()?.sentRequests?.length) {
+          <div class="list-block">
+            <div class="list-block-title">Demandes envoyées</div>
+            @for (r of status()!.sentRequests; track r.id) {
+              <div class="list-row">
+                <span class="username">{{ r.otherUsername }}</span>
+                <button class="btn btn-small" (click)="cancelRequest(r.id)" [disabled]="busy()" type="button">Annuler</button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (!status()?.receivedRequests?.length && !status()?.sentRequests?.length) {
+          <p class="hint">Aucune demande en attente.</p>
+        }
+      }
+
+      @if (activeTab() === 'search') {
+        <div class="search-row">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="search()"
+            placeholder="Chercher un pseudo…"
+            aria-label="Chercher un toon"
+          />
+          <button class="btn" (click)="search()" type="button">Chercher</button>
+        </div>
+
+        @if (searching()) {
+          <p class="hint">Recherche…</p>
+        } @else if (searchQuery.trim() && searchResults().length === 0) {
+          <p class="hint">Aucun toon trouvé.</p>
+        }
+
+        <div class="results">
+          @for (u of searchResults(); track u.id) {
+            <div class="result-row">
+              <span class="username">{{ u.username }}</span>
+              <div class="buttons-row">
+                @if (isBlocked(u.id)) {
+                  <button class="btn btn-small" (click)="unblock(u.id)" [disabled]="busy()" type="button">Débloquer</button>
+                } @else {
+                  @if (isFriend(u.id)) {
+                    <span class="badge badge-friend">ami(e)</span>
+                  } @else if (hasSentRequest(u.id)) {
+                    <span class="badge">en attente</span>
+                  } @else {
+                    <button class="btn btn-small btn-primary" (click)="sendRequest(u.id)" [disabled]="busy()" type="button">Ajouter</button>
+                  }
+                  <button class="btn btn-small btn-danger" (click)="block(u.id)" [disabled]="busy()" type="button">Bloquer</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (activeTab() === 'blocked') {
+        @if (!status()?.blocked?.length) {
+          <p class="hint">Votre liste noire est vide.</p>
+        } @else {
+          <div class="list-block">
+            @for (b of status()!.blocked; track b.userId) {
+              <div class="list-row">
+                <span class="username">{{ b.username }}</span>
+                <button class="btn btn-small" (click)="unblock(b.userId)" [disabled]="busy()" type="button">Débloquer</button>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

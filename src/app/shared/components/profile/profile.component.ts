@@ -4,6 +4,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { EquippedItemInfo, UserProfile } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
+import { FriendService } from '../../../core/services/friend.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 /** Fixed slot layout around the avatar — always these 6 positions, filled or empty. */
@@ -29,6 +30,10 @@ export class ProfileComponent implements OnInit, OnChanges {
 
   private readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly friendService = inject(FriendService);
+
+  friendActionText = signal<string | null>(null);
+  friendActionError = signal<string | null>(null);
 
   readonly slots = SLOTS;
 
@@ -56,6 +61,8 @@ export class ProfileComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['userId'] && !changes['userId'].firstChange) {
       this.editing.set(false);
+      this.friendActionText.set(null);
+      this.friendActionError.set(null);
       this.load();
     }
   }
@@ -85,6 +92,20 @@ export class ProfileComponent implements OnInit, OnChanges {
         this.profile.update(p => p ? { ...p, description: this.editDescription, job: this.editJob } : p);
       },
       error: () => this.saving.set(false),
+    });
+  }
+
+  addFriend(): void {
+    this.friendService.sendRequest(this.userId).subscribe({
+      next: () => { this.friendActionError.set(null); this.friendActionText.set('Demande envoyée.'); },
+      error: (err) => { this.friendActionText.set(null); this.friendActionError.set(err?.error?.message ?? 'Échec de la demande.'); },
+    });
+  }
+
+  blockUser(): void {
+    this.friendService.block(this.userId).subscribe({
+      next: () => { this.friendActionError.set(null); this.friendActionText.set('Toon bloqué.'); },
+      error: (err) => { this.friendActionText.set(null); this.friendActionError.set(err?.error?.message ?? 'Échec du blocage.'); },
     });
   }
 

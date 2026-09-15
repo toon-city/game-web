@@ -1,7 +1,9 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
 import { MairieService } from '../../../core/services/mairie.service';
+import { FriendService } from '../../../core/services/friend.service';
 
 const MAIRIE_POLL_MS = 20_000;
+const FRIENDS_POLL_MS = 20_000;
 
 @Component({
   selector: 'app-navbar',
@@ -16,6 +18,12 @@ const MAIRIE_POLL_MS = 20_000;
         Mairie
         @if (pendingReceived() > 0) {
           <span class="badge">{{ pendingReceived() > 9 ? '9+' : pendingReceived() }}</span>
+        }
+      </button>
+      <button class="nav-btn mairie-btn" (click)="onAmisClick()" type="button">
+        Amis
+        @if (pendingFriendRequests() > 0) {
+          <span class="badge">{{ pendingFriendRequests() > 9 ? '9+' : pendingFriendRequests() }}</span>
         }
       </button>
     </nav>
@@ -90,22 +98,29 @@ export class NavbarComponent implements OnInit, OnDestroy {
   @Output() inventaire = new EventEmitter<void>();
   @Output() boutique = new EventEmitter<void>();
   @Output() mairie = new EventEmitter<void>();
+  @Output() amis = new EventEmitter<void>();
 
   private readonly mairieService = inject(MairieService);
+  private readonly friendService = inject(FriendService);
 
   /** Self-polled, not passed in — the badge must stay current even while the
    *  Mairie panel itself is closed, same reasoning as StatusBarComponent's
    *  own independent polling for the online-count. */
   pendingReceived = signal(0);
-  private pollInterval?: ReturnType<typeof setInterval>;
+  pendingFriendRequests = signal(0);
+  private mairiePollInterval?: ReturnType<typeof setInterval>;
+  private friendsPollInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     this.refreshPending();
-    this.pollInterval = setInterval(() => this.refreshPending(), MAIRIE_POLL_MS);
+    this.refreshFriendRequests();
+    this.mairiePollInterval = setInterval(() => this.refreshPending(), MAIRIE_POLL_MS);
+    this.friendsPollInterval = setInterval(() => this.refreshFriendRequests(), FRIENDS_POLL_MS);
   }
 
   ngOnDestroy(): void {
-    if (this.pollInterval) clearInterval(this.pollInterval);
+    if (this.mairiePollInterval) clearInterval(this.mairiePollInterval);
+    if (this.friendsPollInterval) clearInterval(this.friendsPollInterval);
   }
 
   onMairieClick(): void {
@@ -115,9 +130,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.refreshPending();
   }
 
+  onAmisClick(): void {
+    this.amis.emit();
+    this.refreshFriendRequests();
+  }
+
   private refreshPending(): void {
     this.mairieService.status().subscribe({
       next: (s) => this.pendingReceived.set(s.receivedProposals.length),
+      error: () => {},
+    });
+  }
+
+  private refreshFriendRequests(): void {
+    this.friendService.status().subscribe({
+      next: (s) => this.pendingFriendRequests.set(s.receivedRequests.length),
       error: () => {},
     });
   }

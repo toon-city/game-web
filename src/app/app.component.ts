@@ -17,6 +17,7 @@ import { UserActionDialogService } from './core/services/user-action-dialog.serv
 import { MairieComponent } from './shared/components/mairie/mairie.component';
 import { ProfileComponent } from './shared/components/profile/profile.component';
 import { ProfileService } from './core/services/profile.service';
+import { FriendsComponent } from './shared/components/friends/friends.component';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +36,7 @@ import { ProfileService } from './core/services/profile.service';
     UserActionDialogComponent,
     MairieComponent,
     ProfileComponent,
+    FriendsComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -50,6 +52,7 @@ export class AppComponent implements OnInit {
   invOpen    = signal(false);
   shopOpen   = signal(false);
   mairieOpen = signal(false);
+  amisOpen   = signal(false);
 
   readonly inRoom = computed(() => this.socket.roomState() !== null);
   readonly roomId = computed(() => this.socket.roomState()?.roomId ?? '');
@@ -58,6 +61,7 @@ export class AppComponent implements OnInit {
   toggleInv():  void { this.invOpen.update(v => !v); }
   toggleShop(): void { this.shopOpen.update(v => !v); }
   toggleMairie(): void { this.mairieOpen.update(v => !v); }
+  toggleAmis(): void { this.amisOpen.update(v => !v); }
   goHome():     void { this.router.navigate(['/lobby']); }
 
   ngOnInit(): void {
