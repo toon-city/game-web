@@ -7,8 +7,13 @@
 
 .dialog-wrapper {
   position: fixed;
-  right: 0;
-  top: 120px;
+  // 348px = GameMenuComponent's .menu-wrapper full rendered width (tab +
+  // #game-menu panel, right:0) when open — measured, not guessed. +16px gap
+  // so this sits just to its left instead of underneath/overlapping it.
+  // The dialog can only be open while the row list is visible, i.e. the
+  // menu is open, so there's no "closed menu" width to also account for.
+  right: 364px;
+  top: 230px; // same top as .menu-wrapper — aligned on the row list's height
   z-index: 70; /* above game-menu (60) — opened from it, should sit in front */
   padding-right: 16px;
   animation: slide-in 0.32s cubic-bezier(0.4, 0, 0.2, 1);
