@@ -24,6 +24,8 @@ const FRIENDS_POLL_MS = 20_000;
         Amis
         @if (pendingFriendRequests() > 0) {
           <span class="badge">{{ pendingFriendRequests() > 9 ? '9+' : pendingFriendRequests() }}</span>
+        } @else if (onlineFriendsCount() > 0) {
+          <span class="badge badge-green">{{ onlineFriendsCount() > 9 ? '9+' : onlineFriendsCount() }}</span>
         }
       </button>
     </nav>
@@ -95,6 +97,11 @@ const FRIENDS_POLL_MS = 20_000;
       text-align: center;
       box-shadow: 0 0 0 2px white, 0 2px 6px rgba(240, 3, 127, 0.5);
     }
+
+    .badge-green {
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      box-shadow: 0 0 0 2px white, 0 2px 6px rgba(22, 163, 74, 0.5);
+    }
   `],
 })
 export class NavbarComponent implements OnInit, OnDestroy {
@@ -113,14 +120,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
    *  own independent polling for the online-count. */
   pendingReceived = signal(0);
   pendingFriendRequests = signal(0);
+  /** Only shown when there's no pending request — see the template's @if/@else if priority. */
+  onlineFriendsCount = signal(0);
   private mairiePollInterval?: ReturnType<typeof setInterval>;
   private friendsPollInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     this.refreshPending();
-    this.refreshFriendRequests();
+    this.refreshFriendsStatus();
     this.mairiePollInterval = setInterval(() => this.refreshPending(), MAIRIE_POLL_MS);
-    this.friendsPollInterval = setInterval(() => this.refreshFriendRequests(), FRIENDS_POLL_MS);
+    this.friendsPollInterval = setInterval(() => this.refreshFriendsStatus(), FRIENDS_POLL_MS);
   }
 
   ngOnDestroy(): void {
@@ -137,7 +146,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   onAmisClick(): void {
     this.amis.emit();
-    this.refreshFriendRequests();
+    this.refreshFriendsStatus();
   }
 
   private refreshPending(): void {
@@ -147,9 +156,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
-  private refreshFriendRequests(): void {
+  private refreshFriendsStatus(): void {
     this.friendService.status().subscribe({
-      next: (s) => this.pendingFriendRequests.set(s.receivedRequests.length),
+      next: (s) => {
+        this.pendingFriendRequests.set(s.receivedRequests.length);
+        this.onlineFriendsCount.set(s.friends.filter(f => f.online).length);
+      },
       error: () => {},
     });
   }

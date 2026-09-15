@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
@@ -13,6 +13,8 @@ import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 type FriendsTab = 'friends' | 'requests' | 'search' | 'blocked';
 
+const STATUS_POLL_MS = 20_000;
+
 @Component({
   selector: 'app-friends',
   standalone: true,
@@ -20,7 +22,7 @@ type FriendsTab = 'friends' | 'requests' | 'search' | 'blocked';
   templateUrl: './friends.component.html',
   styleUrls: ['./friends.component.scss'],
 })
-export class FriendsComponent implements OnInit {
+export class FriendsComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
 
   private readonly auth = inject(AuthService);
@@ -45,9 +47,17 @@ export class FriendsComponent implements OnInit {
   errorText = signal<string | null>(null);
   infoText = signal<string | null>(null);
 
+  /** Keeps online status / "Rejoindre" eligibility current while the panel stays open — same interval as NavbarComponent's own badge polling. */
+  private pollInterval?: ReturnType<typeof setInterval>;
+
   ngOnInit(): void {
     this.zIndex.set(this.dialogStack.bringToFront());
     this.refreshStatus();
+    this.pollInterval = setInterval(() => this.refreshStatus(), STATUS_POLL_MS);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
   onDragStarted(): void {
