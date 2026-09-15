@@ -1,0 +1,259 @@
+/* Chrome (ui-block/content/header/close-button + draggable) is the same
+   shared pattern as inventory/shop/navigator/mairie — no reference material
+   for a profile page existed in the old CMS dump (only mairie/accueil/
+   inscription/appart/menu templates did), so this is designed fresh,
+   consistent with the rest of the app rather than reusing an old style. */
+
+:host {
+  display: contents;
+}
+
+.ui-block {
+  display: block;
+  border: 2px solid #3B6E77;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 5px;
+}
+
+.profile {
+  position: fixed;
+  z-index: 100;
+  top: 80px;
+  left: 16px;
+  height: 460px;
+  width: 520px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #3B6E75;
+  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #EC038D;
+  border-radius: 4px 4px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  padding: 8px 12px;
+  cursor: grab;
+  user-select: none;
+
+  &:active { cursor: grabbing; }
+}
+
+.close-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3B6E75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  padding: 0;
+  flex-shrink: 0;
+
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: #3B6E75;
+    border-radius: 1px;
+    left: 50%;
+    top: 50%;
+    transform-origin: center;
+  }
+  &::before { transform: translate(-50%, -50%) rotate(45deg); }
+  &::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+}
+
+.state-msg {
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  margin-top: 40px;
+}
+
+.layout {
+  display: flex;
+  gap: 18px;
+  height: 100%;
+}
+
+/* ── Colonne gauche ────────────────────────────────────────────────── */
+.left {
+  width: 210px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.avatar-slots {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-center {
+  width: 120px;
+  height: 120px;
+}
+
+.slot {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f4f9fb;
+  border: 2px solid #cfe4ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: contain; }
+}
+
+.slot-empty {
+  color: #b7cdd6;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.slot-tl { top: 4px;  left: 8px; }
+.slot-tr { top: 4px;  right: 8px; }
+.slot-ml { top: 50%;  left: 0;  transform: translateY(-50%); }
+.slot-mr { top: 50%;  right: 0; transform: translateY(-50%); }
+.slot-bl { bottom: 4px; left: 8px; }
+.slot-br { bottom: 4px; right: 8px; }
+
+.basic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #f4f9fb;
+  border-radius: 6px;
+}
+
+.info-label { color: #6d8b96; font-weight: 600; }
+.info-value { color: #226981; font-weight: bold; text-align: right; }
+
+/* ── Colonne droite ────────────────────────────────────────────────── */
+.right {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.description-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #226981;
+}
+
+.description-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+.description-edit {
+  flex: 1 1 auto;
+  min-height: 160px;
+  resize: none;
+  border: 2px solid #3b6e75;
+  border-radius: 6px;
+  padding: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.job-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #226981;
+  font-weight: 600;
+
+  input {
+    flex: 1;
+    border: 2px solid #3b6e75;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+}
+
+.buttons-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  background: #3b6e75;
+  font-family: inherit;
+
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.btn-small { padding: 5px 8px; font-size: 11px; }
+.btn-primary { background: #1e8f5a; }

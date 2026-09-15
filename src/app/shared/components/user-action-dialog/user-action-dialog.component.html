@@ -7,8 +7,11 @@
 
     <div class="body">
       <div class="top">
-        <div class="avatar-preview">
-          <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
+        <div class="avatar-col">
+          <div class="avatar-preview">
+            <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
+          </div>
+          <button class="btn btn-small btn-profile" (click)="viewProfile()" type="button">Voir le profil</button>
         </div>
 
         <div class="mp-block">

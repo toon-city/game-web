@@ -1,0 +1,83 @@
+<div class="ui-block profile" cdkDrag cdkDragBoundary="body" aria-label="Profil">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      Profil
+      <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="body">
+      @if (loading()) {
+        <p class="state-msg">Chargement…</p>
+      } @else if (errorText()) {
+        <p class="state-msg">{{ errorText() }}</p>
+      } @else {
+        @if (profile(); as p) {
+        <div class="layout">
+          <!-- ── Colonne gauche : avatar + slots + infos ─────────────── -->
+          <div class="left">
+            <div class="avatar-slots">
+              @for (s of slots; track s.subType) {
+                <div class="slot" [class]="'slot-' + s.pos" [title]="slotItem(s.subType)?.name ?? s.label">
+                  @if (slotItem(s.subType); as item) {
+                    <img [src]="item.displayImage" [alt]="item.name" />
+                  } @else {
+                    <span class="slot-empty">{{ s.label[0] }}</span>
+                  }
+                </div>
+              }
+              <div class="avatar-center">
+                <app-avatar-badge [size]="120" [override]="avatarOverride()" />
+              </div>
+            </div>
+
+            <div class="basic-info">
+              <div class="info-row"><span class="info-label">Pseudo</span><span class="info-value">{{ p.username }}</span></div>
+              <div class="info-row"><span class="info-label">Inscrit(e) le</span><span class="info-value">{{ formatDate(p.createdAt) }}</span></div>
+              <div class="info-row"><span class="info-label">Métier</span><span class="info-value">{{ p.job || '—' }}</span></div>
+              <div class="info-row">
+                <span class="info-label">Conjoint(e)</span>
+                <span class="info-value">
+                  @if (p.marriedToUsername) {
+                    💍 {{ p.marriedToUsername }}
+                  } @else {
+                    —
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Colonne droite : description ─────────────────────────── -->
+          <div class="right">
+            <div class="description-header">
+              <span class="section-title">Description</span>
+              @if (isOwner() && !editing()) {
+                <button class="btn btn-small" (click)="startEdit()" type="button">Modifier</button>
+              }
+            </div>
+
+            @if (editing()) {
+              <textarea
+                class="description-edit"
+                [(ngModel)]="editDescription"
+                placeholder="Parle un peu de toi…"
+                maxlength="1000"
+              ></textarea>
+              <label class="job-edit-row">
+                Métier
+                <input type="text" [(ngModel)]="editJob" placeholder="ex : Pêcheur" maxlength="64" />
+              </label>
+              <div class="buttons-row">
+                <button class="btn btn-small" (click)="cancelEdit()" type="button">Annuler</button>
+                <button class="btn btn-small btn-primary" (click)="save()" [disabled]="saving()" type="button">Enregistrer</button>
+              </div>
+            } @else {
+              <p class="description-text">{{ p.description || (isOwner() ? 'Aucune description — clique sur Modifier pour en ajouter une.' : 'Ce toon n\'a pas encore de description.') }}</p>
+            }
+          </div>
+        </div>
+        }
+      }
+    </div>
+  </div>
+</div>

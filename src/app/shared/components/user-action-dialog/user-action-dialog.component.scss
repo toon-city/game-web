@@ -64,6 +64,14 @@
   gap: 10px;
 }
 
+.avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
 .avatar-preview {
   width: 68px;
   height: 68px;
@@ -72,6 +80,9 @@
   border-radius: 8px;
   border: 1px solid #d5e2e8;
 }
+
+.btn-small { padding: 4px 6px; font-size: 10px; }
+.btn-profile { background: #226981; width: 68px; }
 
 .mp-block {
   flex: 1;

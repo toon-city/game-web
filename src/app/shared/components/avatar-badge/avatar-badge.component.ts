@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { environment } from '../../../../environments/environment';
 
-const BOX = 68; // matches .ic-avatar's fixed size (identity-card.component.scss)
+const DEFAULT_BOX = 68; // matches .ic-avatar's fixed size (identity-card.component.scss)
 const AVATAR_W = 80;
 const AVATAR_H = 120;
 
@@ -37,6 +37,9 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
    */
   @Input() override?: { skinColor: number; clothing: Record<string, string> };
 
+  /** Square canvas size in px — defaults to the identity-card badge's 68px, bump it for a bigger avatar (e.g. the profile page). */
+  @Input() size = DEFAULT_BOX;
+
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
   private readonly auth = inject(AuthService);
@@ -47,11 +50,12 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
   private equippedSub?: { unsubscribe(): void };
 
   async ngAfterViewInit(): Promise<void> {
+    const box = this.size;
     this.app = new Application();
     await this.app.init({
       canvas: this.canvasRef.nativeElement,
-      width: BOX,
-      height: BOX,
+      width: box,
+      height: box,
       backgroundAlpha: 0,
       antialias: false,
       resolution: window.devicePixelRatio ?? 1,
@@ -68,10 +72,10 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
     // Fit the 80x120 avatar (+socle, already within that box) into the
     // square badge without cropping — "contain", not "cover", so the socle
     // at the feet stays visible.
-    const zoom = Math.min(BOX / AVATAR_W, BOX / AVATAR_H);
+    const zoom = Math.min(box / AVATAR_W, box / AVATAR_H);
     this.avatar.scale.set(zoom);
-    this.avatar.x = (BOX - AVATAR_W * zoom) / 2;
-    this.avatar.y = (BOX - AVATAR_H * zoom) / 2;
+    this.avatar.x = (box - AVATAR_W * zoom) / 2;
+    this.avatar.y = (box - AVATAR_H * zoom) / 2;
 
     this.app.stage.addChild(this.avatar);
 

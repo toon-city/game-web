@@ -32,6 +32,10 @@
     <app-mairie (close)="mairieOpen.set(false)" />
   }
 
+  @if (profileService.openUserId(); as profileUserId) {
+    <app-profile [userId]="profileUserId" (close)="profileService.close()" />
+  }
+
   @if (inRoom()) {
     <app-game-menu />
     <app-chat [roomId]="roomId()" />

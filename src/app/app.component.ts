@@ -15,6 +15,8 @@ import { StatusBarComponent } from './shared/components/status-bar/status-bar.co
 import { UserActionDialogComponent } from './shared/components/user-action-dialog/user-action-dialog.component';
 import { UserActionDialogService } from './core/services/user-action-dialog.service';
 import { MairieComponent } from './shared/components/mairie/mairie.component';
+import { ProfileComponent } from './shared/components/profile/profile.component';
+import { ProfileService } from './core/services/profile.service';
 
 @Component({
   selector: 'app-root',
@@ -32,6 +34,7 @@ import { MairieComponent } from './shared/components/mairie/mairie.component';
     StatusBarComponent,
     UserActionDialogComponent,
     MairieComponent,
+    ProfileComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -41,6 +44,7 @@ export class AppComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly socket = inject(SocketService);
   readonly userActionDialog = inject(UserActionDialogService);
+  readonly profileService = inject(ProfileService);
 
   navOpen    = signal(false);
   invOpen    = signal(false);

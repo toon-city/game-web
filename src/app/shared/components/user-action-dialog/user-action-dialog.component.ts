@@ -4,6 +4,7 @@ import { RoomUser, RoomPermission, RoomErrorPayload } from '@toon-live/game-type
 import { AuthService } from '../../../core/services/auth.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ModerationService } from '../../../core/services/moderation.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 import { Subscription } from 'rxjs';
 
@@ -42,6 +43,7 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly socket = inject(SocketService);
   private readonly moderation = inject(ModerationService);
+  private readonly profileService = inject(ProfileService);
 
   private errorSub?: Subscription;
 
@@ -75,6 +77,11 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.errorSub?.unsubscribe();
+  }
+
+  viewProfile(): void {
+    this.profileService.open(this.target.userId);
+    this.close.emit();
   }
 
   sendMessage(): void {
