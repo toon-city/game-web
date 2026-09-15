@@ -11,18 +11,20 @@
           <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
         </div>
 
-        <div class="mp-block">
-          <textarea
-            class="mp-textarea"
-            [(ngModel)]="message"
-            placeholder="Écrire un message privé…"
-            rows="3"
-            maxlength="300"
-          ></textarea>
-          <button class="btn btn-mp" (click)="sendMessage()" [disabled]="!message.trim()" type="button">
-            Envoyer
-          </button>
-        </div>
+        @if (!isSelf()) {
+          <div class="mp-block">
+            <textarea
+              class="mp-textarea"
+              [(ngModel)]="message"
+              placeholder="Écrire un message privé…"
+              rows="3"
+              maxlength="300"
+            ></textarea>
+            <button class="btn btn-mp" (click)="sendMessage()" [disabled]="!message.trim()" type="button">
+              Envoyer
+            </button>
+          </div>
+        }
       </div>
 
       <div class="actions-row">
