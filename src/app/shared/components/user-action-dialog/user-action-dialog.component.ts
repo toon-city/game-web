@@ -58,18 +58,19 @@ export class UserActionDialogComponent implements OnInit, OnDestroy {
   sending = signal(false);
   errorText = signal<string | null>(null);
 
+  // No self-exception anywhere in this dialog by design — your own row
+  // shows the exact same actions as anyone else's: mp, kick, ban, site-ban.
   readonly myId = computed(() => this.auth.user()?.id ?? '');
   readonly myRank = computed(() => this.auth.user()?.rank ?? 0);
-  readonly isSelf = computed(() => this.target?.userId === this.myId());
 
   /** Room owner or admin — same rule enforced server-side (RoomAccessService). */
   readonly canManageRoom = computed(() => {
     const state = this.socket.roomState();
-    return !this.isSelf() && !!state && state.yourPermission >= RoomPermission.OWN;
+    return !!state && state.yourPermission >= RoomPermission.OWN;
   });
 
   /** Moderator or admin, site-wide — independent of which room you're in. */
-  readonly canSiteBan = computed(() => !this.isSelf() && this.myRank() >= 1);
+  readonly canSiteBan = computed(() => this.myRank() >= 1);
 
   ngOnInit(): void {
     this.errorSub = this.socket.roomError$.subscribe((e: RoomErrorPayload) => {

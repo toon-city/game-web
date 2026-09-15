@@ -11,28 +11,24 @@
           <app-avatar-badge [override]="{ skinColor: target.skinColor, clothing: target.clothing }" />
         </div>
 
-        @if (!isSelf()) {
-          <div class="mp-block">
-            <textarea
-              class="mp-textarea"
-              [(ngModel)]="message"
-              placeholder="Écrire un message privé…"
-              rows="3"
-              maxlength="300"
-            ></textarea>
-            <button class="btn btn-mp" (click)="sendMessage()" [disabled]="!message.trim()" type="button">
-              Envoyer
-            </button>
-          </div>
-        }
+        <div class="mp-block">
+          <textarea
+            class="mp-textarea"
+            [(ngModel)]="message"
+            placeholder="Écrire un message privé…"
+            rows="3"
+            maxlength="300"
+          ></textarea>
+          <button class="btn btn-mp" (click)="sendMessage()" [disabled]="!message.trim()" type="button">
+            Envoyer
+          </button>
+        </div>
       </div>
 
       <div class="actions-row">
         <button class="btn btn-profile" (click)="viewProfile()" type="button">Voir le profil</button>
-        @if (!isSelf()) {
-          <button class="btn btn-profile" (click)="addFriend()" type="button">Ajouter en ami</button>
-          <button class="btn btn-danger" (click)="blockUser()" type="button">Bloquer</button>
-        }
+        <button class="btn btn-profile" (click)="addFriend()" type="button">Ajouter en ami</button>
+        <button class="btn btn-danger" (click)="blockUser()" type="button">Bloquer</button>
       </div>
 
       @if (friendActionText()) {
