@@ -36,10 +36,14 @@ const HEAD_BBOX = { x: 17, y: 23, w: 41, h: 42 };
  * below the chin — reading as "the head fills the whole circle" even
  * though the head itself was sized correctly. Fixed by actually masking to
  * the head's own bbox (see below) instead of relying on canvas-edge
- * clipping; 0.78 is deliberately generous now that nothing but real head
- * pixels can render inside that mask.
+ * clipping. 0.78 (mask == bbox exactly, so this was ALSO the margin) still
+ * read as too big/off-center against the circular ring: the bbox is
+ * 41x42, not square, so equal fill on both axes left unequal margins on
+ * each side — barely noticeable as a rectangle, but obvious once a
+ * constant-radius circle is cropping it. 0.62 leaves real breathing room
+ * on every side.
  */
-const HEAD_FILL = 0.78;
+const HEAD_FILL = 0.62;
 
 /**
  * Small live badge: the current user's real avatar (front-facing, with
