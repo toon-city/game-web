@@ -14,6 +14,7 @@ import { NgFor } from '@angular/common';
 import { RemoteChatMessagePayload, RemotePrivateMessagePayload } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { FriendService } from '../../../../core/services/friend.service';
 import { Subscription } from 'rxjs';
 
 /** Unifies public chat + private messages into one renderable list. */
@@ -40,8 +41,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private socket = inject(SocketService);
   private auth = inject(AuthService);
+  private friendService = inject(FriendService);
   private subs: Subscription[] = [];
   private shouldScrollToBottom = false;
+  /**
+   * Public chat is one STOMP topic broadcast to the whole room — the server
+   * can't filter it per-recipient without a bigger fan-out rewrite, so a
+   * blocked user's messages are hidden here instead. Private messages are
+   * already rejected server-side for a blocked pair (RoomModerationService.
+   * sendPrivateMessage), this is just defense in depth for those (e.g. a
+   * block made mid-session doesn't retroactively hide anything already
+   * rendered, but stops anything new).
+   */
+  private blockedIds = new Set<string>();
 
   messages = signal<ChatEntry[]>([]);
   historyOpen = signal(false);
@@ -57,12 +69,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngOnInit(): void {
+    this.friendService.status().subscribe({
+      next: (s) => { this.blockedIds = new Set(s.blocked.map(b => b.userId)); },
+      error: () => {},
+    });
+
     this.subs.push(
       this.socket.chatMessage$.subscribe((msg: RemoteChatMessagePayload) => {
+        if (this.blockedIds.has(msg.userId)) return;
         this.messages.update((msgs) => [...msgs, { ...msg, isPrivate: false }]);
         this.shouldScrollToBottom = true;
       }),
       this.socket.privateMessage$.subscribe((msg: RemotePrivateMessagePayload) => {
+        if (this.blockedIds.has(msg.fromUserId)) return;
         this.messages.update((msgs) => [...msgs, {
           id: `mp-${msg.fromUserId}-${msg.sentAt}`,
           userId: msg.fromUserId,
