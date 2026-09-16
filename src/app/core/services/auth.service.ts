@@ -103,7 +103,7 @@ export class AuthService {
       toonizLevel: res.toonizLevel ?? 0,
       kreds: res.kreds ?? 0,
       pez: res.pez ?? 1500,
-      skinColor: res.skinColor ?? 0xf7ceaf,
+      skinColor: res.skinColor ?? 0xffffff,
       metierName: res.metierName ?? null,
       metierDailyPez: res.metierDailyPez ?? 0,
     };

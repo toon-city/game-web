@@ -348,7 +348,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     // ── Étape 5 : spawner les avatars ─────────────────────────────────────────
     const myUsername  = this.auth.user()!.username;
-    const mySkinColor = this.auth.user()!.skinColor ?? 0xf7ceaf;
+    const mySkinColor = this.auth.user()!.skinColor ?? 0xffffff;
 
     // Trouver les données du joueur courant dans le roomState
     const myRoomUser = state.users.find(u => u.userId === this.myId);
