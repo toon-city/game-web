@@ -24,7 +24,7 @@
     "@toon-live/game-types": "workspace:*",
     "game-core": "workspace:*",
     "mobx": "^6.13.7",
-    "pixi.js": "8.2.5",
+    "pixi.js": "8.20.1",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.7.5",
     "tslib": "^2.6.0",
