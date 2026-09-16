@@ -262,7 +262,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       canvas,
       background: '#1a3a4a',
       antialias: true,
-      resolution: window.devicePixelRatio ?? 1,
+      // See avatar-badge.component.ts's identical comment: the avatar body
+      // sheet is a 3x source downscaled with no mipmap chain, which showed
+      // visible jaggies on the in-game character at native DPR. Supersampled
+      // here too so the whole scene (not just badges) gets the extra
+      // bilinear-filter samples -- this canvas fills a room-sized viewport,
+      // not the full screen, so the extra framebuffer cost stays modest.
+      resolution: Math.max(2, window.devicePixelRatio ?? 1),
       autoDensity: true,
       resizeTo: parent,
     });
