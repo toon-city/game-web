@@ -6,6 +6,21 @@ import { InventoryService } from '../../../core/services/inventory.service';
 import { environment } from '../../../../environments/environment';
 
 const DEFAULT_BOX = 68; // matches .ic-avatar's fixed size (identity-card.component.scss)
+
+/**
+ * Confirmed live (getLocalBounds()/`.width` logged from a running badge):
+ * Avatar's own children are ALREADY normalized to this logical 80x120 box
+ * regardless of the underlying texture sheet's resolution/"scale" --
+ * PixiJS's spritesheet loader applies that resolution when building each
+ * Texture, so Sprite/Container width math (including Avatar's own
+ * `this.width = 80` in its constructor) stays resolution-independent.
+ * `avatar.scale.set(zoom)` below multiplies that ALREADY-normalized 80x120
+ * box, not raw texture pixels -- so these constants do NOT need to change
+ * when the body sheet's resolution changes (tried bumping them to
+ * 240x360/125x127 to "match the 3x re-export", measured the result live,
+ * or that was already resolution-independent and the change just made
+ * every badge render at 1/3 the intended size instead of fixing anything).
+ */
 const AVATAR_W = 80;
 const AVATAR_H = 120;
 /**
