@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
 import { RoomPermission } from '@toon-live/game-types';
 import { SocketService } from '../../../core/services/socket.service';
-import { FurniturePreviewTarget } from '../../../core/services/furniture-preview.service';
+import { FurniturePreviewService, FurniturePreviewTarget } from '../../../core/services/furniture-preview.service';
 
 /**
  * Opened by clicking (outside edit mode) or placing/moving/rotating/clicking
@@ -24,6 +24,7 @@ export class FurniturePreviewComponent {
   @Output() close = new EventEmitter<void>();
 
   private readonly socket = inject(SocketService);
+  private readonly furniturePreview = inject(FurniturePreviewService);
 
   /** Room owner or admin — same rule enforced server-side (RoomAccessService). */
   readonly canManage = computed(() => {
@@ -32,9 +33,16 @@ export class FurniturePreviewComponent {
   });
 
   rotate(): void {
-    // Same 4-step cycle as the old right-click handler (FurnitureView.onRightClick).
+    // Same 4-step cycle as the right-click handler (FurnitureView.onRightClick).
+    // Goes through GameCore (FurniturePreviewService.onRotateRequest), not a
+    // direct sendFurnitureRotate: rotating needs a real collision check
+    // against the piece's actual footprint in the new orientation
+    // (FurnitureController.rotateFurniture), which only the live Pixi scene
+    // can do — this component has no way to validate it itself. The network
+    // send happens after, only on success (GameCanvasComponent's
+    // 'furniture:rotated' listener), not here.
     const next = (this.target.orientation % 4) + 1;
-    this.socket.sendFurnitureRotate(this.roomId, { instanceId: String(this.target.instanceId), orientation: next });
+    this.furniturePreview.requestRotate(this.target.instanceId, next);
   }
 
   take(): void {

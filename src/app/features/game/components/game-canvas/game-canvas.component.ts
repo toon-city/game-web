@@ -160,6 +160,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
    *  serveur — sert à ne rafraîchir l'inventaire que sur mes propres
    *  placements (voir furniturePlace$). */
   private myPlacements = new Set<number>();
+  /** userItemIds mid-first-placement (a ghost dragged from the inventory,
+   *  not yet dropped) — the global 'furniture:placed' listener uses this to
+   *  skip sending a furniture-move for a piece startPlacingFurniture's own
+   *  scoped listener is about to send a furniture-place for instead; the
+   *  server doesn't even know this instance is in the room yet. */
+  private pendingNewPlacements = new Set<number>();
   /** userId -> last clothing map applied, so avatarAppearance$ can detect a
    *  category that dropped out (unequip) and actually clear it — see there. */
   private lastClothingByAvatar = new Map<string, Record<string, string>>();
@@ -402,6 +408,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.inventory.currentRoomId = this.roomId;
     this.inventory.onClothingChanged = (roomId) => this.socket.clothingRefresh(roomId);
     this.inventory.onPlaceFurniture = (item) => this.startPlacingFurniture(item);
+    this.furniturePreview.onRotateRequest = (instanceId, orientation) => this.gc?.rotateFurniture(instanceId, orientation);
 
     this.gc.on('avatar:walking', ({ id, avatar, direction }) => {
       if (id === this.myId) {
@@ -432,6 +439,34 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // check needed here.
     this.gc.on('zone:click', ({ zoneType, zoneIndex }) => {
       this.zoneTexturePicker.open({ zoneType, zoneIndex });
+    });
+
+    // Drag-moving an ALREADY-placed piece around the room, as opposed to
+    // dropping a fresh one from the inventory (that case is handled — and
+    // sends its own furniture-place — entirely inside startPlacingFurniture,
+    // which tracks its own pendingNewPlacements while a ghost is in flight;
+    // skipping it here is what stops this from ALSO sending a bogus
+    // furniture-move for a piece the server doesn't know about yet). Was
+    // completely unwired before — FurnitureController.endDrag already
+    // collision-checks and moves the piece locally, but nothing told the
+    // server, so any move of an existing piece reverted on the next reload.
+    this.gc.on('furniture:placed', ({ view }) => {
+      const instanceId = view.model.id;
+      if (this.pendingNewPlacements.has(instanceId)) return;
+      const { x, y } = view.model;
+      this.socket.sendFurnitureMove(this.roomId, { instanceId: String(instanceId), x, y });
+    });
+
+    // Right-click rotation (FurnitureView.onRightClick) and the preview
+    // panel's rotate button (via FurniturePreviewService.onRotateRequest,
+    // wired below) both funnel through FurnitureController.rotateFurniture,
+    // which only emits this on a NON-silent, actually-accepted (collision-
+    // checked) rotation — applyRemoteFurnitureRotation (the echo path,
+    // below) never does, so this can't ping-pong the same rotation back to
+    // the server. Was completely unwired before, same gap as the move
+    // above: the rotation happened locally and nowhere else.
+    this.gc.on('furniture:rotated', ({ view, orientation }) => {
+      this.socket.sendFurnitureRotate(this.roomId, { instanceId: String(view.model.id), orientation });
     });
 
     // The world can host avatars from here on. Reconcile against the live room
@@ -593,7 +628,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         this.gc?.moveFurniture(Number(p.instanceId), p.x, p.y);
       }),
       this.socket.furnitureRotate$.subscribe((p) => {
-        this.gc?.rotateFurniture(Number(p.instanceId), p.orientation);
+        // Silent: this is a confirmation (including the echo of our own
+        // request), not a fresh local one — see applyRemoteFurnitureRotation's
+        // own comment for why re-emitting here would ping-pong it right back
+        // to the server on every client that receives this broadcast.
+        this.gc?.applyRemoteFurnitureRotation(Number(p.instanceId), p.orientation);
         const meta = this.furnitureMeta.get(Number(p.instanceId));
         if (meta) meta.orientation = p.orientation;
         this.furniturePreview.updateOrientation(Number(p.instanceId), p.orientation);
@@ -679,13 +718,18 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
 
     const userItemId = item.id;
+    // Marks this instance as "not the server's problem yet" for the global
+    // furniture:placed listener (see its own comment) — set before the ghost
+    // even spawns, since a click-to-place with zero movement can fire
+    // 'furniture:placed' synchronously within spawnFurniture's own await chain.
+    this.pendingNewPlacements.add(userItemId);
     const file = `${item.item.spriteKey}/${item.item.spritePath}`;
     // Dropped from the inventory: appear where the drag actually ended
     // instead of a fixed spot the player then had to drag again from
     // scratch. Click-to-place (no drag) keeps the old default.
     const { x, y } = spawnPos ?? { x: 400, y: 300 };
     const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, x, y, 1);
-    if (!ghostView || !this.gc) return;
+    if (!ghostView || !this.gc) { this.pendingNewPlacements.delete(userItemId); return; }
 
     // Seed furnitureMeta right away instead of waiting for the server's
     // furniturePlace$ echo — the ghost's own confirm click can fire
@@ -701,6 +745,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // (guard either found it on, or just switched it on), no reason to snap
     // back off right after one piece.
     const cleanup = () => {
+      this.pendingNewPlacements.delete(userItemId);
       this.gc?.off('furniture:placed', onPlaced);
       document.removeEventListener('keydown', onKeyDown);
       errorSub.unsubscribe();
@@ -783,6 +828,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.stopPan();
     this.inventory.onClothingChanged = null;
     this.inventory.onPlaceFurniture = null;
+    this.furniturePreview.onRotateRequest = null;
     this.inventory.currentRoomId = null;
     this.subs.forEach((s) => s.unsubscribe());
     this.walkTimers.forEach((t) => clearTimeout(t));
