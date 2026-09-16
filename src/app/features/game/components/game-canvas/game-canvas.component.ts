@@ -271,9 +271,10 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       // sheet is a 3x source downscaled, which showed visible jaggies on the
       // in-game character at native DPR. Supersampled here too so the whole
       // scene (not just badges) gets the extra bilinear-filter samples.
-      // Stays at 2 rather than the badges' 3: this canvas fills the whole
-      // room viewport, so each extra step costs real framebuffer, and the
-      // remaining ~1.5x minification is what the mipmap chain
+      // 2 and not more, for the same reason as the badge (its comment has
+      // the measurements): above 2 the browser's own bilinear downscale of
+      // the canvas stops being a correct box filter and adds aliasing back.
+      // The ~1.5x minification left over is what the mipmap chain
       // (BaseTextureLoader.enableMipmaps) is there to handle.
       resolution: Math.max(2, window.devicePixelRatio ?? 1),
       autoDensity: true,

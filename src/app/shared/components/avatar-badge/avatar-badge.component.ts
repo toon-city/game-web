@@ -147,13 +147,18 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       // source (toon.json meta.scale) drawn into a small box (68-159px), so
       // at 1x DPR every output pixel had to stand in for ~3 source texels
       // and bilinear minification left visible staircase jaggies on curved
-      // edges (confirmed live, zoomed screenshot). 3 rather than 2 because
-      // it matches that source scale: the badge zoom is ~0.85-2, so at
-      // resolution 3 the sheet lands at roughly one texel per backing pixel
-      // and there is almost nothing left to minify. Trivial at this canvas
-      // size (a 159px badge backs 477x477). Mipmaps (BaseTextureLoader.
-      // enableMipmaps) cover whatever minification is left.
-      resolution: Math.max(3, window.devicePixelRatio ?? 1),
+      // edges (confirmed live, zoomed screenshot).
+      //
+      // Exactly 2, not more. The canvas is stretched to its box by CSS
+      // (`width: 100%` below), so the browser is the one doing the final
+      // downscale, and it does that with a plain bilinear filter -- which is
+      // a correct box filter at 2:1 and only at 2:1. At 3:1 it samples 4 of
+      // every 9 backing pixels and throws the rest away, which put a harsh
+      // speckled, half-broken outline on the avatar: measurably worse than
+      // no supersampling at all (hard edge steps over the badge, DPR 1:
+      // 222 at resolution 2, 358 at resolution 3, 371 with no mipmaps).
+      // Anything above 2 needs the canvas sized in real pixels first.
+      resolution: Math.max(2, window.devicePixelRatio ?? 1),
       autoDensity: true,
     });
     if (this.destroyed) { this.app.destroy({}, { children: true }); this.app = null; return; }
