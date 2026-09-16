@@ -367,7 +367,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // Trouver les données du joueur courant dans le roomState
     const myRoomUser = state.users.find(u => u.userId === this.myId);
 
-    this.gc.spawnAvatar(this.myId, 300, 300, {
+    // Server now spawns joiners at the room's own door (RoomStateService.join /
+    // HouseGeometry — this.x/y from the socket handshake, not a client guess).
+    // 300,300 stays only as a last-resort fallback for the (shouldn't-happen)
+    // case where our own entry is somehow missing from the snapshot.
+    this.gc.spawnAvatar(this.myId, myRoomUser?.x ?? 300, myRoomUser?.y ?? 300, {
       // The socle (pedestal/shadow base) is a preview-badge device — see
       // AvatarBadgeComponent (identity-card, profile) — not something an
       // in-room character standing/walking around a house should show.
