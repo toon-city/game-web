@@ -152,6 +152,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   /** instanceId -> catalogue info, for the click-to-preview panel (name/
    *  displayImage aren't on GameCore's own lightweight Furniture model). */
   private furnitureMeta = new Map<number, { name: string; displayImage: string | null; orientation: number }>();
+
+  /** userItemIds dont J'AI envoyé le placement et dont j'attends l'écho
+   *  serveur — sert à ne rafraîchir l'inventaire que sur mes propres
+   *  placements (voir furniturePlace$). */
+  private myPlacements = new Set<number>();
   /** userId -> last clothing map applied, so avatarAppearance$ can detect a
    *  category that dropped out (unequip) and actually clear it — see there. */
   private lastClothingByAvatar = new Map<string, Record<string, string>>();
@@ -263,11 +268,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       background: '#1a3a4a',
       antialias: true,
       // See avatar-badge.component.ts's identical comment: the avatar body
-      // sheet is a 3x source downscaled with no mipmap chain, which showed
-      // visible jaggies on the in-game character at native DPR. Supersampled
-      // here too so the whole scene (not just badges) gets the extra
-      // bilinear-filter samples -- this canvas fills a room-sized viewport,
-      // not the full screen, so the extra framebuffer cost stays modest.
+      // sheet is a 3x source downscaled, which showed visible jaggies on the
+      // in-game character at native DPR. Supersampled here too so the whole
+      // scene (not just badges) gets the extra bilinear-filter samples.
+      // Stays at 2 rather than the badges' 3: this canvas fills the whole
+      // room viewport, so each extra step costs real framebuffer, and the
+      // remaining ~1.5x minification is what the mipmap chain
+      // (BaseTextureLoader.enableMipmaps) is there to handle.
       resolution: Math.max(2, window.devicePixelRatio ?? 1),
       autoDensity: true,
       resizeTo: parent,
@@ -473,6 +480,16 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         this.reconcileAvatars();
       }),
       this.socket.remoteMove$.subscribe((p) => {
+        // /topic/room/{id}/avatar-move is a plain broadcast, so the server
+        // sends every move straight back to whoever made it (confirmed live:
+        // 16/16 avatar-move frames received while walking alone in a room
+        // carried my own userId). Applying that echo to my own avatar made
+        // the lerp below drag it back toward an already-stale server position
+        // while changeDirection() overwrote my current facing with the one
+        // from a packet or two ago — that is the "the toon faces somewhere
+        // unrelated to where it's actually walking" bug. My own avatar is
+        // authoritative locally; only other players' come off the wire.
+        if (p.userId === this.myId) return;
         const remoteAvatar = this.gc?.getAvatar(p.userId);
         if (!remoteAvatar) return;
         this.remoteTargets.set(p.userId, { x: p.x, y: p.y });
@@ -487,6 +504,9 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         }, 600));
       }),
       this.socket.remoteStop$.subscribe((p) => {
+        // Same self-echo as avatar-move above: my own stop comes back to me
+        // and would cut the walk animation while I'm still holding a key.
+        if (p.userId === this.myId) return;
         clearTimeout(this.walkTimers.get(p.userId));
         this.walkTimers.delete(p.userId);
         this.gc?.getAvatar(p.userId)?.stopWalk();
@@ -534,6 +554,14 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
           p.x, p.y, p.orientation,
         );
         this.furnitureMeta.set(Number(p.instanceId), { name: p.name, displayImage: p.displayImage, orientation: p.orientation });
+        // Le serveur vient de poser `placed_in_room_id` : l'item a quitté
+        // l'inventaire. Le panneau reste ouvert pendant un glisser-déposer,
+        // donc il faut le lui dire (voir InventoryService.itemsChanged$).
+        // Restreint aux pièces que J'AI posées : le placement d'un autre
+        // joueur ne change rien à mon inventaire.
+        if (this.myPlacements.delete(Number(p.instanceId))) {
+          this.inventory.itemsChanged$.next();
+        }
       }),
       this.socket.furnitureMove$.subscribe((p) => {
         this.gc?.moveFurniture(Number(p.instanceId), p.x, p.y);
@@ -547,6 +575,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.socket.furnitureRemove$.subscribe((p) => {
         this.gc?.removeFurniture(Number(p.instanceId));
         this.furnitureMeta.delete(Number(p.instanceId));
+        // "Prendre" remet la pièce dans l'inventaire de son propriétaire.
+        // L'écho ne dit pas qui c'est, donc on recharge dans tous les cas —
+        // ça ne coûte une requête que si le panneau est ouvert (personne
+        // n'est abonné à itemsChanged$ sinon).
+        this.inventory.itemsChanged$.next();
         // A "prendre" on the piece currently shown in the preview panel
         // (or a remove from anyone else while it's open) should close it —
         // nothing left to take, keeping it open would offer a dead action.
@@ -638,6 +671,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     const onPlaced = ({ view }: { view: FurnitureView }) => {
       if (view !== ghostView) return; // un autre meuble vient d'être déplacé, pas le nôtre
       const { x, y, orientation } = view.model;
+      this.myPlacements.add(userItemId);
       this.socket.sendFurniturePlace(this.roomId, { userItemId, x, y, orientation });
       this.gc?.removeFurniture(userItemId);
       cleanup();
@@ -658,6 +692,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // n'arrive jamais), mais silencieusement : le joueur ne savait pas pourquoi.
     const errorSub = this.socket.roomError$.subscribe((e: RoomErrorPayload) => {
       if (e.code !== 'FURNITURE_ACTION_FAILED') return;
+      this.myPlacements.delete(userItemId); // refus serveur : aucun écho ne viendra
       this.gc?.removeFurniture(userItemId);
       this.furnitureMeta.delete(userItemId); // never actually placed — drop the meta seeded above
       if (this.furniturePreview.target()?.instanceId === userItemId) this.furniturePreview.close();

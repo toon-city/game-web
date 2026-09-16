@@ -28,6 +28,15 @@ export class InventoryService {
   readonly equippedChanged$ = new Subject<void>();
 
   /**
+   * Émis quand le contenu même de l'inventaire a changé côté serveur sans
+   * passer par equip/unequip : poser un meuble dans une room le retire de
+   * l'inventaire (`placed_in_room_id`, exclu par UserItemRepository.
+   * findInventory), le reprendre l'y remet. Sans ça le panneau gardait la
+   * liste chargée à son ouverture et le meuble posé y restait visible.
+   */
+  readonly itemsChanged$ = new Subject<void>();
+
+  /**
    * Défini par GameCanvasComponent pendant qu'on est en room : démarre le
    * placement (fantôme + drag) d'un meuble depuis l'inventaire. Même
    * indirection que onClothingChanged — le panneau inventaire est un overlay

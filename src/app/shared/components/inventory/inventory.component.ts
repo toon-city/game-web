@@ -1,6 +1,7 @@
-import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { UserItemInfo, ItemType } from '@toon-live/game-types';
 import { InventoryService } from '../../../core/services/inventory.service';
@@ -22,7 +23,7 @@ const FILTER_MAP: Record<InvFilter, ItemType | undefined> = {
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.scss'],
 })
-export class InventoryComponent implements OnInit {
+export class InventoryComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
 
   private readonly inventoryService = inject(InventoryService);
@@ -42,9 +43,28 @@ export class InventoryComponent implements OnInit {
   /** Item shown in the preview area — click selects, it no longer acts immediately. */
   selected = signal<UserItemInfo | null>(null);
 
+  private itemsSub?: Subscription;
+
   ngOnInit(): void {
     this.zIndex.set(this.dialogStack.bringToFront());
     this.load(false);
+    // Le panneau reste ouvert pendant qu'on glisse un meuble vers la room
+    // (le drop ne le ferme pas), donc rien ne le rechargeait : le meuble
+    // posé restait listé alors que le serveur ne le renvoie plus. On revient
+    // page 0 — c'est aussi la page où vit l'item qu'on vient de poser (tri
+    // par acquiredAt desc) et l'infinite scroll repartira de là.
+    this.itemsSub = this.inventoryService.itemsChanged$.subscribe(() => {
+      this.page.set(0);
+      // L'item qui vient de partir dans la room n'est plus listable : garder
+      // l'aperçu ouvert dessus laisserait un bouton "Placer" qui ne peut plus
+      // rien faire.
+      this.selected.set(null);
+      this.load(false);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.itemsSub?.unsubscribe();
   }
 
   onDragStarted(): void {

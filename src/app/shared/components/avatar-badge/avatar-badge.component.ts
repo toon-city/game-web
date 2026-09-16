@@ -144,14 +144,16 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       backgroundAlpha: 0,
       antialias: true,
       // Supersampled above the real device DPR: the body sheet is a 3x
-      // source (toon.json meta.scale) downscaled into a small box (68-159px)
-      // with no mipmap chain (Pixi doesn't auto-generate one) -- plain
-      // bilinear minification at 1x DPR left visible staircase jaggies on
-      // curved edges (confirmed live, zoomed screenshot). More backing
-      // pixels per CSS pixel gives the bilinear filter more samples to
-      // average, which stands in for real mip-mapped AA here. Cheap at this
-      // canvas size.
-      resolution: Math.max(2, window.devicePixelRatio ?? 1),
+      // source (toon.json meta.scale) drawn into a small box (68-159px), so
+      // at 1x DPR every output pixel had to stand in for ~3 source texels
+      // and bilinear minification left visible staircase jaggies on curved
+      // edges (confirmed live, zoomed screenshot). 3 rather than 2 because
+      // it matches that source scale: the badge zoom is ~0.85-2, so at
+      // resolution 3 the sheet lands at roughly one texel per backing pixel
+      // and there is almost nothing left to minify. Trivial at this canvas
+      // size (a 159px badge backs 477x477). Mipmaps (BaseTextureLoader.
+      // enableMipmaps) cover whatever minification is left.
+      resolution: Math.max(3, window.devicePixelRatio ?? 1),
       autoDensity: true,
     });
     if (this.destroyed) { this.app.destroy({}, { children: true }); this.app = null; return; }
