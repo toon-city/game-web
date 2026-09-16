@@ -13,12 +13,16 @@ import {
   RemoteFurniturePlacePayload,
   RemoteFurnitureRemovePayload,
   RemoteFurnitureRotatePayload,
+  RemoteTextureApplyPayload,
+  RemoteTextureRemovePayload,
   RemotePrivateMessagePayload,
   AvatarAppearancePayload,
   FurniturePlacePayload,
   FurnitureMovePayload,
   FurnitureRotatePayload,
   FurnitureRemovePayload,
+  TextureApplyPayload,
+  TextureRemovePayload,
   KickedPayload,
   RoomKickPayload,
   RoomBanPayload,
@@ -55,6 +59,8 @@ export class SocketService implements OnDestroy {
   readonly furnitureMove$ = new Subject<RemoteFurnitureMovePayload>();
   readonly furnitureRotate$ = new Subject<RemoteFurnitureRotatePayload>();
   readonly furnitureRemove$ = new Subject<RemoteFurnitureRemovePayload>();
+  readonly textureApply$ = new Subject<RemoteTextureApplyPayload>();
+  readonly textureRemove$ = new Subject<RemoteTextureRemovePayload>();
   readonly privateMessage$ = new Subject<RemotePrivateMessagePayload>();
 
   constructor(private auth: AuthService) {}
@@ -139,6 +145,8 @@ export class SocketService implements OnDestroy {
       this.gs.on('remoteFurnitureMove', (p) => this.furnitureMove$.next(p)),
       this.gs.on('remoteFurnitureRotate', (p) => this.furnitureRotate$.next(p)),
       this.gs.on('remoteFurnitureRemove', (p) => this.furnitureRemove$.next(p)),
+      this.gs.on('remoteTextureApply', (p) => this.textureApply$.next(p)),
+      this.gs.on('remoteTextureRemove', (p) => this.textureRemove$.next(p)),
       this.gs.on('remotePrivateMessage', (p) => this.privateMessage$.next(p)),
     ];
 
@@ -194,6 +202,12 @@ export class SocketService implements OnDestroy {
   }
   sendFurnitureRemove(roomId: string, p: FurnitureRemovePayload): void {
     this.gs?.sendFurnitureRemove(roomId, p);
+  }
+  sendTextureApply(roomId: string, p: TextureApplyPayload): void {
+    this.gs?.sendTextureApply(roomId, p);
+  }
+  sendTextureRemove(roomId: string, p: TextureRemovePayload): void {
+    this.gs?.sendTextureRemove(roomId, p);
   }
   sendPrivateMessage(roomId: string, p: PrivateMessagePayload): void {
     this.gs?.sendPrivateMessage(roomId, p);

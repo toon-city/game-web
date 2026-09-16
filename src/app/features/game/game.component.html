@@ -4,11 +4,13 @@
     [roomId]="roomId"
     [editMode]="editMode()"
     (editModeChange)="editMode.set($event)"
+    [zoneEditMode]="zoneEditMode()"
   />
 }
 
 @if (canEdit()) {
   <div class="edit-overlay">
     <mat-slide-toggle [(ngModel)]="editMode" color="warn">Mode édition</mat-slide-toggle>
+    <mat-slide-toggle [(ngModel)]="zoneEditMode" color="warn">Papier peint / sol</mat-slide-toggle>
   </div>
 }

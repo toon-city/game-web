@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, tap } from 'rxjs';
-import { UserItemInfo, ItemType } from '@toon-live/game-types';
+import { UserItemInfo, ItemType, ItemSubType } from '@toon-live/game-types';
 import { environment } from '../../../environments/environment';
 
 export interface PagedResult<T> {
@@ -58,9 +58,10 @@ export class InventoryService {
     this.onPlaceFurniture?.(item);
   }
 
-  listItems(type?: ItemType, page = 0): Observable<PagedResult<UserItemInfo>> {
+  listItems(type?: ItemType, page = 0, subType?: ItemSubType): Observable<PagedResult<UserItemInfo>> {
     let params = new HttpParams().set('page', page);
     if (type) params = params.set('type', type);
+    if (subType) params = params.set('subType', subType);
     return this.http.get<PagedResult<UserItemInfo>>(this.base, { params });
   }
 

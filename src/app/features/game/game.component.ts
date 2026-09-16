@@ -33,6 +33,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   roomId = '';
   editMode = signal(false);
+  /** Independent from editMode on purpose — see HouseView's own comment on why. */
+  zoneEditMode = signal(false);
   /** Contrôle la destruction/recréation du GameCanvasComponent lors d'un changement de room. */
   canShowCanvas = signal(false);
   private kickedSub?: Subscription;

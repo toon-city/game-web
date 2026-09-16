@@ -20,6 +20,8 @@ import { ProfileService } from './core/services/profile.service';
 import { FriendsComponent } from './shared/components/friends/friends.component';
 import { FurniturePreviewComponent } from './shared/components/furniture-preview/furniture-preview.component';
 import { FurniturePreviewService } from './core/services/furniture-preview.service';
+import { ZoneTexturePickerComponent } from './shared/components/zone-texture-picker/zone-texture-picker.component';
+import { ZoneTexturePickerService } from './core/services/zone-texture-picker.service';
 import { MetierPickerComponent } from './shared/components/metier-picker/metier-picker.component';
 import { MetierService } from './core/services/metier.service';
 import { TradeCenterComponent } from './shared/components/trade-center/trade-center.component';
@@ -44,6 +46,7 @@ import { TradeService } from './core/services/trade.service';
     ProfileComponent,
     FriendsComponent,
     FurniturePreviewComponent,
+    ZoneTexturePickerComponent,
     MetierPickerComponent,
     TradeCenterComponent,
   ],
@@ -57,6 +60,7 @@ export class AppComponent implements OnInit {
   readonly userActionDialog = inject(UserActionDialogService);
   readonly profileService = inject(ProfileService);
   readonly furniturePreview = inject(FurniturePreviewService);
+  readonly zoneTexturePicker = inject(ZoneTexturePickerService);
   readonly metierService = inject(MetierService);
   readonly tradeService = inject(TradeService);
 

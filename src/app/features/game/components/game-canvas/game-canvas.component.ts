@@ -19,6 +19,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
 import { UserActionDialogService } from '../../../../core/services/user-action-dialog.service';
 import { FurniturePreviewService } from '../../../../core/services/furniture-preview.service';
+import { ZoneTexturePickerService } from '../../../../core/services/zone-texture-picker.service';
 import { environment } from '../../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
@@ -126,6 +127,7 @@ import { Subscription } from 'rxjs';
 export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() roomId = '';
   @Input() editMode = false;
+  @Input() zoneEditMode = false;
   /** Furniture dropped from the inventory onto the canvas while not editing
    *  auto-switches edit mode on (see startPlacingFurniture) — the parent
    *  owns the actual signal, this just reports the change back up. */
@@ -138,6 +140,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private inventory = inject(InventoryService);
   private userActionDialog = inject(UserActionDialogService);
   private furniturePreview = inject(FurniturePreviewService);
+  private zoneTexturePicker = inject(ZoneTexturePickerService);
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
@@ -174,6 +177,10 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       // free the camera while editing, hand it back to the avatar on exit.
       this.gc.setFollowCamera(!this.editMode);
       if (!this.editMode) this.stopPan();
+    }
+    if (changes['zoneEditMode'] && this.gc) {
+      this.gc.setZoneEditMode(this.zoneEditMode);
+      if (!this.zoneEditMode) this.zoneTexturePicker.close();
     }
   }
 
@@ -357,6 +364,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.furnitureMeta.set(Number(f.instanceId), { name: f.name, displayImage: f.displayImage, orientation: f.orientation });
     }
 
+    // Papiers peints/sols déjà appliqués dans la room — même principe que les
+    // meubles ci-dessus (snapshot du join, le direct arrive via remoteTextureApply$/
+    // remoteTextureRemove$ dans subscribeToRoomEvents).
+    for (const t of state.textures ?? []) {
+      await this.gc.applyTexture(t.zoneType, t.zoneIndex, t.baseId, t.spritePath);
+    }
+
     this.loadingView.setMessage('Chargement des joueurs...');
     this.loadingView.setProgress(0.8);
 
@@ -411,6 +425,13 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       const meta = this.furnitureMeta.get(instanceId);
       if (!meta) return;
       this.furniturePreview.open({ instanceId, name: meta.name, displayImage: meta.displayImage, orientation: meta.orientation });
+    });
+
+    // Only ever fires while zoneEditMode is on (AreaView/WallView gate their
+    // own interactivity on it — see HouseView.setZoneEditMode), so no extra
+    // check needed here.
+    this.gc.on('zone:click', ({ zoneType, zoneIndex }) => {
+      this.zoneTexturePicker.open({ zoneType, zoneIndex });
     });
 
     // The world can host avatars from here on. Reconcile against the live room
@@ -591,6 +612,18 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         if (this.furniturePreview.target()?.instanceId === Number(p.instanceId)) {
           this.furniturePreview.close();
         }
+      }),
+      // Papier peint/sol posé ou retiré — même diffusion "tout le monde,
+      // y compris qui vient de le faire" que les meubles ci-dessus.
+      this.socket.textureApply$.subscribe((p) => {
+        this.gc?.applyTexture(p.zoneType, p.zoneIndex, p.baseId, p.spritePath);
+        this.inventory.itemsChanged$.next();
+        this.zoneTexturePicker.close();
+      }),
+      this.socket.textureRemove$.subscribe((p) => {
+        this.gc?.resetTexture(p.zoneType, p.zoneIndex);
+        this.inventory.itemsChanged$.next();
+        this.zoneTexturePicker.close();
       }),
     );
   }

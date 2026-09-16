@@ -68,6 +68,14 @@
         (close)="furniturePreview.close()"
       />
     }
+
+    @if (zoneTexturePicker.target(); as zoneTarget) {
+      <app-zone-texture-picker
+        [target]="zoneTarget"
+        [roomId]="roomId()"
+        (close)="zoneTexturePicker.close()"
+      />
+    }
   }
 
   <app-status-bar />

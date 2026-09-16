@@ -1,0 +1,47 @@
+<div class="ui-block zone-texture-picker" cdkDrag cdkDragBoundary="body" [style.z-index]="zIndex()" [attr.aria-label]="title()">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      {{ title() }}
+      <button class="close-button" (click)="close.emit()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="body">
+      @if (current(); as cur) {
+        <div class="current">
+          <div class="thumb">
+            @if (cur.displayImage) {
+              <img [src]="cur.displayImage" [alt]="cur.name" />
+            }
+          </div>
+          <div class="info">
+            <div class="name">{{ cur.name }}</div>
+            <button class="btn-take" (click)="remove()" type="button">Retirer</button>
+          </div>
+        </div>
+      } @else {
+        <div class="state-msg">Aucun {{ target.zoneType === 'WALL' ? 'papier peint' : 'revêtement' }} appliqué.</div>
+      }
+
+      @if (error(); as err) {
+        <div class="error-msg">{{ err }}</div>
+      }
+
+      <div class="items-label">Vos objets</div>
+      @if (loading() && items().length === 0) {
+        <div class="state-msg">Chargement…</div>
+      } @else if (items().length === 0) {
+        <div class="state-msg">Vous n'en possédez aucun.</div>
+      } @else {
+        <div class="items">
+          @for (item of items(); track item.id) {
+            <div class="item" [title]="item.item.name" (click)="apply(item)">
+              @if (item.item.displayImage) {
+                <img [src]="item.item.displayImage" [alt]="item.item.name" />
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
