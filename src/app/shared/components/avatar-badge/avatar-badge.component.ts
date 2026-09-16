@@ -76,7 +76,7 @@ const HEAD_FILL = 0.62;
   template: `<canvas #canvas class="avatar-badge-canvas" [class.head-crop]="mode === 'head'"></canvas>`,
   styles: [`
     :host { display: block; width: 100%; height: 100%; }
-    .avatar-badge-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .avatar-badge-canvas { display: block; width: 100%; height: 100%; }
     .avatar-badge-canvas.head-crop { border-radius: 50%; }
   `],
 })
@@ -123,7 +123,7 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       width: box,
       height: boxH,
       backgroundAlpha: 0,
-      antialias: false,
+      antialias: true,
       resolution: window.devicePixelRatio ?? 1,
       autoDensity: true,
     });
