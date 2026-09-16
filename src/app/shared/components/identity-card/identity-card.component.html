@@ -44,7 +44,11 @@
     <div class="ic-metier" (click)="openMetierPicker()" title="Choisir un métier">
       @if (auth.user()?.metierName; as metierName) {
         <span class="ic-metier__name">{{ metierName }}</span>
-        <span class="ic-metier__pez">+{{ auth.user()?.metierDailyPez ?? 0 }} pz/jour</span>
+        <span class="ic-metier__pez">
+          +{{ auth.user()?.metierDailyPez ?? 0 }}
+          <img src="assets/images/pez.png" alt="Pezs" width="12" height="12" />
+          /jour
+        </span>
       } @else {
         <span class="ic-metier__name ic-metier__name--none">Aucun métier — choisir</span>
       }

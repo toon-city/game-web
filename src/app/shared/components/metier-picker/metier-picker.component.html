@@ -19,7 +19,11 @@
             <div class="list-row metier-row">
               <div class="identity">
                 <span class="username">{{ o.name }}</span>
-                <span class="badge badge-pez">+{{ o.dailyPez }} pz/jour</span>
+                <span class="badge badge-pez">
+                  +{{ o.dailyPez }}
+                  <img src="assets/images/pez.png" alt="Pezs" width="12" height="12" />
+                  /jour
+                </span>
               </div>
               @if (o.eligible) {
                 <button class="btn btn-small btn-primary" [disabled]="busy()" (click)="choose(o)" type="button">Choisir</button>
