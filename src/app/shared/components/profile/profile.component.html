@@ -16,19 +16,33 @@
           <!-- ── Colonne gauche : avatar + slots + infos ─────────────── -->
           <div class="left">
             <div class="avatar-slots">
-              @for (s of slots; track s.subType) {
-                <div class="slot" [class]="'slot-' + s.pos" [title]="slotItem(s.subType)?.name ?? s.label">
-                  @if (slotItem(s.subType); as item) {
-                    <img [src]="item.displayImage" [alt]="item.name" />
-                  } @else {
-                    <span class="slot-empty">{{ s.label[0] }}</span>
-                  }
-                </div>
+              @if (!p.workOutfitActive) {
+                @for (s of slots; track s.subType) {
+                  <div class="slot" [class]="'slot-' + s.pos" [title]="slotItem(s.subType)?.name ?? s.label">
+                    @if (slotItem(s.subType); as item) {
+                      <img [src]="item.displayImage" [alt]="item.name" />
+                    } @else {
+                      <span class="slot-empty">{{ s.label[0] }}</span>
+                    }
+                  </div>
+                }
               }
               <div class="avatar-center">
                 <app-avatar-badge [size]="106" [height]="159" [override]="avatarOverride()" />
               </div>
             </div>
+
+            @if (isOwner() && p.metierName) {
+              <label class="work-outfit-toggle">
+                <input
+                  type="checkbox"
+                  [checked]="p.workOutfitActive"
+                  [disabled]="workOutfitBusy()"
+                  (change)="toggleWorkOutfit($any($event.target).checked)"
+                />
+                Tenue de travail ({{ p.metierName }})
+              </label>
+            }
 
             <div class="basic-info">
               <div class="info-row">

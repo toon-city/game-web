@@ -35,4 +35,9 @@ export class ProfileService {
   updateDescription(userId: string, description: string, job: string): Observable<void> {
     return this.http.put<void>(`${this.base}/${userId}`, { description, job });
   }
+
+  /** Toggles the "tenue de travail" overlay — same PUT endpoint, only self/admin allowed server-side. */
+  setWorkOutfitActive(userId: string, active: boolean): Observable<void> {
+    return this.http.put<void>(`${this.base}/${userId}`, { workOutfitActive: active });
+  }
 }

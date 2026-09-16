@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FriendService } from '../../../core/services/friend.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { InventoryService } from '../../../core/services/inventory.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 /** Fixed slot layout around the avatar — always these 6 positions, filled or empty. */
@@ -32,6 +33,7 @@ export class ProfileComponent implements OnInit, OnChanges {
   private readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly inventory = inject(InventoryService);
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
@@ -66,6 +68,8 @@ export class ProfileComponent implements OnInit, OnChanges {
   editDescription = '';
   editJob = '';
   saving = signal(false);
+
+  workOutfitBusy = signal(false);
 
   readonly isOwner = computed(() => this.auth.user()?.id === this.userId);
 
@@ -123,6 +127,24 @@ export class ProfileComponent implements OnInit, OnChanges {
         this.profile.update(p => p ? { ...p, description: this.editDescription, job: this.editJob } : p);
       },
       error: () => this.saving.set(false),
+    });
+  }
+
+  /**
+   * Owner-only (gated in the template by isOwner()) — flips the overlay and
+   * reloads the profile so the avatar preview/slots reflect it immediately,
+   * plus the same "clothing changed" notification equip/unequip already
+   * send (identity badge + room broadcast if currently in one).
+   */
+  toggleWorkOutfit(active: boolean): void {
+    this.workOutfitBusy.set(true);
+    this.profileService.setWorkOutfitActive(this.userId, active).subscribe({
+      next: () => {
+        this.workOutfitBusy.set(false);
+        this.inventory.notifyClothingChanged();
+        this.load();
+      },
+      error: () => this.workOutfitBusy.set(false),
     });
   }
 

@@ -62,17 +62,17 @@ export class InventoryService {
 
   equip(userItemId: number): Observable<UserItemInfo> {
     return this.http.put<UserItemInfo>(`${this.base}/${userItemId}/equip`, {}).pipe(
-      tap(() => this._notifyClothingChanged()),
+      tap(() => this.notifyClothingChanged()),
     );
   }
 
   unequip(userItemId: number): Observable<UserItemInfo> {
     return this.http.put<UserItemInfo>(`${this.base}/${userItemId}/unequip`, {}).pipe(
-      tap(() => this._notifyClothingChanged()),
+      tap(() => this.notifyClothingChanged()),
     );
   }
 
-  private _notifyClothingChanged(): void {
+  notifyClothingChanged(): void {
     if (this.currentRoomId && this.onClothingChanged) {
       this.onClothingChanged(this.currentRoomId);
     }
