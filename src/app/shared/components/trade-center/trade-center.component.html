@@ -38,13 +38,22 @@
               <span>{{ sel.item.name }}</span>
             </div>
           } @else {
+            <div class="picker-filters">
+              <input type="text" [(ngModel)]="myItemsSearch" placeholder="Chercher dans mon inventaire…" />
+              <select [(ngModel)]="myItemsType" (ngModelChange)="onMyItemsTypeChange()">
+                @for (o of typeOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+              </select>
+              <select [(ngModel)]="myItemsSubType">
+                @for (o of subTypeOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+              </select>
+            </div>
             <div class="pick-list">
               @if (myItemsLoading()) {
                 <p class="hint">Chargement…</p>
-              } @else if (myItems().length === 0) {
-                <p class="hint">Aucun objet disponible (déjà équipé ou déjà proposé).</p>
+              } @else if (filteredMyItems().length === 0) {
+                <p class="hint">Aucun objet ne correspond (déjà équipé/proposé, ou filtres trop restrictifs).</p>
               } @else {
-                @for (it of myItems(); track it.id) {
+                @for (it of filteredMyItems(); track it.id) {
                   <div class="pick-row" (click)="pickMyItem(it)">
                     <img [src]="it.item.displayImage" [alt]="it.item.name" />
                     <span>{{ it.item.name }}</span>
@@ -65,13 +74,21 @@
               <span>{{ sel.name }}</span>
             </div>
           } @else {
-            <div class="search-row">
+            <div class="picker-filters">
               <input type="text" [(ngModel)]="catalogSearch" (keyup.enter)="searchCatalog()" placeholder="Chercher un objet du catalogue…" />
+              <select [(ngModel)]="catalogType" (ngModelChange)="searchCatalog()">
+                @for (o of typeOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+              </select>
+              <select [(ngModel)]="catalogSubType" (ngModelChange)="searchCatalog()">
+                @for (o of subTypeOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+              </select>
               <button class="btn btn-small" (click)="searchCatalog()" type="button">Chercher</button>
             </div>
             <div class="pick-list">
               @if (catalogLoading()) {
                 <p class="hint">Recherche…</p>
+              } @else if (catalogResults().length === 0) {
+                <p class="hint">Aucun objet ne correspond à ces critères.</p>
               } @else {
                 @for (it of catalogResults(); track it.id) {
                   <div class="pick-row" (click)="pickRequestedItem(it)">

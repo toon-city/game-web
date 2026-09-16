@@ -2,13 +2,36 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs/operators';
-import { ItemInfo, ItemType, TradeOffer, TradeSortOption, UserItemInfo } from '@toon-live/game-types';
+import { ItemInfo, ItemSubType, ItemType, TradeOffer, TradeSortOption, UserItemInfo } from '@toon-live/game-types';
 import { TradeService } from '../../../core/services/trade.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
 
 type TradeTab = 'market' | 'mine' | 'history';
+
+/** "Tous" always included, per l'utilisateur — jamais juste un sous-ensemble contextuel. */
+export const ITEM_TYPE_FILTER_OPTIONS: { value: ItemType | ''; label: string }[] = [
+  { value: '', label: 'Tous types' },
+  { value: 'CLOTHING', label: 'Vêtements' },
+  { value: 'FURNITURE', label: 'Meubles' },
+  { value: 'MISC', label: 'Divers' },
+];
+
+export const ITEM_SUBTYPE_FILTER_OPTIONS: { value: ItemSubType | ''; label: string }[] = [
+  { value: '', label: 'Tous sous-types' },
+  { value: 'HAIRSTYLE', label: 'Coiffure' },
+  { value: 'HAT', label: 'Chapeau' },
+  { value: 'TOP', label: 'Haut' },
+  { value: 'BOTTOM', label: 'Bas' },
+  { value: 'MAKEUP', label: 'Maquillage' },
+  { value: 'RING', label: 'Bague' },
+  { value: 'FLOOR', label: 'Sol' },
+  { value: 'WALL', label: 'Mur' },
+  { value: 'WALLPAPER', label: 'Papier peint' },
+  { value: 'PIECE', label: 'Meuble' },
+  { value: 'OTHER', label: 'Autre' },
+];
 
 /**
  * Centre d'échange — place de marché publique : je propose "mon item
@@ -55,13 +78,36 @@ export class TradeCenterComponent implements OnInit {
   historyLoading = signal(false);
 
   // ── Proposer un échange ───────────────────────────────────────────────────
+  readonly typeOptions = ITEM_TYPE_FILTER_OPTIONS;
+  readonly subTypeOptions = ITEM_SUBTYPE_FILTER_OPTIONS;
+
   composing = signal(false);
   myItems = signal<UserItemInfo[]>([]);
   myItemsLoading = signal(false);
   selectedOfferedItem = signal<UserItemInfo | null>(null);
   offeredPez = 0;
 
+  /**
+   * Type filtré côté serveur (InventoryService.listItems le supporte déjà,
+   * relance loadMyItems) — recherche texte + sous-type filtrés côté client
+   * sur la page déjà chargée. Méthode plate, pas un computed() : ces deux
+   * champs sont liés en ngModel (mutation directe, pas des signaux), un
+   * computed() ne se re-déclencherait jamais dessus.
+   */
+  myItemsSearch = '';
+  myItemsType: ItemType | '' = '';
+  myItemsSubType: ItemSubType | '' = '';
+  filteredMyItems(): UserItemInfo[] {
+    const search = this.myItemsSearch.trim().toLowerCase();
+    const subType = this.myItemsSubType;
+    return this.myItems().filter(it =>
+      (!search || it.item.name.toLowerCase().includes(search)) &&
+      (!subType || it.item.subType === subType));
+  }
+
   catalogSearch = '';
+  catalogType: ItemType | '' = '';
+  catalogSubType: ItemSubType | '' = '';
   catalogResults = signal<ItemInfo[]>([]);
   catalogLoading = signal(false);
   selectedRequestedItem = signal<ItemInfo | null>(null);
@@ -185,7 +231,12 @@ export class TradeCenterComponent implements OnInit {
     this.selectedRequestedItem.set(null);
     this.offeredPez = 0;
     this.requestedPez = 0;
+    this.myItemsSearch = '';
+    this.myItemsType = '';
+    this.myItemsSubType = '';
     this.catalogSearch = '';
+    this.catalogType = '';
+    this.catalogSubType = '';
     this.catalogResults.set([]);
     this.loadMyItems();
   }
@@ -194,9 +245,14 @@ export class TradeCenterComponent implements OnInit {
     this.composing.set(false);
   }
 
+  /** Le type est le seul filtre qui redemande une page serveur — texte/sous-type restent client (voir filteredMyItems). */
+  onMyItemsTypeChange(): void {
+    this.loadMyItems();
+  }
+
   private loadMyItems(): void {
     this.myItemsLoading.set(true);
-    this.inventoryService.listItems(undefined, 0).pipe(finalize(() => this.myItemsLoading.set(false))).subscribe({
+    this.inventoryService.listItems(this.myItemsType || undefined, 0).pipe(finalize(() => this.myItemsLoading.set(false))).subscribe({
       next: page => this.myItems.set(page.content),
       error: () => this.myItems.set([]),
     });
@@ -208,7 +264,7 @@ export class TradeCenterComponent implements OnInit {
 
   searchCatalog(): void {
     this.catalogLoading.set(true);
-    this.tradeService.searchItemCatalog(this.catalogSearch || undefined, undefined)
+    this.tradeService.searchItemCatalog(this.catalogSearch || undefined, this.catalogType || undefined, this.catalogSubType || undefined)
       .pipe(finalize(() => this.catalogLoading.set(false)))
       .subscribe({
         next: page => this.catalogResults.set(page.content),

@@ -176,7 +176,7 @@
 
 // ── Marché ────────────────────────────────────────────────────────────────
 
-.market-filters {
+.market-filters, .picker-filters {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
@@ -203,6 +203,8 @@
     background: white;
   }
 }
+
+.picker-filters { margin-bottom: 6px; }
 
 .list-block {
   background: white;

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateTradeOfferRequest, ItemInfo, ItemType, TradeOffer, TradeSortOption } from '@toon-live/game-types';
+import { CreateTradeOfferRequest, ItemInfo, ItemSubType, ItemType, TradeOffer, TradeSortOption } from '@toon-live/game-types';
 import { environment } from '../../../environments/environment';
 import { PagedResult } from './inventory.service';
 
@@ -54,10 +54,11 @@ export class TradeService {
   }
 
   /** Catalogue complet (pas juste mon inventaire) — pour choisir "quel objet je veux recevoir" en proposant un échange. */
-  searchItemCatalog(search: string | undefined, itemType: ItemType | undefined): Observable<PagedResult<ItemInfo>> {
+  searchItemCatalog(search: string | undefined, itemType: ItemType | undefined, subType: ItemSubType | undefined): Observable<PagedResult<ItemInfo>> {
     let params = new HttpParams();
     if (search) params = params.set('search', search);
     if (itemType) params = params.set('itemType', itemType);
+    if (subType) params = params.set('subType', subType);
     return this.http.get<PagedResult<ItemInfo>>(this.itemsBase, { params });
   }
 }
