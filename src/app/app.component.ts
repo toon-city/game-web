@@ -22,6 +22,8 @@ import { FurniturePreviewComponent } from './shared/components/furniture-preview
 import { FurniturePreviewService } from './core/services/furniture-preview.service';
 import { MetierPickerComponent } from './shared/components/metier-picker/metier-picker.component';
 import { MetierService } from './core/services/metier.service';
+import { TradeCenterComponent } from './shared/components/trade-center/trade-center.component';
+import { TradeService } from './core/services/trade.service';
 
 @Component({
   selector: 'app-root',
@@ -43,6 +45,7 @@ import { MetierService } from './core/services/metier.service';
     FriendsComponent,
     FurniturePreviewComponent,
     MetierPickerComponent,
+    TradeCenterComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -55,6 +58,7 @@ export class AppComponent implements OnInit {
   readonly profileService = inject(ProfileService);
   readonly furniturePreview = inject(FurniturePreviewService);
   readonly metierService = inject(MetierService);
+  readonly tradeService = inject(TradeService);
 
   navOpen    = signal(false);
   invOpen    = signal(false);

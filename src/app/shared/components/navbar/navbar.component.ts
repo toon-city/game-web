@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
 import { MairieService } from '../../../core/services/mairie.service';
 import { FriendService } from '../../../core/services/friend.service';
+import { TradeService } from '../../../core/services/trade.service';
 
 const MAIRIE_POLL_MS = 20_000;
 const FRIENDS_POLL_MS = 20_000;
@@ -27,6 +28,9 @@ const FRIENDS_POLL_MS = 20_000;
         } @else if (onlineFriendsCount() > 0) {
           <span class="badge badge-green">{{ onlineFriendsCount() > 9 ? '9+' : onlineFriendsCount() }}</span>
         }
+      </button>
+      <button class="nav-btn mairie-btn" (click)="tradeService.openPanel()" type="button">
+        Échanges
       </button>
     </nav>
   `,
@@ -114,6 +118,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private readonly mairieService = inject(MairieService);
   private readonly friendService = inject(FriendService);
+  readonly tradeService = inject(TradeService);
 
   /** Self-polled, not passed in — the badge must stay current even while the
    *  Mairie panel itself is closed, same reasoning as StatusBarComponent's

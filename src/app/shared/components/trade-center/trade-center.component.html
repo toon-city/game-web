@@ -1,0 +1,204 @@
+<div class="ui-block trade-center" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Centre d'échange">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      Centre d'échange
+      <button class="close-button" (click)="close()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="friends-tabs">
+      <button class="friends-tab" [class.active]="activeTab() === 'market'" (click)="selectTab('market')" type="button">
+        <span class="tab-icon">🔄</span> Échanges
+      </button>
+      <button class="friends-tab" [class.active]="activeTab() === 'mine'" (click)="selectTab('mine')" type="button">
+        <span class="tab-icon">📋</span> Mes propositions
+        @if (mine().length) { <span class="tab-count">{{ mine().length }}</span> }
+      </button>
+      <button class="friends-tab" [class.active]="activeTab() === 'history'" (click)="selectTab('history')" type="button">
+        <span class="tab-icon">🕓</span> Historique
+      </button>
+      <button class="propose-btn" (click)="openCompose()" type="button">+ Proposer</button>
+    </div>
+
+    <div class="body">
+      @if (actionError()) {
+        <p class="msg msg-error">{{ actionError() }}</p>
+      }
+
+      @if (composing()) {
+        <!-- ── Proposer un échange ─────────────────────────────────────── -->
+        <div class="compose">
+          @if (proposeError()) {
+            <p class="msg msg-error">{{ proposeError() }}</p>
+          }
+
+          <p class="section-label">Mon objet</p>
+          @if (selectedOfferedItem(); as sel) {
+            <div class="picked-item" (click)="selectedOfferedItem.set(null)" title="Changer">
+              <img [src]="sel.item.displayImage" [alt]="sel.item.name" />
+              <span>{{ sel.item.name }}</span>
+            </div>
+          } @else {
+            <div class="pick-list">
+              @if (myItemsLoading()) {
+                <p class="hint">Chargement…</p>
+              } @else if (myItems().length === 0) {
+                <p class="hint">Aucun objet disponible (déjà équipé ou déjà proposé).</p>
+              } @else {
+                @for (it of myItems(); track it.id) {
+                  <div class="pick-row" (click)="pickMyItem(it)">
+                    <img [src]="it.item.displayImage" [alt]="it.item.name" />
+                    <span>{{ it.item.name }}</span>
+                  </div>
+                }
+              }
+            </div>
+          }
+          <label class="pez-row">
+            Pez offerts (optionnel)
+            <input type="number" min="0" [(ngModel)]="offeredPez" />
+          </label>
+
+          <p class="section-label">Objet demandé</p>
+          @if (selectedRequestedItem(); as sel) {
+            <div class="picked-item" (click)="selectedRequestedItem.set(null)" title="Changer">
+              <img [src]="sel.displayImage" [alt]="sel.name" />
+              <span>{{ sel.name }}</span>
+            </div>
+          } @else {
+            <div class="search-row">
+              <input type="text" [(ngModel)]="catalogSearch" (keyup.enter)="searchCatalog()" placeholder="Chercher un objet du catalogue…" />
+              <button class="btn btn-small" (click)="searchCatalog()" type="button">Chercher</button>
+            </div>
+            <div class="pick-list">
+              @if (catalogLoading()) {
+                <p class="hint">Recherche…</p>
+              } @else {
+                @for (it of catalogResults(); track it.id) {
+                  <div class="pick-row" (click)="pickRequestedItem(it)">
+                    <img [src]="it.displayImage" [alt]="it.name" />
+                    <span>{{ it.name }}</span>
+                  </div>
+                }
+              }
+            </div>
+          }
+          <label class="pez-row">
+            Pez demandés (optionnel)
+            <input type="number" min="0" [(ngModel)]="requestedPez" />
+          </label>
+
+          <div class="buttons-row">
+            <button class="btn btn-small" (click)="closeCompose()" type="button">Annuler</button>
+            <button
+              class="btn btn-small btn-primary"
+              [disabled]="proposing() || !selectedOfferedItem() || !selectedRequestedItem()"
+              (click)="submitPropose()"
+              type="button"
+            >Proposer</button>
+          </div>
+        </div>
+      } @else if (activeTab() === 'market') {
+        <!-- ── Échanges ─────────────────────────────────────────────────── -->
+        <div class="market-filters">
+          <input type="text" [(ngModel)]="marketSearch" (keyup.enter)="applyMarketFilters()" placeholder="Rechercher un objet…" />
+          <select [(ngModel)]="marketItemType" (ngModelChange)="applyMarketFilters()">
+            <option value="">Tous types</option>
+            <option value="CLOTHING">Vêtements</option>
+            <option value="FURNITURE">Meubles</option>
+            <option value="MISC">Divers</option>
+          </select>
+          <select [(ngModel)]="marketSort" (ngModelChange)="applyMarketFilters()">
+            <option value="newest">Plus récents</option>
+            <option value="oldest">Plus anciens</option>
+            <option value="pezDesc">Pez offerts ↓</option>
+            <option value="pezAsc">Pez offerts ↑</option>
+          </select>
+        </div>
+
+        <div class="list-block trade-list" (scroll)="onMarketScroll($event)">
+          @if (!marketLoading() && marketResults().length === 0) {
+            <p class="hint">Aucun échange ne correspond à ces critères.</p>
+          }
+          @for (t of marketResults(); track t.id) {
+            <div class="list-row trade-row">
+              <div class="trade-side">
+                <img [src]="t.offeredItem.displayImage" [alt]="t.offeredItem.name" />
+                <div>
+                  <span class="item-name">{{ t.offeredItem.name }}</span>
+                  @if (t.offeredPez > 0) { <span class="badge badge-pez">+{{ t.offeredPez }} pz</span> }
+                  <span class="offerer">par {{ t.offererUsername }}</span>
+                </div>
+              </div>
+              <span class="trade-arrow">⇄</span>
+              <div class="trade-side">
+                <img [src]="t.requestedItem.displayImage" [alt]="t.requestedItem.name" />
+                <div>
+                  <span class="item-name">{{ t.requestedItem.name }}</span>
+                  @if (t.requestedPez > 0) { <span class="badge badge-pez">+{{ t.requestedPez }} pz</span> }
+                </div>
+              </div>
+              <button class="btn btn-small btn-primary" [disabled]="actionBusyId() === t.id" (click)="acceptTrade(t)" type="button">Accepter</button>
+            </div>
+          }
+          @if (marketLoading()) { <p class="hint">Chargement…</p> }
+        </div>
+      } @else if (activeTab() === 'mine') {
+        <!-- ── Mes propositions ─────────────────────────────────────────── -->
+        <div class="list-block">
+          @if (mineLoading()) {
+            <p class="hint">Chargement…</p>
+          } @else if (mine().length === 0) {
+            <p class="hint">Vous n'avez aucun échange en cours.</p>
+          } @else {
+            @for (t of mine(); track t.id) {
+              <div class="list-row trade-row">
+                <div class="trade-side">
+                  <img [src]="t.offeredItem.displayImage" [alt]="t.offeredItem.name" />
+                  <div>
+                    <span class="item-name">{{ t.offeredItem.name }}</span>
+                    @if (t.offeredPez > 0) { <span class="badge badge-pez">+{{ t.offeredPez }} pz</span> }
+                  </div>
+                </div>
+                <span class="trade-arrow">⇄</span>
+                <div class="trade-side">
+                  <img [src]="t.requestedItem.displayImage" [alt]="t.requestedItem.name" />
+                  <div>
+                    <span class="item-name">{{ t.requestedItem.name }}</span>
+                    @if (t.requestedPez > 0) { <span class="badge badge-pez">+{{ t.requestedPez }} pz</span> }
+                  </div>
+                </div>
+                <button class="btn btn-small btn-danger" [disabled]="actionBusyId() === t.id" (click)="cancelTrade(t)" type="button">Annuler</button>
+              </div>
+            }
+          }
+        </div>
+      } @else {
+        <!-- ── Historique ───────────────────────────────────────────────── -->
+        <div class="list-block">
+          @if (historyLoading()) {
+            <p class="hint">Chargement…</p>
+          } @else if (history().length === 0) {
+            <p class="hint">Aucun échange terminé pour le moment.</p>
+          } @else {
+            @for (t of history(); track t.id) {
+              <div class="list-row trade-row">
+                <div class="trade-side">
+                  <img [src]="t.offeredItem.displayImage" [alt]="t.offeredItem.name" />
+                  <span class="item-name">{{ t.offeredItem.name }}</span>
+                </div>
+                <span class="trade-arrow">⇄</span>
+                <div class="trade-side">
+                  <img [src]="t.requestedItem.displayImage" [alt]="t.requestedItem.name" />
+                  <span class="item-name">{{ t.requestedItem.name }}</span>
+                </div>
+                <span class="badge" [class.badge-cancelled]="t.status === 'CANCELLED'" [class.badge-pez]="t.status !== 'CANCELLED'">
+                  {{ historyOutcome(t) }}
+                </span>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

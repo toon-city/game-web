@@ -41,6 +41,10 @@
     <app-metier-picker />
   }
 
+  @if (tradeService.panelOpen()) {
+    <app-trade-center />
+  }
+
   @if (profileService.openUserId(); as profileUserId) {
     <app-profile [userId]="profileUserId" (close)="profileService.close()" />
   }
