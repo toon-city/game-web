@@ -210,20 +210,60 @@
 .work-outfit-toggle {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 6px 10px;
   background: rgba(35, 105, 129, 0.06);
   border-radius: 10px;
-  font-size: 11.5px;
-  font-weight: 800;
-  color: var(--toon-petrol-dark);
   cursor: pointer;
 
-  input[type="checkbox"] {
+  &__label {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--toon-petrol-dark);
+  }
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+
+    &:disabled { cursor: default; }
+    &:disabled ~ .switch__track { opacity: 0.5; }
+    &:checked ~ .switch__track { background: var(--toon-petrol); }
+    &:checked ~ .switch__track .switch__thumb { transform: translateX(14px); }
+  }
+
+  &__track {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: rgba(35, 105, 129, 0.30);
+    border-radius: 999px;
+    transition: background 0.15s;
+  }
+
+  &__thumb {
+    display: block;
+    position: absolute;
+    top: 2px;
+    left: 2px;
     width: 16px;
     height: 16px;
-    accent-color: var(--toon-petrol);
-    cursor: pointer;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(3, 56, 73, 0.4);
+    transition: transform 0.15s;
   }
 }
 
