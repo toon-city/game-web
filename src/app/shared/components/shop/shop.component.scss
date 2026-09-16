@@ -101,10 +101,9 @@
 }
 
 .shop {
+  // top/left set inline from DialogStackService.open() (see the .ts).
   position: fixed;
   z-index: 100;
-  top: 80px;
-  left: calc(16px + 550px + 16px);
   height: 480px;
   width: 700px;
 }

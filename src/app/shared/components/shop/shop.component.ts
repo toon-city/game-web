@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject, signal, input } from '@angular/core';
+import { Component, EventEmitter, OnInit, OnDestroy, Output, inject, signal, input } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { finalize } from 'rxjs/operators';
@@ -31,15 +31,19 @@ const SHOP_TABS: ShopTab[] = [
   templateUrl: './shop.component.html',
   styleUrls: ['./shop.component.scss'],
 })
-export class ShopComponent implements OnInit {
+export class ShopComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
 
   private readonly shopService = inject(ShopService);
   readonly auth = inject(AuthService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
+  /** On-open position — see DialogStackService.open() for why this isn't a
+   *  fixed value in the SCSS anymore. */
+  pos = signal({ top: 80, left: 16 });
 
   readonly shopTabs = SHOP_TABS;
 
@@ -55,8 +59,14 @@ export class ShopComponent implements OnInit {
   confirming        = signal<ConfirmState>(null);
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 80, 16, 700, 480);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.loadCollections();
+  }
+
+  ngOnDestroy(): void {
+    this.dialogStack.release(this.dialogId);
   }
 
   onDragStarted(): void {

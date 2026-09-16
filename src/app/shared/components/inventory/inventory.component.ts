@@ -31,6 +31,10 @@ export class InventoryComponent implements OnInit, OnDestroy {
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
+  /** On-open position — see DialogStackService.open() for why this isn't a
+   *  fixed value in the SCSS anymore. */
+  pos = signal({ top: 80, left: 16 });
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   filter = signal<InvFilter>('TOUS');
   readonly filters: InvFilter[] = ['TOUS', 'MEUBLES', 'VETEMENTS', 'DIVERS'];
@@ -46,7 +50,9 @@ export class InventoryComponent implements OnInit, OnDestroy {
   private itemsSub?: Subscription;
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 80, 16, 820, 380);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.load(false);
     // Le panneau reste ouvert pendant qu'on glisse un meuble vers la room
     // (le drop ne le ferme pas), donc rien ne le rechargeait : le meuble
@@ -65,6 +71,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.itemsSub?.unsubscribe();
+    this.dialogStack.release(this.dialogId);
   }
 
   onDragStarted(): void {

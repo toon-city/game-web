@@ -19,10 +19,9 @@
 }
 
 .profile {
+  // top/left set inline from DialogStackService.open() (see the .ts).
   position: fixed;
   z-index: 100;
-  top: 80px;
-  left: 16px;
   height: 460px;
   width: 520px;
 }

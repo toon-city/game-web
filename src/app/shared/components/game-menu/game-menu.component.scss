@@ -6,7 +6,9 @@
 .menu-wrapper {
   position: fixed;
   right: 0;
-  top: 230px;
+  // 248px, not 230px: identity-card sits at top:72px and runs ~163px tall,
+  // ending ≈235px — 230 overlapped its bottom edge by ~5px.
+  top: 248px;
   z-index: 60;
   display: flex;
   align-items: center;
@@ -65,6 +67,13 @@
   background: white;
   border: 2px solid #2b4a5a;
   border-radius: 11px;
+  // Content (bar + 300px list + emoji grid + buttons) runs ~600px tall,
+  // which ran off the bottom of the viewport on anything shorter than
+  // ~900px — cap it to the available space below the wrapper's top offset
+  // and let it scroll instead of clipping unreachably.
+  max-height: calc(100vh - 264px);
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 #game-menu .content {

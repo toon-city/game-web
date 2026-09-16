@@ -33,8 +33,12 @@ export class ZoneTexturePickerComponent implements OnInit, OnChanges, OnDestroy 
   private readonly inventoryService = inject(InventoryService);
   private readonly socket = inject(SocketService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   zIndex = signal(100);
+  /** On-open position — see DialogStackService.open() for why this isn't a
+   *  fixed value in the SCSS anymore. */
+  pos = signal({ top: 80, left: 16 });
   items = signal<UserItemInfo[]>([]);
   loading = signal(false);
   /** Set on a TEXTURE_ACTION_FAILED reply to *my own* request — see roomError$ below. */
@@ -54,7 +58,9 @@ export class ZoneTexturePickerComponent implements OnInit, OnChanges, OnDestroy 
   });
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 80, 16, 320, 440);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.load();
     // The panel stays open across an apply/remove (see GameCanvasComponent's
     // textureApply$/textureRemove$ handlers, which also fire itemsChanged$) —
@@ -64,6 +70,10 @@ export class ZoneTexturePickerComponent implements OnInit, OnChanges, OnDestroy 
       if (e.code !== 'TEXTURE_ACTION_FAILED') return;
       this.error.set(e.message);
     });
+  }
+
+  onDragStarted(): void {
+    this.zIndex.set(this.dialogStack.bringToFront());
   }
 
   ngOnChanges(): void {
@@ -77,6 +87,7 @@ export class ZoneTexturePickerComponent implements OnInit, OnChanges, OnDestroy 
   ngOnDestroy(): void {
     this.itemsSub?.unsubscribe();
     this.errorSub?.unsubscribe();
+    this.dialogStack.release(this.dialogId);
   }
 
   private load(): void {

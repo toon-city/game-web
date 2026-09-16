@@ -1,4 +1,4 @@
-<div class="ui-block zone-texture-picker" cdkDrag cdkDragBoundary="body" [style.z-index]="zIndex()" [attr.aria-label]="title()">
+<div class="ui-block zone-texture-picker" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" [style.top.px]="pos().top" [style.left.px]="pos().left" [attr.aria-label]="title()">
   <div class="content">
     <div class="header" cdkDragHandle>
       {{ title() }}

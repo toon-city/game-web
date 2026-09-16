@@ -44,10 +44,17 @@ const FRIENDS_POLL_MS = 20_000;
       right: 16px;
       bottom: 16px;
       display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      /* Fixed-width row (4 icons + 3 buttons) overflows past the left edge
+         on narrow viewports since it's anchored via right:16px — capping
+         the width and letting it wrap keeps it on-screen instead of
+         clipping off at negative x. */
+      max-width: calc(100vw - 32px);
       padding: 8px;
       gap: 8px;
       background: rgba(255, 255, 255, 0.97);
-      border-radius: 999px;
+      border-radius: 20px;
       z-index: 150;
       align-items: center;
       box-shadow: 0 8px 24px rgba(3, 56, 73, 0.28);

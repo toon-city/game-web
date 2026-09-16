@@ -28,11 +28,15 @@ export class FriendsComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly friendService = inject(FriendService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
   private readonly router = inject(Router);
   private readonly profileService = inject(ProfileService);
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
+  /** On-open position — see DialogStackService.open() for why this isn't a
+   *  fixed value in the SCSS anymore. */
+  pos = signal({ top: 80, left: 16 });
 
   readonly myId = () => this.auth.user()?.id ?? '';
 
@@ -51,12 +55,15 @@ export class FriendsComponent implements OnInit, OnDestroy {
   private pollInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 80, 16, 380, 500);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.refreshStatus();
     this.pollInterval = setInterval(() => this.refreshStatus(), STATUS_POLL_MS);
   }
 
   ngOnDestroy(): void {
+    this.dialogStack.release(this.dialogId);
     if (this.pollInterval) clearInterval(this.pollInterval);
   }
 

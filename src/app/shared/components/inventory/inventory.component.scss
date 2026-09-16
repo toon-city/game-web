@@ -74,10 +74,11 @@
 }
 
 .inventory {
+  // top/left set inline from DialogStackService.open() (see the .ts) — was
+  // hardcoded assuming friends is open immediately to the left, which broke
+  // the moment it wasn't (or the window was too narrow).
   position: fixed;
   z-index: 100;
-  top: 80px;
-  left: calc(16px + 550px + 16px);
   height: 380px;
   width: 820px; // was 680px — +140px for the preview sidebar, now to the right instead of stacked below
 }

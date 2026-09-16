@@ -43,9 +43,13 @@ export class NavigatorComponent implements OnInit, OnDestroy {
   private snack = inject(MatSnackBar);
   readonly auth = inject(AuthService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
+  /** On-open position — see DialogStackService.open() for why this isn't a
+   *  fixed value in the SCSS anymore. */
+  pos = signal({ top: 80, left: 16 });
 
   filter = signal<FilterMode>('PUBLIC');
   searchQuery = '';
@@ -66,7 +70,9 @@ export class NavigatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 80, 16, 555, 600);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.searchSubject.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -81,6 +87,7 @@ export class NavigatorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.dialogStack.release(this.dialogId);
   }
 
   onSearchChange(): void {

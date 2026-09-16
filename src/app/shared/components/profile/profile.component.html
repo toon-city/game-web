@@ -1,4 +1,4 @@
-<div class="ui-block profile" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Profil">
+<div class="ui-block profile" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" [style.top.px]="pos().top" [style.left.px]="pos().left" aria-label="Profil">
   <div class="content">
     <div class="header" cdkDragHandle>
       Profil

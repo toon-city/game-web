@@ -14,11 +14,11 @@
 }
 
 .trade-center {
+  // top/left set inline from DialogStackService.open() (see the .ts) —
+  // was `left: 50%; transform: translateX(-50%)`, which cdkDrag silently
+  // broke the first time the panel was dragged (see the .ts's own comment).
   position: fixed;
   z-index: 100;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
   width: 460px;
   height: 560px;
 }

@@ -14,11 +14,11 @@
 }
 
 .metier-picker {
+  // top/left set inline from DialogStackService.open() (see the .ts) —
+  // was `left: 50%; transform: translateX(-50%)`, which cdkDrag silently
+  // broke the first time the panel was dragged (see trade-center.component.ts).
   position: fixed;
   z-index: 100;
-  top: 90px;
-  left: 50%;
-  transform: translateX(-50%);
   width: 380px;
   max-height: 70vh;
 }

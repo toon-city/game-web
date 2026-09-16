@@ -39,10 +39,9 @@ $row-active: rgba(240, 3, 127, 0.16);
 }
 
 .navigator {
+  // top/left set inline from DialogStackService.open() (see the .ts).
   position: fixed;
   z-index: 100;
-  top: 80px;
-  left: 16px;
   height: 600px;
   width: 555px;
 }

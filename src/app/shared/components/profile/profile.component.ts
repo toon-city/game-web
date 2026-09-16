@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, computed, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { EquippedItemInfo, UserProfile, FriendsStatus } from '@toon-live/game-types';
@@ -26,7 +26,7 @@ const SLOTS: { subType: string; label: string; pos: string }[] = [
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })
-export class ProfileComponent implements OnInit, OnChanges {
+export class ProfileComponent implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true }) userId!: string;
   @Output() close = new EventEmitter<void>();
 
@@ -34,9 +34,16 @@ export class ProfileComponent implements OnInit, OnChanges {
   private readonly profileService = inject(ProfileService);
   private readonly dialogStack = inject(DialogStackService);
   private readonly inventory = inject(InventoryService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);
+  /** On-open position — see DialogStackService.open() for why this isn't a
+   *  fixed value in the SCSS anymore. Claimed once on create, NOT re-claimed
+   *  on ngOnChanges (switching to a different userId while still open keeps
+   *  the panel where it is — this component instance is reused, not
+   *  recreated, for that case). */
+  pos = signal({ top: 80, left: 16 });
   private readonly friendService = inject(FriendService);
 
   friendActionText = signal<string | null>(null);
@@ -80,8 +87,14 @@ export class ProfileComponent implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 80, 16, 520, 460);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.dialogStack.release(this.dialogId);
   }
 
   onDragStarted(): void {

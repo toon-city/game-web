@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs/operators';
@@ -49,13 +49,19 @@ export const ITEM_SUBTYPE_FILTER_OPTIONS: { value: ItemSubType | ''; label: stri
   templateUrl: './trade-center.component.html',
   styleUrls: ['./trade-center.component.scss'],
 })
-export class TradeCenterComponent implements OnInit {
+export class TradeCenterComponent implements OnInit, OnDestroy {
   private readonly tradeService = inject(TradeService);
   private readonly inventoryService = inject(InventoryService);
   private readonly auth = inject(AuthService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   zIndex = signal(100);
+  /** On-open position (centered by default) — see DialogStackService.open()
+   *  for why this isn't `left: 50%; transform: translateX(-50%)` in the
+   *  SCSS anymore: cdkDrag overwrites `style.transform` the instant a drag
+   *  starts, silently discarding that centering and making the panel jump. */
+  pos = signal({ top: 70, left: 0 });
   activeTab = signal<TradeTab>('market');
 
   // ── Échanges (marché) ──────────────────────────────────────────────────────
@@ -117,8 +123,14 @@ export class TradeCenterComponent implements OnInit {
   proposeError = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 70, 'center', 460, 560);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.loadMarket(false);
+  }
+
+  ngOnDestroy(): void {
+    this.dialogStack.release(this.dialogId);
   }
 
   onDragStarted(): void {

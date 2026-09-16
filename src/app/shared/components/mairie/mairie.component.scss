@@ -22,10 +22,13 @@
 }
 
 .mairie {
+  // top/left set inline from DialogStackService.open() (see the .ts) — was
+  // hardcoded to `16+550+16+700+16 = 1298px`, an assumed neighbor layout
+  // (friends + trade-center open side by side) that was never actually
+  // guaranteed: already off the right edge of a 1280px viewport with NO
+  // other panel open at all.
   position: fixed;
   z-index: 100;
-  top: 80px;
-  left: calc(16px + 550px + 16px + 700px + 16px);
   height: 560px;
   width: 380px;
 }

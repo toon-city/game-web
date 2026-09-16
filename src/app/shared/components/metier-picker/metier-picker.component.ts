@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MetierOption } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
@@ -19,20 +19,31 @@ import { DialogStackService } from '../../../core/services/dialog-stack.service'
   templateUrl: './metier-picker.component.html',
   styleUrls: ['./metier-picker.component.scss'],
 })
-export class MetierPickerComponent implements OnInit {
+export class MetierPickerComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly metierService = inject(MetierService);
   private readonly dialogStack = inject(DialogStackService);
+  private readonly dialogId = this.dialogStack.newInstanceId();
 
   zIndex = signal(100);
+  /** Was `left: 50%; transform: translateX(-50%)` in the SCSS — cdkDrag
+   *  overwrites `style.transform` on drag start, silently discarding that
+   *  centering (see trade-center.component.ts for the same fix). */
+  pos = signal({ top: 90, left: 0 });
   options = signal<MetierOption[]>([]);
   loading = signal(false);
   busy = signal(false);
   errorText = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.zIndex.set(this.dialogStack.bringToFront());
+    const p = this.dialogStack.open(this.dialogId, 90, 'center', 380, 500);
+    this.zIndex.set(p.zIndex);
+    this.pos.set({ top: p.top, left: p.left });
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.dialogStack.release(this.dialogId);
   }
 
   onDragStarted(): void {
