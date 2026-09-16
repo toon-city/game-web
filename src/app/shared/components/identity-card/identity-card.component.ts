@@ -1,6 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
+import { MetierService } from '../../../core/services/metier.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 @Component({
@@ -13,10 +14,15 @@ import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 export class IdentityCardComponent {
   readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly metierService = inject(MetierService);
 
   openMyProfile(): void {
     const id = this.auth.user()?.id;
     if (id) this.profileService.open(id);
+  }
+
+  openMetierPicker(): void {
+    this.metierService.openPicker();
   }
 
   readonly kredsDiff = signal<number | null>(null);

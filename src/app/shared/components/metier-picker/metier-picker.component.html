@@ -1,0 +1,35 @@
+<div class="ui-block metier-picker" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" aria-label="Métiers">
+  <div class="content">
+    <div class="header" cdkDragHandle>
+      Métiers
+      <button class="close-button" (click)="close()" aria-label="Fermer" title="Fermer" type="button"></button>
+    </div>
+
+    <div class="body">
+      @if (errorText()) {
+        <p class="msg msg-error">{{ errorText() }}</p>
+      }
+      @if (loading()) {
+        <p class="hint">Chargement…</p>
+      } @else if (options().length === 0) {
+        <p class="hint">Aucun métier disponible pour le moment.</p>
+      } @else {
+        <div class="list-block">
+          @for (o of options(); track o.id) {
+            <div class="list-row metier-row">
+              <div class="identity">
+                <span class="username">{{ o.name }}</span>
+                <span class="badge badge-pez">+{{ o.dailyPez }} pz/jour</span>
+              </div>
+              @if (o.eligible) {
+                <button class="btn btn-small btn-primary" [disabled]="busy()" (click)="choose(o)" type="button">Choisir</button>
+              } @else {
+                <span class="hint block-reason">{{ o.blockReason }}</span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

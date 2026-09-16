@@ -20,6 +20,8 @@ import { ProfileService } from './core/services/profile.service';
 import { FriendsComponent } from './shared/components/friends/friends.component';
 import { FurniturePreviewComponent } from './shared/components/furniture-preview/furniture-preview.component';
 import { FurniturePreviewService } from './core/services/furniture-preview.service';
+import { MetierPickerComponent } from './shared/components/metier-picker/metier-picker.component';
+import { MetierService } from './core/services/metier.service';
 
 @Component({
   selector: 'app-root',
@@ -40,6 +42,7 @@ import { FurniturePreviewService } from './core/services/furniture-preview.servi
     ProfileComponent,
     FriendsComponent,
     FurniturePreviewComponent,
+    MetierPickerComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -51,6 +54,7 @@ export class AppComponent implements OnInit {
   readonly userActionDialog = inject(UserActionDialogService);
   readonly profileService = inject(ProfileService);
   readonly furniturePreview = inject(FurniturePreviewService);
+  readonly metierService = inject(MetierService);
 
   navOpen    = signal(false);
   invOpen    = signal(false);

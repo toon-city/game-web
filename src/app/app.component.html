@@ -37,6 +37,10 @@
     <app-friends (close)="amisOpen.set(false)" />
   }
 
+  @if (metierService.pickerOpen()) {
+    <app-metier-picker />
+  }
+
   @if (profileService.openUserId(); as profileUserId) {
     <app-profile [userId]="profileUserId" (close)="profileService.close()" />
   }
