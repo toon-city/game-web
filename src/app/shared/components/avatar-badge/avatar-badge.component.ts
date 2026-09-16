@@ -113,6 +113,25 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
   private app: Application | null = null;
   private avatar: Avatar | null = null;
   private equippedSub?: { unsubscribe(): void };
+  /**
+   * ngAfterViewInit is async (two awaits below) but a dialog can close
+   * (ngOnDestroy) before either resolves — e.g. the profile dialog's badge
+   * only mounts once `profile()` loads, so a fast open/close can tear the
+   * component down mid-init. Racing `app.destroy()` (from ngOnDestroy)
+   * against a still-running `app.init()`/Avatar-construction left the
+   * renderer in a torn state: destroy() nulls internal GL resources, but
+   * the ticker (already scheduling frames) fires again once init finishes
+   * building on top of it, hitting `null.geometry` in the batcher and
+   * crashing PixiJS process-wide (confirmed live: rapid-fire opening/
+   * closing the profile dialog reproduced "Cannot read properties of null
+   * (reading 'geometry')" on the very first cycle, every time). Checked
+   * after each await so we bail before touching a canvas/app that
+   * ngOnDestroy already started tearing down, and finish the teardown
+   * ourselves once the in-flight init settles instead of proceeding.
+   */
+  private destroyed = false;
+  /** True once both awaits below have resolved and the avatar is on stage — ngOnDestroy only destroys `app` directly when this is true; otherwise it defers (via `destroyed`) to the post-await checks above, since `this.app` is already a truthy-but-not-fully-inited Application during that window. */
+  private initDone = false;
 
   async ngAfterViewInit(): Promise<void> {
     const box = this.size;
@@ -127,9 +146,11 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       resolution: window.devicePixelRatio ?? 1,
       autoDensity: true,
     });
+    if (this.destroyed) { this.app.destroy({}, { children: true }); this.app = null; return; }
 
     if (environment.assetsUrl) AssetBaseUrl.setDynamic(environment.assetsUrl);
     await BaseTextureLoader.getInstance().load();
+    if (this.destroyed) { this.app.destroy({}, { children: true }); this.app = null; return; }
 
     // direction 1 = down/front-facing — the pose that shows the face (see
     // the direction diagram at the top of game-core's Avatar.ts).
@@ -175,6 +196,7 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
     }
 
     this.app.stage.addChild(this.avatar);
+    this.initDone = true;
 
     if (this.override) {
       this.avatar.setSkinColor(this.override.skinColor);
@@ -204,10 +226,20 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.equippedSub?.unsubscribe();
-    this.app?.ticker.stop();
-    this.app?.destroy(true, { children: true });
-    this.app = null;
+    // Only destroy directly once init() has actually finished — `this.app`
+    // is truthy the instant `new Application()` runs, well before it's
+    // safe to destroy, so gate on `initDone` instead. While init is still
+    // in flight, just leave the `destroyed` flag set: the post-await checks
+    // in ngAfterViewInit above will destroy it themselves the moment their
+    // pending init settles, instead of racing a concurrent destroy() against
+    // an Application that isn't fully built yet.
+    if (this.initDone && this.app) {
+      this.app.ticker.stop();
+      this.app.destroy({}, { children: true });
+      this.app = null;
+    }
     this.avatar = null;
   }
 }
