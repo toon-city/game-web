@@ -112,6 +112,19 @@
         &:focus { outline: none; }
       }
 
+      .emoji-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        font-size: 17px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.12s;
+
+        &:hover, &.active { background: rgba(210, 87, 142, 0.10); }
+      }
+
       .enter {
         display: flex;
         align-items: center;
@@ -126,6 +139,73 @@
 
         &:hover { filter: brightness(1.1); }
       }
+    }
+  }
+
+  // ── Emoji/cœurs/zzz picker — floats above the chat bar regardless of
+  // whether history is open (positioned relative to .chat itself, not
+  // .new-message, so it isn't affected by that panel's own height). ──────
+  .emoji-picker {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 8px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    border: 2px solid #3B6E77;
+    border-radius: 11px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .emojis {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+  }
+
+  .emojis .emoji {
+    aspect-ratio: 1;
+    padding: 3px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s;
+
+    &:hover { background: rgba(35, 105, 129, 0.08); }
+
+    img { width: 100%; height: 100%; object-fit: contain; }
+  }
+
+  .emote-buttons {
+    display: flex;
+    gap: 8px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(35, 105, 129, 0.12);
+  }
+
+  .action-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(35, 105, 129, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s;
+
+    img { width: 20px; height: 20px; object-fit: contain; }
+
+    &:hover {
+      background: rgba(240, 3, 127, 0.10);
+      transform: translateY(-1px);
     }
   }
 }

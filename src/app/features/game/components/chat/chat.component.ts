@@ -68,6 +68,36 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
+  // ── Emoji/cœurs/zzz picker — lives next to the message input, not in
+  // the player-list panel it used to be bolted onto. ──────────────────────
+  readonly emojis = Array.from({ length: 12 }, (_, i) => i + 1);
+  emojiPickerOpen = signal(false);
+
+  toggleEmojiPicker(): void {
+    this.emojiPickerOpen.update(v => !v);
+  }
+
+  /**
+   * All three just broadcast — the server echoes back to the sender too
+   * (same pattern as chat), so the local avatar's own bubble appears via
+   * that round-trip in GameCanvasComponent's remoteEmote$ subscription,
+   * not from anything done here.
+   */
+  sendSmile(frame: number): void {
+    if (this.roomId) this.socket.sendAvatarEmote(this.roomId, 'SMILE', frame);
+    this.emojiPickerOpen.set(false);
+  }
+
+  sendLove(): void {
+    if (this.roomId) this.socket.sendAvatarEmote(this.roomId, 'LOVE');
+    this.emojiPickerOpen.set(false);
+  }
+
+  sendZzz(): void {
+    if (this.roomId) this.socket.sendAvatarEmote(this.roomId, 'ZZZ');
+    this.emojiPickerOpen.set(false);
+  }
+
   ngOnInit(): void {
     this.friendService.status().subscribe({
       next: (s) => { this.blockedIds = new Set(s.blocked.map(b => b.userId)); },

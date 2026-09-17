@@ -21,8 +21,6 @@ export class GameMenuComponent {
   readonly totalConnected = computed(() => this.users().length);
   readonly myUserId = computed(() => this.auth.user()?.id ?? '');
 
-  readonly emojis = Array.from({ length: 12 }, (_, i) => i + 1);
-
   soundOn = signal(true);
   menuOpen = signal(true);
 
@@ -46,26 +44,5 @@ export class GameMenuComponent {
    */
   openRow(user: RoomUser): void {
     this.userActionDialog.open(user);
-  }
-
-  /**
-   * All three just broadcast — the server echoes back to the sender too
-   * (same pattern as chat), so the local avatar's own bubble appears via
-   * that round-trip in GameCanvasComponent's remoteEmote$ subscription,
-   * not from anything done here.
-   */
-  sendSmile(frame: number): void {
-    const roomId = this.socket.roomState()?.roomId;
-    if (roomId) this.socket.sendAvatarEmote(roomId, 'SMILE', frame);
-  }
-
-  sendLove(): void {
-    const roomId = this.socket.roomState()?.roomId;
-    if (roomId) this.socket.sendAvatarEmote(roomId, 'LOVE');
-  }
-
-  sendZzz(): void {
-    const roomId = this.socket.roomState()?.roomId;
-    if (roomId) this.socket.sendAvatarEmote(roomId, 'ZZZ');
   }
 }

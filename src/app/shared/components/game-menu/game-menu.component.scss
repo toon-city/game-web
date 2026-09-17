@@ -203,32 +203,6 @@
   color: var(--toon-petrol-dark);
 }
 
-#game-menu .emojis {
-  flex-shrink: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 10px;
-  width: 100%;
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(3, 56, 73, 0.10);
-  box-sizing: border-box;
-}
-
-#game-menu .emojis .emoji {
-  aspect-ratio: 1;
-  padding: 4px;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.12s;
-
-  &:hover { background: rgba(35, 105, 129, 0.06); }
-}
-
 #game-menu .buttons {
   flex-shrink: 0;
   display: flex;
