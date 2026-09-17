@@ -2,49 +2,23 @@
    styles.scss's --toon-* tokens) — same recipe as the other shared panels. */
 :host { display: contents; }
 
-// ── Wrapper collapsible (même recette que GameMenuComponent's .menu-wrapper) ────
+// ── Wrapper collapsible ───────────────────────────────────────────────────────
 
 .nav-wrapper {
   position: fixed;
   right: 0;
   bottom: 16px;
   z-index: 150;
-  display: flex;
-  align-items: center;
   transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 
+  // Leaves the tab (first child of .navbar, ~40px including its own
+  // padding) on screen — see .nav-tab below. Was a separate pink block
+  // bolted on to the left of the bar; now it's literally .navbar's own
+  // first child, sharing the same background/shape, so this is the only
+  // piece left visible once the rest slides off.
   &.closed {
-    transform: translateX(calc(100% - 28px));
+    transform: translateX(calc(100% - 40px));
   }
-}
-
-// Prolongement visuel de la barre (même dégradé que les en-têtes de
-// panneau), pas un élément séparé posé à côté.
-.nav-tab {
-  flex-shrink: 0;
-  width: 28px;
-  align-self: stretch;
-  padding: 12px 0;
-  background: linear-gradient(180deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
-  border: none;
-  border-radius: 10px 0 0 10px;
-  margin-right: -1px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.16);
-  user-select: none;
-  transition: filter 0.15s;
-
-  &:hover { filter: brightness(1.08); }
-}
-
-.nav-tab-icon {
-  font-size: 13px;
-  color: white;
-  font-weight: 900;
-  line-height: 1;
 }
 
 // ── Barre de navigation (horizontale, collée au bord droit) ──────────────────
@@ -54,11 +28,11 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  // Fixed-width row (4 icons + 3 buttons) overflows past the left edge on
-  // narrow viewports since the wrapper is anchored right:0 — capping the
-  // width and letting it wrap keeps it on-screen instead of clipping off
-  // at negative x (the tab's 28px + a little breathing room reserved).
-  max-width: calc(100vw - 44px);
+  // Fixed-width row (tab + 4 icons + 3 buttons) overflows past the left
+  // edge on narrow viewports since the wrapper is anchored right:0 —
+  // capping the width and letting it wrap keeps it on-screen instead of
+  // clipping off at negative x.
+  max-width: calc(100vw - 16px);
   padding: 8px;
   gap: 8px;
   background: rgba(255, 255, 255, 0.97);
@@ -66,6 +40,32 @@
   // and this wraps to 2 rows on narrow viewports (see max-width above).
   border-radius: 20px 0 0 20px;
   box-shadow: 0 8px 24px rgba(3, 56, 73, 0.28);
+}
+
+// The tab IS the bar's own left end — same background as .navbar (no
+// separate colored block), just a distinct clickable cell with a thin
+// divider so it still reads as a handle.
+.nav-tab {
+  flex-shrink: 0;
+  width: 24px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-right: 2px solid rgba(35, 105, 129, 0.12);
+  padding-right: 6px;
+  margin-right: 2px;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(35, 105, 129, 0.06); }
+}
+
+.nav-tab-icon {
+  font-size: 12px;
+  color: var(--toon-petrol);
+  font-weight: 900;
+  line-height: 1;
 }
 
 .nav-icon {
