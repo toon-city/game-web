@@ -77,6 +77,28 @@ html {
 }
 .snack-info .mat-mdc-button { color: #043849 !important; }
 
+/* ── Mobile: popups en plein écran ───────────────────────────────────────────
+   Tous les dialogs draggables (Amis/Inventaire/Boutique/Mairie/Navigateur/
+   Échanges/Profil/Métier-picker/Zone-texture-picker) partagent la classe
+   racine .ui-block, chacun avec sa propre 2e classe (.inventory, .friends…)
+   qui pose position:fixed + une largeur/hauteur fixe en dur, en encapsulation
+   Angular (spécificité plus haute qu'une règle globale à une seule classe) —
+   d'où le !important ici, seule façon de gagner sur ces règles par composant
+   sans les dupliquer une par une. Le drag est désactivé séparément côté TS
+   via ViewportService + [cdkDragDisabled]. Desktop (>767.98px) intouché. */
+@media (max-width: 767.98px) {
+  .ui-block {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    transform: none !important;
+  }
+}
+
 /* ── Base ────────────────────────────────────────────────────────────────── */
 html, body {
   height: 100%;

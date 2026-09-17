@@ -6,6 +6,7 @@ import { finalize } from 'rxjs/operators';
 import { UserItemInfo, ItemType } from '@toon-live/game-types';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 
 type InvFilter = 'TOUS' | 'MEUBLES' | 'VETEMENTS' | 'DIVERS';
 
@@ -28,6 +29,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
 
   private readonly inventoryService = inject(InventoryService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */
   zIndex = signal(100);

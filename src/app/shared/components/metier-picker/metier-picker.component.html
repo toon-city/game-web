@@ -1,4 +1,4 @@
-<div class="ui-block metier-picker" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" [style.top.px]="pos().top" [style.left.px]="pos().left" aria-label="Métiers">
+<div class="ui-block metier-picker" cdkDrag [cdkDragDisabled]="viewport.isMobile()" cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" [style.top.px]="pos().top" [style.left.px]="pos().left" aria-label="Métiers">
   <div class="content">
     <div class="header" cdkDragHandle>
       Métiers

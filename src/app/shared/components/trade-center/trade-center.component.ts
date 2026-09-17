@@ -7,6 +7,7 @@ import { TradeService } from '../../../core/services/trade.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 
 type TradeTab = 'market' | 'mine' | 'history';
 
@@ -54,6 +55,7 @@ export class TradeCenterComponent implements OnInit, OnDestroy {
   private readonly inventoryService = inject(InventoryService);
   private readonly auth = inject(AuthService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly dialogId = this.dialogStack.newInstanceId();
 
   zIndex = signal(100);

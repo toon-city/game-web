@@ -217,6 +217,24 @@
     overflow: hidden;
   }
 
+  // Same plein-écran treatment as the .ui-block dialogs (styles.scss) —
+  // this panel doesn't share that class (its own top/left/width predate
+  // DialogStackService's convention), so it needs its own override here.
+  // Drag disabled separately via [cdkDragDisabled] (see the .html).
+  @media (max-width: 767.98px) {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    transform: none;
+
+    .pp-inner {
+      max-height: none;
+      height: 100%;
+    }
+  }
+
   // ── En-tête (drag handle) ────────────────────────────────────────────────────
 
   .header {

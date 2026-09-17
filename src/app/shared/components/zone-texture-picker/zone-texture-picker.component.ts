@@ -5,6 +5,7 @@ import { UserItemInfo, ItemSubType } from '@toon-live/game-types';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 import { ZoneTexturePickerTarget } from '../../../core/services/zone-texture-picker.service';
 
 /**
@@ -33,6 +34,7 @@ export class ZoneTexturePickerComponent implements OnInit, OnChanges, OnDestroy 
   private readonly inventoryService = inject(InventoryService);
   private readonly socket = inject(SocketService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly dialogId = this.dialogStack.newInstanceId();
 
   zIndex = signal(100);

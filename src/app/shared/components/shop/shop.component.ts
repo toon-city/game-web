@@ -6,6 +6,7 @@ import { ShopItemInfo, ShopIdType, CollectionInfo } from '@toon-live/game-types'
 import { ShopService } from '../../../core/services/shop.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 
 type BuyState = { shopItemId: number; option: 'PEZ' | 'KREDS' } | null;
 type ConfirmState = { item: ShopItemInfo; option: 'PEZ' | 'KREDS'; sourceEl: HTMLElement; quantity: number } | null;
@@ -37,6 +38,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   private readonly shopService = inject(ShopService);
   readonly auth = inject(AuthService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly dialogId = this.dialogStack.newInstanceId();
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */

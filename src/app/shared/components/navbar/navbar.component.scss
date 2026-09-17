@@ -125,3 +125,41 @@
   background: linear-gradient(90deg, #22c55e, #16a34a);
   box-shadow: 0 0 0 2px white, 0 2px 6px rgba(22, 163, 74, 0.5);
 }
+
+// ── Mobile: full-width bottom toolbar instead of the collapsible bottom-
+// right tab. Always fully visible (no point collapsing a bar that's already
+// thin and full-width) — the tab that used to toggle it is hidden, and the
+// closed/collapsed transform is neutralised so it can't get stuck off-screen
+// (e.g. `open` was already false from a desktop session before resizing
+// down). Desktop rules above are untouched, this only fires ≤767.98px.
+@media (max-width: 767.98px) {
+  .nav-wrapper,
+  .nav-wrapper.closed {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none !important;
+  }
+
+  .navbar {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    border-radius: 14px 14px 0 0;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 16px rgba(3, 56, 73, 0.22);
+    gap: 6px;
+  }
+
+  .nav-tab { display: none; }
+
+  .nav-icon {
+    height: 38px;
+    width: 38px;
+  }
+
+  .nav-btn {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}

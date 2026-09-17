@@ -1,4 +1,4 @@
-<div class="ui-block mairie" cdkDrag cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" [style.top.px]="pos().top" [style.left.px]="pos().left" aria-label="Mairie">
+<div class="ui-block mairie" cdkDrag [cdkDragDisabled]="viewport.isMobile()" cdkDragBoundary="body" (cdkDragStarted)="onDragStarted()" [style.z-index]="zIndex()" [style.top.px]="pos().top" [style.left.px]="pos().left" aria-label="Mairie">
   <div class="content">
     <div class="header" cdkDragHandle>
       Mairie

@@ -4,6 +4,7 @@ import { MetierOption } from '@toon-live/game-types';
 import { AuthService } from '../../../core/services/auth.service';
 import { MetierService } from '../../../core/services/metier.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 
 /**
  * Player-facing métier picker — reached by clicking the métier area of the
@@ -23,6 +24,7 @@ export class MetierPickerComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly metierService = inject(MetierService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly dialogId = this.dialogStack.newInstanceId();
 
   zIndex = signal(100);

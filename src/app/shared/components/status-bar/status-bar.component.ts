@@ -17,6 +17,7 @@ import { UserListService, UserListItem } from '../../../core/services/user-list.
 import { SocketService } from '../../../core/services/socket.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 import { Subscription } from 'rxjs';
 
 /** Ligne dans le tableau joueurs : données API + roomId formaté en string */
@@ -40,6 +41,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   private readonly router       = inject(Router);
   private readonly profileService = inject(ProfileService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
 
   /** Player panel joins the same stack as the other dialogs (shop, profile,
    *  ...) — was a static z-index:201, always above them regardless of which

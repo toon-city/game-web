@@ -243,3 +243,11 @@
     }
   }
 }
+
+// ── Mobile: la status-bar a son propre panel "Connectés" (pastille en haut,
+// voir status-bar.component) — sur mobile c'est le seul, pour ne pas se
+// battre avec le joystick de déplacement pour la même zone bas-droite.
+// Desktop garde les deux panels inchangés.
+@media (max-width: 767.98px) {
+  .menu-wrapper { display: none; }
+}

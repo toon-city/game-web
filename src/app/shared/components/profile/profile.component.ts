@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FriendService } from '../../../core/services/friend.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
@@ -33,6 +34,7 @@ export class ProfileComponent implements OnInit, OnChanges, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly inventory = inject(InventoryService);
   private readonly dialogId = this.dialogStack.newInstanceId();
 

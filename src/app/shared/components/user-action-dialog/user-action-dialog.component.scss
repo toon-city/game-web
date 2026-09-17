@@ -24,8 +24,25 @@
   to   { transform: translateX(0); }
 }
 
+// Mobile: the desktop offset (right:364px/top:230px) is measured against
+// GameMenuComponent's panel width, which is hidden entirely on mobile (see
+// game-menu.component.scss) — this dialog can still open there though (an
+// avatar click in-canvas, or a row in the status-bar's Connectés panel, both
+// also call UserActionDialogService.open()), so it needs its own
+// mobile-appropriate position: centered, not anchored to a hidden panel.
+@media (max-width: 767.98px) {
+  .dialog-wrapper {
+    right: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding-right: 0;
+    animation: none;
+  }
+}
+
 .content {
-  width: 340px;
+  width: min(340px, calc(100vw - 32px));
   background: rgba(255, 255, 255, 0.97);
   border-radius: 18px;
   box-shadow: 0 12px 32px rgba(3, 56, 73, 0.28);

@@ -7,6 +7,7 @@ import { MairieService } from '../../../core/services/mairie.service';
 import { InventoryService } from '../../../core/services/inventory.service';
 import { UserListItem } from '../../../core/services/user-list.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
 @Component({
@@ -23,6 +24,7 @@ export class MairieComponent implements OnInit, OnDestroy {
   private readonly mairie = inject(MairieService);
   private readonly inventory = inject(InventoryService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly dialogId = this.dialogStack.newInstanceId();
 
   /** Bumped on open and on every drag — "dernier affiché + dernier déplacé". */

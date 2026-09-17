@@ -210,6 +210,32 @@
   }
 }
 
+// ── Mobile: chat quitte le centrage plein-large pour laisser la place au
+// joystick de déplacement (bottom-right, voir game-canvas.component.ts) et
+// à la barre de navigation devenue une barre du bas pleine largeur (voir
+// navbar.component.scss) — .chat flotte juste au-dessus de cette dernière,
+// aligné à gauche, avec sa droite dégagée de la zone du joystick. Desktop
+// (centré, bottom:16px) est inchangé au-dessus de 767.98px.
+@media (max-width: 767.98px) {
+  .chat {
+    left: 8px;
+    // 140px clears the joystick's full footprint (right:20px + 110px wide =
+    // 130px from the edge) plus an 8-10px gap — measured live, a smaller
+    // value here left the chat bar's right corner overlapping the
+    // joystick's top-left corner on a 390px-wide screen.
+    right: 140px;
+    transform: none;
+    width: auto;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+
+    // Same specificity as the desktop 6-column rule (both `.chat .emojis`)
+    // so this actually wins instead of silently losing to it.
+    .emojis {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
 
 .chat-header {
   display: flex;

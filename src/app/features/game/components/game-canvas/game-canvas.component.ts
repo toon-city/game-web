@@ -12,7 +12,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { Application, Assets } from 'pixi.js';
-import { GameCore, LoadingView, FurnitureView } from 'game-core';
+import { GameCore, LoadingView, FurnitureView, DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN } from 'game-core';
 import { RoomState, UserItemInfo, RoomErrorPayload, RoomPermission } from '@toon-live/game-types';
 import { SocketService } from '../../../../core/services/socket.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -20,6 +20,7 @@ import { InventoryService } from '../../../../core/services/inventory.service';
 import { UserActionDialogService } from '../../../../core/services/user-action-dialog.service';
 import { FurniturePreviewService } from '../../../../core/services/furniture-preview.service';
 import { ZoneTexturePickerService } from '../../../../core/services/zone-texture-picker.service';
+import { ViewportService } from '../../../../core/services/viewport.service';
 import { environment } from '../../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
@@ -48,6 +49,20 @@ import { Subscription } from 'rxjs';
         <button class="recenter-btn" (click)="recenterCamera()" aria-label="Recentrer la caméra">
           <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6a6 6 0 0 1-6 6 6 6 0 0 1-6-6H4a8 8 0 0 0 8 8 8 8 0 0 0 8-8 8 8 0 0 0-8-8z"/></svg>
         </button>
+      </div>
+    }
+    @if (viewport.isMobile()) {
+      <div
+        #moveJoystickBase
+        class="move-joystick-base"
+        role="group"
+        aria-label="Déplacer le personnage"
+        (pointerdown)="onMoveJoystickDown($event, moveJoystickBase)"
+        (pointermove)="onMoveJoystickMove($event, moveJoystickBase)"
+        (pointerup)="onMoveJoystickUp($event)"
+        (pointercancel)="onMoveJoystickUp($event)"
+      >
+        <div class="move-joystick-knob" [style.transform]="moveKnobTransform()"></div>
       </div>
     }
   `,
@@ -122,6 +137,56 @@ import { Subscription } from 'rxjs';
     .recenter-btn svg { width: 14px; height: 14px; fill: currentColor; }
     .recenter-btn:hover { color: #fff; background: rgba(20, 40, 50, 1); }
     .recenter-btn:active { color: #ffd35c; }
+
+    /* Mobile movement joystick — visible only below the 767.98px breakpoint
+       (mounted conditionally via ViewportService, see @if above), so it
+       never affects desktop even if this CSS loaded there. Bottom-right,
+       clear of the bottom nav bar (navbar.component.scss reserves that
+       strip on mobile) and of the chat bar (chat.component.scss leaves
+       right:100px free on mobile specifically for this). */
+    .move-joystick-base {
+      position: absolute;
+      right: 20px;
+      bottom: 96px;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 45%, rgba(30, 55, 68, 0.85) 0%, rgba(14, 30, 38, 0.85) 72%);
+      box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+        inset 0 2px 4px rgba(255, 255, 255, 0.08);
+      touch-action: none;
+      z-index: 90;
+    }
+    .move-joystick-base::after {
+      content: '';
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      pointer-events: none;
+    }
+    .move-joystick-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 46px;
+      height: 46px;
+      margin: -23px 0 0 -23px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #f0037f 0%, #a8005a 100%);
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+      pointer-events: none;
+      transition: box-shadow 0.1s;
+    }
+    .move-joystick-base:active .move-joystick-knob {
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    }
   `],
 })
 export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges {
@@ -141,6 +206,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private userActionDialog = inject(UserActionDialogService);
   private furniturePreview = inject(FurniturePreviewService);
   private zoneTexturePicker = inject(ZoneTexturePickerService);
+  protected viewport = inject(ViewportService);
 
   private app: Application | null = null;
   private gc:  GameCore | null    = null;
@@ -265,6 +331,65 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   recenterCamera(): void {
     this.gc?.centerCameraOnAvatar(this.myId);
+  }
+
+  // ── Mobile movement joystick ─────────────────────────────────────────────
+  // Same analog-drag widget as the camera pad above, but wired straight to
+  // GameCore.setVirtualDirection instead of panning — no interval needed,
+  // the direction bitmask is set directly on each pointer event and
+  // InputController.setDirectionMask only fires the avatar's onChange when
+  // the mask actually changes (same edge-triggering as keyboard/touch).
+
+  private static readonly MOVE_KNOB_MAX_OFFSET = 32; // px, base radius(55) - knob radius(23)
+  private static readonly MOVE_DEAD_ZONE = 10;        // px, per axis
+
+  private moveActivePointerId: number | null = null;
+  private moveKnobOffset = { x: 0, y: 0 };
+
+  moveKnobTransform(): string {
+    return `translate(${this.moveKnobOffset.x}px, ${this.moveKnobOffset.y}px)`;
+  }
+
+  onMoveJoystickDown(ev: PointerEvent, baseEl: HTMLElement): void {
+    ev.preventDefault();
+    this.moveActivePointerId = ev.pointerId;
+    baseEl.setPointerCapture(ev.pointerId);
+    this.updateMoveJoystick(ev, baseEl);
+  }
+
+  onMoveJoystickMove(ev: PointerEvent, baseEl: HTMLElement): void {
+    if (this.moveActivePointerId !== ev.pointerId) return;
+    this.updateMoveJoystick(ev, baseEl);
+  }
+
+  onMoveJoystickUp(ev: PointerEvent): void {
+    if (this.moveActivePointerId !== ev.pointerId) return;
+    this.moveActivePointerId = null;
+    this.moveKnobOffset = { x: 0, y: 0 };
+    this.gc?.setVirtualDirection(this.myId, 0);
+  }
+
+  private updateMoveJoystick(ev: PointerEvent, baseEl: HTMLElement): void {
+    const rect = baseEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let dx = ev.clientX - cx;
+    let dy = ev.clientY - cy;
+    const dist = Math.hypot(dx, dy);
+    const max = GameCanvasComponent.MOVE_KNOB_MAX_OFFSET;
+    if (dist > max) {
+      dx = (dx / dist) * max;
+      dy = (dy / dist) * max;
+    }
+    this.moveKnobOffset = { x: dx, y: dy };
+
+    const th = GameCanvasComponent.MOVE_DEAD_ZONE;
+    const mask =
+      (dx < -th ? DIR_LEFT  : 0) |
+      (dx >  th ? DIR_RIGHT : 0) |
+      (dy < -th ? DIR_UP    : 0) |
+      (dy >  th ? DIR_DOWN  : 0);
+    this.gc?.setVirtualDirection(this.myId, mask);
   }
 
   private async startLoading(): Promise<void> {
@@ -402,6 +527,17 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       clothing:  myRoomUser?.clothing ?? {},
     });
     this.gc.bindPlayerInput(this.myId);
+
+    // The follow camera is lookahead-style: it only nudges once the avatar
+    // nears a fixed-pixel cameraMargin from the edge, it doesn't snap to
+    // center on spawn. That margin is a much smaller fraction of a small
+    // mobile screen, so on mobile the avatar can spawn well outside the
+    // visible frame with nothing on screen until it's walked far enough to
+    // trigger a follow — force an immediate center there. Desktop's viewport
+    // is large enough that this was never an issue, so left untouched.
+    if (this.viewport.isMobile()) {
+      this.gc.centerCameraOnAvatar(this.myId);
+    }
 
     // Wirer l'inventaire pour notifier le serveur après equip/unequip, et pour
     // démarrer un placement meuble (voir startPlacingFurniture).

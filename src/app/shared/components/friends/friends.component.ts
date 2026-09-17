@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { FriendService } from '../../../core/services/friend.service';
 import { UserListItem } from '../../../core/services/user-list.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
+import { ViewportService } from '../../../core/services/viewport.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { AvatarBadgeComponent } from '../avatar-badge/avatar-badge.component';
 
@@ -28,6 +29,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly friendService = inject(FriendService);
   private readonly dialogStack = inject(DialogStackService);
+  protected readonly viewport = inject(ViewportService);
   private readonly dialogId = this.dialogStack.newInstanceId();
   private readonly router = inject(Router);
   private readonly profileService = inject(ProfileService);
