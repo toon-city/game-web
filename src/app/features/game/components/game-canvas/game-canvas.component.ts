@@ -543,14 +543,14 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     // The follow camera is lookahead-style: it only nudges once the avatar
     // nears a fixed-pixel cameraMargin from the edge, it doesn't snap to
-    // center on spawn. That margin is a much smaller fraction of a small
-    // mobile screen, so on mobile the avatar can spawn well outside the
-    // visible frame with nothing on screen until it's walked far enough to
-    // trigger a follow — force an immediate center there. Desktop's viewport
-    // is large enough that this was never an issue, so left untouched.
-    if (this.viewport.isMobile()) {
-      this.gc.centerCameraOnAvatar(this.myId);
-    }
+    // center on spawn — the initial camera position is a hardcoded (400,300)
+    // guess (see setCameraPosition above), arbitrary relative to wherever a
+    // given room's actual door/spawn point projects to. Used to look
+    // desktop-safe only because the one room available to test against
+    // happened to spawn near that guess; confirmed live against a room whose
+    // door projects to (2972,0) that desktop is exactly as exposed to a
+    // blank/empty-looking canvas on spawn as mobile — always snap to center.
+    this.gc.centerCameraOnAvatar(this.myId);
 
     // Wirer l'inventaire pour notifier le serveur après equip/unequip, et pour
     // démarrer un placement meuble (voir startPlacingFurniture).
