@@ -1,4 +1,10 @@
-<aside class="identity-card" aria-label="Identité utilisateur">
+<div class="ic-wrapper" [class.closed]="!open()">
+  <div class="ic-tab" (click)="toggle()" [title]="open() ? 'Replier' : 'Identité'"
+       role="button" tabindex="0" (keyup.enter)="toggle()">
+    <span class="ic-tab-icon">{{ open() ? '❯' : '❮' }}</span>
+  </div>
+
+  <aside class="identity-card" aria-label="Identité utilisateur">
   <div class="ic-inner">
 
     <div class="ic-header">
@@ -55,4 +61,5 @@
     </div>
 
   </div>
-</aside>
+  </aside>
+</div>

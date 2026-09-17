@@ -1,3 +1,7 @@
+/* Palette/type are the real project identity (see login.component.scss /
+   styles.scss's --toon-* tokens) — same recipe as the other shared panels.
+   Was its own third ad-hoc palette (#2b4a5a/#82c9e8/#fde3c5/#d24193 +
+   a rainbow-shimmer text label) before. */
 :host {
   display: contents;
 }
@@ -6,8 +10,7 @@
 .menu-wrapper {
   position: fixed;
   right: 0;
-  // 248px, not 230px: identity-card sits at top:72px and runs ~163px tall,
-  // ending ≈235px — 230 overlapped its bottom edge by ~5px.
+  // identity-card sits at top:72px and runs ~163px tall, ending ≈235px.
   top: 248px;
   z-index: 60;
   display: flex;
@@ -27,7 +30,7 @@
   width: 28px;
   padding: 24px 0;
   background: white;
-  border: 2px solid #2b4a5a;
+  border: 2px solid var(--toon-petrol);
   border-right: none;
   border-radius: 10px 0 0 10px;
   margin-right: -2px; /* recouvre le bord gauche du panel */
@@ -42,11 +45,11 @@
   user-select: none;
   transition: background 0.15s;
 
-  &:hover { background: #eef8fb; }
+  &:hover { background: rgba(35, 105, 129, 0.06); }
 
   .tab-icon {
     font-size: 13px;
-    color: #2b4a5a;
+    color: var(--toon-petrol);
     font-weight: 900;
     line-height: 1;
   }
@@ -54,7 +57,7 @@
   .tab-count {
     font-size: 11px;
     font-weight: 900;
-    color: #d24193;
+    color: var(--toon-pink);
     font-family: 'Nunito', Arial, sans-serif;
     writing-mode: vertical-lr;
     transform: rotate(180deg);
@@ -63,11 +66,12 @@
 }
 
 #game-menu {
-  padding: 5px;
-  background: white;
-  border: 2px solid #2b4a5a;
-  border-radius: 11px;
-  // Content (bar + 300px list + emoji grid + buttons) runs ~600px tall,
+  padding: 0;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30), 0 2px 8px rgba(3, 56, 73, 0.14);
+  overflow: hidden;
+  // Content (header + 300px list + emoji grid + buttons) runs ~600px tall,
   // which ran off the bottom of the viewport on anything shorter than
   // ~900px — cap it to the available space below the wrapper's top offset
   // and let it scroll instead of clipping unreachably.
@@ -80,20 +84,59 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
-  border: 2px solid #2b4a5a;
-  border-radius: 6px;
-  background: #82c9e8;
+  padding: 12px;
+  background: white;
+}
+
+// ── En-tête "Connectés" (remplace le label texte à effet arc-en-ciel par
+// le même bandeau dégradé rose que les autres panneaux du site) ─────────────
+.connected-bar {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  margin: -12px -12px 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(90deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
+  color: white;
+  font-family: 'Nunito', Arial, sans-serif;
+}
+
+.connected-bar .label {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.connected-bar .bar {
+  display: none; // the old empty pill-fill track carried no real information
+}
+
+.connected-bar .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 #game-menu .connected-list {
-  margin-top: 12px;
-  font-family: Arial, sans-serif;
-  border: 2px solid #2b4a5a;
+  margin-top: 0;
+  font-family: 'Nunito', Arial, sans-serif;
+  border: none;
   width: 250px;
   height: 300px;
   background: white;
-  border-radius: 6px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(3, 56, 73, 0.10);
   overflow-y: auto;
 }
 
@@ -105,21 +148,23 @@
 }
 
 #game-menu .connected-list table tbody tr:nth-child(odd) {
-  background-color: #fde3c5;
+  background-color: rgba(35, 105, 129, 0.04);
 }
 
 #game-menu .connected-list table tbody tr.clickable {
   cursor: pointer;
+  transition: background 0.1s;
 }
 
 #game-menu .connected-list table tbody tr.clickable:hover {
-  filter: brightness(0.95);
+  background: rgba(240, 3, 127, 0.06);
 }
 
 #game-menu .connected-list table td {
   border: none;
-  padding: 6px 8px;
+  padding: 7px 8px;
   vertical-align: middle;
+  font-size: 13px;
 }
 
 #game-menu .connected-list table td:first-child {
@@ -136,39 +181,45 @@
 }
 
 #game-menu .connected-list table td.man {
-  font-weight: bold;
-  color: #0c97ba;
+  font-weight: 800;
+  color: var(--toon-sky-dark);
 }
 
 #game-menu .connected-list table td.woman {
-  font-weight: bold;
-  color: #d24193;
+  font-weight: 800;
+  color: var(--toon-pink);
 }
 
 #game-menu .connected-list table td.no-binary {
-  font-weight: bold;
-  color: #000000;
+  font-weight: 800;
+  color: var(--toon-petrol-dark);
 }
 
 #game-menu .emojis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  padding: 8px;
-  border: 2px solid #2b4a5a;
+  padding: 10px;
+  border: none;
   width: 250px;
   background: white;
-  border-radius: 6px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(3, 56, 73, 0.10);
   margin-top: 12px;
+  box-sizing: border-box;
 }
 
 #game-menu .emojis .emoji {
   aspect-ratio: 1;
   padding: 4px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.12s;
+
+  &:hover { background: rgba(35, 105, 129, 0.06); }
 }
 
 #game-menu .buttons {
@@ -184,76 +235,25 @@
   margin-left: auto;
 }
 
-.connected-bar {
-  position: relative;
-  width: 220px;
-  font-family: Arial, sans-serif;
-}
+.action-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(35, 105, 129, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.12s;
 
-.connected-bar .bar {
-  background: white;
-  border-radius: 20px;
-  height: 22px;
-  border: 2px solid #2b4a5a;
-  position: relative;
-  overflow: hidden;
-}
+  img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
 
-.connected-bar .fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 65%;
-  background: white;
-  border-radius: 20px;
-}
-
-.connected-bar .count {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: bold;
-  color: #2b4a5a;
-  font-size: 13px;
-}
-
-.connected-bar .label {
-  position: absolute;
-  width: 200px;
-  top: -17px;
-  left: -5px;
-
-  font-size: 32px;
-  font-weight: 900;
-  letter-spacing: -3px;
-
-  background: linear-gradient(
-    90deg,
-    #ff2f63  0%,
-    #ff5580  30%,
-    #ff2f63  35%,
-    #fc85a30a 48%,
-    #fc85a3 55%,
-    #fc85a30a 62%,
-    #ff2f63  67%,
-    #ff5580  75%,
-    #ff2f63  100%
-  );
-  background-size: 400% 100%;
-  background-position: 0% center;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  transform: rotate(-2deg);
-
-  animation: shimmer-rtl 8s linear infinite;
-}
-
-@keyframes shimmer-rtl {
-  0%   { background-position: -100% center; }
-  13%  { background-position: 0% center; }
-  100% { background-position: 0% center; }
+  &:not([style*="cursor: default"]):hover {
+    background: rgba(240, 3, 127, 0.10);
+    transform: translateY(-1px);
+  }
 }

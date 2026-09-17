@@ -5,23 +5,65 @@
   display: contents;
 }
 
-// ── Carte identité ─────────────────────────────────────────────────────────────
+// ── Wrapper collapsible (même recette que GameMenuComponent's .menu-wrapper) ────
 
-.identity-card {
+.ic-wrapper {
   position: fixed;
   top: 72px;
-  right: 16px;
-  width: 230px;
+  right: 0;
   z-index: 60;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 10px 28px rgba(3, 56, 73, 0.26);
-  padding: 0;
-  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding-right: 16px;
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.closed {
+    transform: translateX(calc(100% - 28px));
+  }
 
   @media (max-width: 767.98px) {
     display: none;
   }
+}
+
+.ic-tab {
+  flex-shrink: 0;
+  width: 28px;
+  padding: 24px 0;
+  background: white;
+  border: 2px solid var(--toon-petrol);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  margin-right: -2px;
+  margin-top: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(35, 105, 129, 0.06); }
+}
+
+.ic-tab-icon {
+  font-size: 13px;
+  color: var(--toon-petrol);
+  font-weight: 900;
+  line-height: 1;
+}
+
+// ── Carte identité ─────────────────────────────────────────────────────────────
+
+.identity-card {
+  width: 230px;
+  border-radius: 18px 0 18px 18px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 10px 28px rgba(3, 56, 73, 0.26);
+  padding: 0;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .ic-inner {

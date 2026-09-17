@@ -47,9 +47,4 @@ export class GameMenuComponent {
   openRow(user: RoomUser): void {
     this.userActionDialog.open(user);
   }
-
-  fillPercent = computed(() => {
-    const max = this.socket.roomState()?.users?.length ?? 1;
-    return Math.min(100, Math.round((this.totalConnected() / Math.max(1, max)) * 100));
-  });
 }

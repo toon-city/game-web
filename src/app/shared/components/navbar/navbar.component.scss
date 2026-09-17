@@ -1,0 +1,117 @@
+/* Palette/type are the real project identity (see login.component.scss /
+   styles.scss's --toon-* tokens) — same recipe as the other shared panels. */
+:host { display: contents; }
+
+// ── Wrapper collapsible (même recette que GameMenuComponent's .menu-wrapper) ────
+
+.nav-wrapper {
+  position: fixed;
+  right: 0;
+  bottom: 16px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  padding-right: 0;
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.closed {
+    transform: translateX(calc(100% - 28px));
+  }
+}
+
+.nav-tab {
+  flex-shrink: 0;
+  width: 28px;
+  padding: 24px 0;
+  background: white;
+  border: 2px solid var(--toon-petrol);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  margin-right: -2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(35, 105, 129, 0.06); }
+}
+
+.nav-tab-icon {
+  font-size: 13px;
+  color: var(--toon-petrol);
+  font-weight: 900;
+  line-height: 1;
+}
+
+// ── Barre de navigation (colonne, collée au bord droit) ──────────────────────────
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px 0 0 20px;
+  box-shadow: 0 8px 24px rgba(3, 56, 73, 0.28);
+}
+
+.nav-icon {
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 4px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: transform 0.15s, background 0.15s;
+
+  &:hover { transform: scale(1.1); background: rgba(35, 105, 129, 0.08); }
+}
+
+.nav-btn {
+  position: relative;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(35, 105, 129, 0.07);
+  color: var(--toon-petrol-dark);
+  font-weight: 800;
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, transform 0.12s;
+
+  &:hover { background: rgba(240, 3, 127, 0.10); color: var(--toon-pink-dark); transform: translateY(-1px); }
+  &:focus { outline: none; box-shadow: 0 0 0 3px rgba(35, 105, 129, 0.15); }
+}
+
+.mairie-btn { overflow: visible; }
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--toon-pink), var(--toon-pink-dark));
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 0 0 2px white, 0 2px 6px rgba(240, 3, 127, 0.5);
+}
+
+.badge-green {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  box-shadow: 0 0 0 2px white, 0 2px 6px rgba(22, 163, 74, 0.5);
+}

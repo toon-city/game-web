@@ -16,6 +16,12 @@ export class IdentityCardComponent {
   private readonly profileService = inject(ProfileService);
   private readonly metierService = inject(MetierService);
 
+  /** Collapsible right-edge panel, same tab-and-slide recipe as GameMenuComponent. */
+  open = signal(true);
+  toggle(): void {
+    this.open.update(v => !v);
+  }
+
   openMyProfile(): void {
     const id = this.auth.user()?.id;
     if (id) this.profileService.open(id);

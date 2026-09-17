@@ -1,0 +1,30 @@
+<div class="nav-wrapper" [class.closed]="!open()">
+  <div class="nav-tab" (click)="toggle()" [title]="open() ? 'Replier' : 'Menu'"
+       role="button" tabindex="0" (keyup.enter)="toggle()">
+    <span class="nav-tab-icon">{{ open() ? '❯' : '❮' }}</span>
+  </div>
+
+  <nav class="navbar" aria-label="Navigation principale">
+    <img src="assets/images/navbar/accueil.png" alt="Accueil" class="nav-icon" (click)="accueil.emit()" role="button" tabindex="0" />
+    <img src="assets/images/navbar/navigator.png" alt="Navigateur" class="nav-icon" (click)="navigateur.emit()" role="button" tabindex="0" />
+    <img id="nav-inventory-icon" src="assets/images/navbar/inventory.png" alt="Inventaire" class="nav-icon" (click)="inventaire.emit()" role="button" tabindex="0" />
+    <img src="assets/images/navbar/shop.png" alt="Boutique" class="nav-icon" (click)="boutique.emit()" role="button" tabindex="0" />
+    <button class="nav-btn mairie-btn" (click)="onMairieClick()" type="button">
+      Mairie
+      @if (pendingReceived() > 0) {
+        <span class="badge">{{ pendingReceived() > 9 ? '9+' : pendingReceived() }}</span>
+      }
+    </button>
+    <button class="nav-btn mairie-btn" (click)="onAmisClick()" type="button">
+      Amis
+      @if (pendingFriendRequests() > 0) {
+        <span class="badge">{{ pendingFriendRequests() > 9 ? '9+' : pendingFriendRequests() }}</span>
+      } @else if (onlineFriendsCount() > 0) {
+        <span class="badge badge-green">{{ onlineFriendsCount() > 9 ? '9+' : onlineFriendsCount() }}</span>
+      }
+    </button>
+    <button class="nav-btn mairie-btn" (click)="tradeService.openPanel()" type="button">
+      Échanges
+    </button>
+  </nav>
+</div>

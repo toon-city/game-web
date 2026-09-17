@@ -78,6 +78,13 @@
   height: 100%;
 }
 
+// Mobile portrait: the word takes real width away from the deditoon ticker
+// on a narrow screen — the smile icon already conveys "connectés", so only
+// the number stays. Same reasoning for "Deditoon" → "+" below.
+@media (max-width: 767.98px) and (orientation: portrait) {
+  .count-label { display: none; }
+}
+
 // ── Déditoon container ─────────────────────────────────────────────────────────
 
 .deditoon-container {
@@ -105,6 +112,18 @@
   &:hover {
     filter: brightness(1.1);
   }
+}
+
+.add-icon {
+  display: none;
+  font-size: 17px;
+  line-height: 1;
+}
+
+@media (max-width: 767.98px) and (orientation: portrait) {
+  .add-label { display: none; }
+  .add-icon  { display: block; }
+  .add       { padding: 0 14px; }
 }
 
 // ── Zone ticker ────────────────────────────────────────────────────────────────

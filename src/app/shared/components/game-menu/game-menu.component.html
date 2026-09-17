@@ -9,11 +9,8 @@
   <div class="content">
     <!-- Connected bar -->
     <div class="connected-bar">
-      <div class="bar">
-        <div class="fill" [style.width.%]="fillPercent()"></div>
-        <div class="count">{{ totalConnected() }}</div>
-      </div>
-      <div class="label">Connectés</div>
+      <span class="label">Connectés</span>
+      <span class="count">{{ totalConnected() }}</span>
     </div>
 
     <!-- User list -->

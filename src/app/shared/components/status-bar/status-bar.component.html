@@ -6,13 +6,17 @@
       <div class="smile">
         <img src="assets/images/smile.png" alt="Connectés" />
       </div>
-      <div class="count">{{ statsService.stats().totalConnected }} connectés</div>
+      <div class="count">
+        <span class="count-num">{{ statsService.stats().totalConnected }}</span>
+        <span class="count-label">&nbsp;connectés</span>
+      </div>
     </button>
 
     <!-- ── Déditoon container ─────────────────── -->
     <div class="deditoon-container">
       <button class="add" (click)="openDeditoonInput()" title="Écrire une déditoon (10 kreds)">
-        Deditoon
+        <span class="add-label">Deditoon</span>
+        <span class="add-icon" aria-hidden="true">+</span>
       </button>
 
       <div class="deditoons">
