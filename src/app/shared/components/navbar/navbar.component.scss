@@ -42,23 +42,25 @@
   box-shadow: 0 8px 24px rgba(3, 56, 73, 0.28);
 }
 
-// The tab IS the bar's own left end — same background as .navbar (no
-// separate colored block), just a distinct clickable cell with a thin
-// divider so it still reads as a handle.
+// The tab IS the bar's own left end — bleeds out to .navbar's own padded
+// edge (negative margin cancelling the parent's 8px padding on 3 sides)
+// and shares its exact corner radius, so it reads as a proper rounded
+// cap flush with the bar's silhouette instead of a small inset rectangle
+// floating inside it.
 .nav-tab {
   flex-shrink: 0;
-  width: 24px;
-  height: 36px;
+  align-self: stretch;
+  width: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-right: 2px solid rgba(35, 105, 129, 0.12);
-  padding-right: 6px;
-  margin-right: 2px;
+  margin: -8px 4px -8px -8px;
+  border-radius: 20px 0 0 20px;
+  background: rgba(35, 105, 129, 0.06);
   transition: background 0.15s;
 
-  &:hover { background: rgba(35, 105, 129, 0.06); }
+  &:hover { background: rgba(35, 105, 129, 0.12); }
 }
 
 .nav-tab-icon {
