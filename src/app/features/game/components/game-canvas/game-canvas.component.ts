@@ -502,7 +502,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // pour les placements/déplacements qui arrivent APRÈS, en direct).
     for (const f of state.furnitures ?? []) {
       await this.gc.spawnFurniture(
-        Number(f.instanceId), f.baseId, 18, `${f.spriteKey}/${f.spritePath}`,
+        Number(f.instanceId), f.baseId, f.type, `${f.spriteKey}/${f.spritePath}`,
         f.x, f.y, f.orientation,
       );
       this.furnitureMeta.set(Number(f.instanceId), { name: f.name, displayImage: f.displayImage, orientation: f.orientation });
@@ -784,7 +784,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       // propre fantôme local et laisse cet écho créer le vrai meuble).
       this.socket.furniturePlace$.subscribe((p) => {
         this.gc?.spawnFurniture(
-          Number(p.instanceId), p.baseId, 18, `${p.spriteKey}/${p.spritePath}`,
+          Number(p.instanceId), p.baseId, p.type, `${p.spriteKey}/${p.spritePath}`,
           p.x, p.y, p.orientation,
         );
         this.furnitureMeta.set(Number(p.instanceId), { name: p.name, displayImage: p.displayImage, orientation: p.orientation });
@@ -901,6 +901,11 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // instead of a fixed spot the player then had to drag again from
     // scratch. Click-to-place (no drag) keeps the old default.
     const { x, y } = spawnPos ?? { x: 400, y: 300 };
+    // Still hardcoded 18 (regular blocking furniture): ItemInfo has no
+    // renderType yet (only FurnitureState/the room-snapshot+broadcast path
+    // does — see items.render_type) — every item a player can actually drag
+    // from their own inventory today is a normal blocking piece, so this
+    // isn't reachable with anything else yet.
     const ghostView = await this.gc.spawnFurniture(userItemId, item.item.id, 18, file, x, y, 1);
     if (!ghostView || !this.gc) { this.pendingNewPlacements.delete(userItemId); return; }
 
