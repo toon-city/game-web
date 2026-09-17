@@ -1,7 +1,5 @@
 /* Palette/type are the real project identity (see login.component.scss /
-   styles.scss's --toon-* tokens) — same recipe as the other shared panels.
-   Was its own third ad-hoc palette (#2b4a5a/#82c9e8/#fde3c5/#d24193 +
-   a rainbow-shimmer text label) before. */
+   styles.scss's --toon-* tokens) — same recipe as the other shared panels. */
 :host {
   display: contents;
 }
@@ -10,30 +8,34 @@
 .menu-wrapper {
   position: fixed;
   right: 0;
-  // identity-card sits at top:72px and runs ~163px tall, ending ≈235px.
+  // Prend toute la hauteur dispo entre le panel identité (top:72px, ~163px
+  // de haut, donc finit ≈235px) et la navbar (bottom:16px, une ligne
+  // horizontale ≈56px de haut, donc commence ≈vh-72px) — top/bottom fixes
+  // plutôt qu'une hauteur en dur, avec juste une petite marge de chaque
+  // côté, pas plus.
   top: 248px;
+  bottom: 81px;
   z-index: 60;
   display: flex;
-  align-items: center;
-  padding-right: 16px;
+  align-items: stretch;
   transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.closed {
-    /* déplace le wrapper vers la droite en laissant juste la languette visible */
     transform: translateX(calc(100% - 28px));
   }
 }
 
-/* ── Languette ────────────────────────────────────────────────────────── */
+/* ── Languette : prolongement visuel du bloc (même dégradé que son en-tête),
+   pas un élément séparé posé à côté ────────────────────────────────────── */
 .tab {
   flex-shrink: 0;
   width: 28px;
+  align-self: center;
   padding: 24px 0;
-  background: white;
-  border: 2px solid var(--toon-petrol);
-  border-right: none;
+  background: linear-gradient(180deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
+  border: none;
   border-radius: 10px 0 0 10px;
-  margin-right: -2px; /* recouvre le bord gauche du panel */
+  margin-right: -1px;
   z-index: 1;
   cursor: pointer;
   display: flex;
@@ -41,15 +43,15 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.12);
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.16);
   user-select: none;
-  transition: background 0.15s;
+  transition: filter 0.15s;
 
-  &:hover { background: rgba(35, 105, 129, 0.06); }
+  &:hover { filter: brightness(1.08); }
 
   .tab-icon {
     font-size: 13px;
-    color: var(--toon-petrol);
+    color: white;
     font-weight: 900;
     line-height: 1;
   }
@@ -57,7 +59,7 @@
   .tab-count {
     font-size: 11px;
     font-weight: 900;
-    color: var(--toon-pink);
+    color: white;
     font-family: 'Nunito', Arial, sans-serif;
     writing-mode: vertical-lr;
     transform: rotate(180deg);
@@ -66,56 +68,50 @@
 }
 
 #game-menu {
-  padding: 0;
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 20px;
-  box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30), 0 2px 8px rgba(3, 56, 73, 0.14);
-  overflow: hidden;
-  // Content (header + 300px list + emoji grid + buttons) runs ~600px tall,
-  // which ran off the bottom of the viewport on anything shorter than
-  // ~900px — cap it to the available space below the wrapper's top offset
-  // and let it scroll instead of clipping unreachably.
-  max-height: calc(100vh - 264px);
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-#game-menu .content {
+  // Largeur fixe, pas flex:1 — un .menu-wrapper sans `left` explicite (right:0
+  // + top/bottom pour la hauteur, voir plus bas) calcule sa propre largeur en
+  // shrink-to-fit ; un enfant flex:1 dedans fait déborder ce calcul jusqu'à
+  // la largeur du viewport entier (feedback avec les width:100% en cascade
+  // à l'intérieur). Largeur fixe = comportement prévisible.
+  width: 280px;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 12px;
-  background: white;
+  background: rgba(255, 255, 255, 0.97);
+  // Collé au bord droit (voir .menu-wrapper) — seuls les coins gauche
+  // arrondis, comme la navbar et le panel identité.
+  border-radius: 20px 0 0 20px;
+  box-shadow: 0 14px 40px rgba(3, 56, 73, 0.30), 0 2px 8px rgba(3, 56, 73, 0.14);
+  overflow: hidden;
 }
 
-// ── En-tête "Connectés" (remplace le label texte à effet arc-en-ciel par
-// le même bandeau dégradé rose que les autres panneaux du site) ─────────────
-.connected-bar {
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  margin: -12px -12px 12px;
-  padding: 12px 14px;
+/* ── En-tête : plein bord, hors du padding du corps (l'ancienne version
+   mettait "Connectés" DANS .content qui a 12px de padding, et essayait de
+   le faire déborder avec des marges négatives + width:100% — le width:100%
+   d'un enfant flex se résout contre la content-box DÉJÀ réduite par le
+   padding du parent, donc la marge négative ne fait que décaler la barre
+   au lieu de l'élargir : résultat, un bandeau rose flottant avec un liseré
+   blanc tout autour. Sortir l'en-tête de .content, comme fait déjà chaque
+   autre panneau du site, évite le problème plutôt que de le corriger). ── */
+.header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  padding: 12px 14px;
   background: linear-gradient(90deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
   color: white;
   font-family: 'Nunito', Arial, sans-serif;
 }
 
-.connected-bar .label {
+.header-title {
   font-size: 15px;
   font-weight: 900;
   letter-spacing: 0.2px;
 }
 
-.connected-bar .bar {
-  display: none; // the old empty pill-fill track carried no real information
-}
-
-.connected-bar .count {
+.header-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -128,12 +124,24 @@
   font-weight: 800;
 }
 
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  overflow-y: auto;
+  background: white;
+}
+
 #game-menu .connected-list {
-  margin-top: 0;
+  flex: 1;
+  min-height: 120px;
+  width: 100%;
+  box-sizing: border-box;
   font-family: 'Nunito', Arial, sans-serif;
-  border: none;
-  width: 250px;
-  height: 300px;
   background: white;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(3, 56, 73, 0.10);
@@ -196,16 +204,15 @@
 }
 
 #game-menu .emojis {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   padding: 10px;
-  border: none;
-  width: 250px;
+  width: 100%;
   background: white;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(3, 56, 73, 0.10);
-  margin-top: 12px;
   box-sizing: border-box;
 }
 
@@ -223,12 +230,13 @@
 }
 
 #game-menu .buttons {
+  flex-shrink: 0;
   display: flex;
   width: 100%;
   gap: 8px;
-  margin-top: 12px;
   align-items: center;
   justify-content: start;
+  box-sizing: border-box;
 }
 
 #game-menu .buttons .action-button:last-child {

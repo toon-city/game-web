@@ -11,7 +11,6 @@
   z-index: 150;
   display: flex;
   align-items: center;
-  padding-right: 0;
   transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.closed {
@@ -19,42 +18,52 @@
   }
 }
 
+// Prolongement visuel de la barre (même dégradé que les en-têtes de
+// panneau), pas un élément séparé posé à côté.
 .nav-tab {
   flex-shrink: 0;
   width: 28px;
-  padding: 24px 0;
-  background: white;
-  border: 2px solid var(--toon-petrol);
-  border-right: none;
+  align-self: stretch;
+  padding: 12px 0;
+  background: linear-gradient(180deg, var(--toon-pink) 0%, var(--toon-pink-dark) 100%);
+  border: none;
   border-radius: 10px 0 0 10px;
-  margin-right: -2px;
+  margin-right: -1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.12);
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.16);
   user-select: none;
-  transition: background 0.15s;
+  transition: filter 0.15s;
 
-  &:hover { background: rgba(35, 105, 129, 0.06); }
+  &:hover { filter: brightness(1.08); }
 }
 
 .nav-tab-icon {
   font-size: 13px;
-  color: var(--toon-petrol);
+  color: white;
   font-weight: 900;
   line-height: 1;
 }
 
-// ── Barre de navigation (colonne, collée au bord droit) ──────────────────────────
+// ── Barre de navigation (horizontale, collée au bord droit) ──────────────────
 
 .navbar {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 10px 8px;
+  justify-content: flex-end;
+  // Fixed-width row (4 icons + 3 buttons) overflows past the left edge on
+  // narrow viewports since the wrapper is anchored right:0 — capping the
+  // width and letting it wrap keeps it on-screen instead of clipping off
+  // at negative x (the tab's 28px + a little breathing room reserved).
+  max-width: calc(100vw - 44px);
+  padding: 8px;
   gap: 8px;
   background: rgba(255, 255, 255, 0.97);
+  // 20px not a pill — a pill only reads right on a single unbroken row,
+  // and this wraps to 2 rows on narrow viewports (see max-width above).
   border-radius: 20px 0 0 20px;
   box-shadow: 0 8px 24px rgba(3, 56, 73, 0.28);
 }
@@ -75,14 +84,13 @@
 
 .nav-btn {
   position: relative;
-  width: 100%;
-  padding: 8px 12px;
+  padding: 8px 16px;
   border: none;
   border-radius: 999px;
   background: rgba(35, 105, 129, 0.07);
   color: var(--toon-petrol-dark);
   font-weight: 800;
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'Nunito', sans-serif;
   cursor: pointer;
   white-space: nowrap;
