@@ -260,8 +260,12 @@
     object-fit: contain;
   }
 
-  &:not([style*="cursor: default"]):hover {
-    background: rgba(240, 3, 127, 0.10);
-    transform: translateY(-1px);
+  &:not([style*="cursor: default"]) {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(240, 3, 127, 0.10);
+      transform: translateY(-1px);
+    }
   }
 }

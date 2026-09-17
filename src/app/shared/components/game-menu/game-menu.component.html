@@ -39,7 +39,7 @@
       <!-- Emojis grid -->
       <div class="emojis">
         @for (n of emojis; track n) {
-          <div class="emoji" title="Emoji {{n}}" style="opacity:0.5;cursor:default;">
+          <div class="emoji" title="Emoji {{n}}" (click)="sendSmile(n)" role="button" tabindex="0" (keyup.enter)="sendSmile(n)">
             <img [src]="'assets/images/emojis/' + n + '.png'" [alt]="'Emoji ' + n" width="28" height="28" />
           </div>
         }
@@ -47,8 +47,8 @@
 
       <!-- Action buttons -->
       <div class="buttons">
-        <div class="action-button" style="opacity:0.5;cursor:default;"><img src="assets/images/bouton_coeurs.png" alt="Cœurs" /></div>
-        <div class="action-button" style="opacity:0.5;cursor:default;"><img src="assets/images/bouton_zzz.png" alt="Zzz" /></div>
+        <div class="action-button" title="Cœurs" (click)="sendLove()" role="button" tabindex="0" (keyup.enter)="sendLove()"><img src="assets/images/bouton_coeurs.png" alt="Cœurs" /></div>
+        <div class="action-button" title="Zzz" (click)="sendZzz()" role="button" tabindex="0" (keyup.enter)="sendZzz()"><img src="assets/images/bouton_zzz.png" alt="Zzz" /></div>
         <div class="action-button" style="cursor:default;">
           @if (soundOn()) {
             <img src="assets/images/bouton_sound_on.png" alt="Son activé" />

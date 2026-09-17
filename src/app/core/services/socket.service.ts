@@ -8,6 +8,8 @@ import {
   RemoteAvatarMovePayload,
   RemoteAvatarStopPayload,
   RemoteAvatarSayPayload,
+  RemoteAvatarEmotePayload,
+  EmoteKind,
   RemoteChatMessagePayload,
   RemoteFurnitureMovePayload,
   RemoteFurniturePlacePayload,
@@ -53,6 +55,7 @@ export class SocketService implements OnDestroy {
   readonly remoteMove$ = new Subject<RemoteAvatarMovePayload>();
   readonly remoteStop$ = new Subject<RemoteAvatarStopPayload>();
   readonly remoteSay$ = new Subject<RemoteAvatarSayPayload>();
+  readonly remoteEmote$ = new Subject<RemoteAvatarEmotePayload>();
   readonly chatMessage$ = new Subject<RemoteChatMessagePayload>();
   readonly avatarAppearance$ = new Subject<AvatarAppearancePayload>();
   readonly furniturePlace$ = new Subject<RemoteFurniturePlacePayload>();
@@ -139,6 +142,7 @@ export class SocketService implements OnDestroy {
       this.gs.on('remoteAvatarMove', (p) => this.remoteMove$.next(p)),
       this.gs.on('remoteAvatarStop', (p) => this.remoteStop$.next(p)),
       this.gs.on('remoteAvatarSay', (p) => this.remoteSay$.next(p)),
+      this.gs.on('remoteAvatarEmote', (p) => this.remoteEmote$.next(p)),
       this.gs.on('remoteChatMessage', (p) => this.chatMessage$.next(p)),
       this.gs.on('avatarAppearance', (p) => this.avatarAppearance$.next(p)),
       this.gs.on('remoteFurniturePlace', (p) => this.furniturePlace$.next(p)),
@@ -187,6 +191,9 @@ export class SocketService implements OnDestroy {
   }
   sendAvatarSay(roomId: string, text: string): void {
     this.gs?.sendAvatarSay(roomId, text);
+  }
+  sendAvatarEmote(roomId: string, kind: EmoteKind, value?: number): void {
+    this.gs?.sendAvatarEmote(roomId, kind, value);
   }
   sendChatMessage(roomId: string, text: string): void {
     this.gs?.sendChatMessage(roomId, text);

@@ -575,6 +575,25 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.socket.remoteSay$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
       }),
+      // Server broadcasts to everyone including the sender (same as chat
+      // below), so this is the only place SMILE/LOVE/ZZZ ever gets applied —
+      // no separate local-echo path needed, the sender sees their own click
+      // via this same subscription once it round-trips.
+      this.socket.remoteEmote$.subscribe((p) => {
+        const avatar = this.gc?.getAvatar(p.userId);
+        if (!avatar) return;
+        switch (p.kind) {
+          case 'SMILE':
+            if (p.value) avatar.emote(`assets/images/emojis/${p.value}.png`, 4000);
+            break;
+          case 'LOVE':
+            avatar.emote('assets/images/bouton_coeurs.png', 3000, true);
+            break;
+          case 'ZZZ':
+            avatar.emote('assets/images/bouton_zzz.png', 4000);
+            break;
+        }
+      }),
       this.socket.chatMessage$.subscribe((p) => {
         this.gc?.getAvatar(p.userId)?.say(p.text, 2500);
       }),
