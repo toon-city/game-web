@@ -584,13 +584,18 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         if (!avatar) return;
         switch (p.kind) {
           case 'SMILE':
-            if (p.value) avatar.emote(`assets/images/emojis/${p.value}.png`, 4000);
+            if (p.value) avatar.playSmile(p.value);
             break;
           case 'LOVE':
-            avatar.emote('assets/images/bouton_coeurs.png', 3000, true);
+            avatar.playLove();
             break;
           case 'ZZZ':
-            avatar.emote('assets/images/bouton_zzz.png', 4000);
+            // No fixed duration — avatar.walk()/say() call stopSnore()
+            // internally the moment this player moves or talks (works for
+            // both the local avatar and any remote one, since remote
+            // move/say already route through those same two methods —
+            // see the remoteMove$/remoteSay$/chatMessage$ subscriptions).
+            avatar.startSnore();
             break;
         }
       }),
