@@ -221,6 +221,9 @@
   // this panel doesn't share that class (its own top/left/width predate
   // DialogStackService's convention), so it needs its own override here.
   // Drag disabled separately via [cdkDragDisabled] (see the .html).
+  // Same z-index bump as .ui-block's mobile override, and for the same
+  // reason: this panel's own top (.status-bar) is itself part of the
+  // z-index:200 chrome it needs to sit above once full-screen.
   @media (max-width: 767.98px) {
     position: fixed;
     inset: 0;
@@ -228,6 +231,9 @@
     max-width: none;
     border-radius: 0;
     transform: none;
+    // [style.z-index]="playerPanelZIndex()" is an inline style — wins over
+    // a plain rule regardless of source order, needs !important to override.
+    z-index: 220 !important;
 
     .pp-inner {
       max-height: none;

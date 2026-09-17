@@ -96,6 +96,15 @@ html {
     max-height: none !important;
     border-radius: 0 !important;
     transform: none !important;
+    // Le z-index dynamique par dialog (DialogStackService, 101+) reste
+    // sous le chrome fixe (status-bar/barre deditoon et edit-overlay :
+    // z-index 200 chacun, navbar mobile : 150) — un panel plein écran
+    // s'affichait donc SOUS ces barres au lieu de les recouvrir. Mesuré
+    // en live : le panel Amis restait visible en transparence sous la
+    // barre deditoon et les toggles "Mode édition". 220 passe au-dessus
+    // des trois sans dépasser le modal deditoon-overlay (300, actif
+    // seulement pendant la saisie, doit rester par-dessus tout).
+    z-index: 220 !important;
   }
 }
 

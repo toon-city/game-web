@@ -226,7 +226,14 @@
     right: 140px;
     transform: none;
     width: auto;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    // 64px only cleared the navbar's single-row height (~54-64px) — on a
+    // narrow phone (measured live at 360px/320px wide) its 3 text buttons +
+    // 4 icons wrap to 2 rows, growing to ~91px, and the chat bar's own
+    // bottom edge ended up rendered UNDER that second row (opaque white
+    // background from the navbar covering it, looked like the bar was
+    // misplaced/cut off). 100px clears the worst-case wrapped height with
+    // margin regardless of which row count the current viewport gets.
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
 
     // Same specificity as the desktop 6-column rule (both `.chat .emojis`)
     // so this actually wins instead of silently losing to it.

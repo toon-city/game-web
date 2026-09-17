@@ -138,6 +138,19 @@ import { Subscription } from 'rxjs';
     .recenter-btn:hover { color: #fff; background: rgba(20, 40, 50, 1); }
     .recenter-btn:active { color: #ffd35c; }
 
+    /* Mobile: the bottom navbar becomes a full-width bar (navbar.component.scss,
+       z-index:150) sitting on top of the whole screen width, including the
+       bottom-left corner this pad used to occupy at bottom:16px — measured
+       live, the pad's lower half was rendered completely invisible underneath
+       it (it never disappeared, it was just opaque-covered). Raised to the
+       same bottom offset as .move-joystick-base below, which already clears
+       that bar's tallest (2-row-wrapped) measured height of 91px. */
+    @media (max-width: 767.98px) {
+      .camera-pad {
+        bottom: 96px;
+      }
+    }
+
     /* Mobile movement joystick — visible only below the 767.98px breakpoint
        (mounted conditionally via ViewportService, see @if above), so it
        never affects desktop even if this CSS loaded there. Bottom-right,
