@@ -75,7 +75,7 @@ const HEAD_FILL = 0.62;
   standalone: true,
   template: `<canvas #canvas class="avatar-badge-canvas" [class.head-crop]="mode === 'head'"></canvas>`,
   styles: [`
-    :host { display: block; width: 100%; height: 100%; }
+    :host { display: flex; width: 100%; height: 100%; justify-content: center; }
     .avatar-badge-canvas { display: block; width: 100%; height: 100%; }
     .avatar-badge-canvas.head-crop { border-radius: 50%; }
   `],
@@ -180,11 +180,7 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
       // HEAD_FILL's comment for why this replaced canvas-edge clipping.
       const zoom = (box * HEAD_FILL) / Math.max(HEAD_BBOX.w, HEAD_BBOX.h);
       this.avatar.scale.set(zoom);
-      // -1.5px nudge: reported (and measured) as sitting slightly right of
-      // center at the bbox-centered position — the presence dot sitting on
-      // the bottom-right corner also visually pulls the eye that way, but
-      // the head itself measured a couple px off too.
-      const centerNudgeX = -1.5;
+      const centerNudgeX = 0;
       const centerNudgeY = -1.5;
       this.avatar.x = box / 2 - (HEAD_BBOX.x + HEAD_BBOX.w / 2) * zoom + centerNudgeX;
       this.avatar.y = boxH / 2 - (HEAD_BBOX.y + HEAD_BBOX.h / 2) * zoom + centerNudgeY;

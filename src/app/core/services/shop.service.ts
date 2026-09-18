@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ShopItemInfo, ShopIdType, CollectionInfo, UserItemInfo, BuyOption } from '@toon-live/game-types';
+import { ShopItemInfo, ShopIdType, CollectionInfo, UserItemInfo, BuyOption, ItemSubType } from '@toon-live/game-types';
 import { environment } from '../../../environments/environment';
 import { PagedResult } from './inventory.service';
 
@@ -10,9 +10,10 @@ export class ShopService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
 
-  listItems(shopId: ShopIdType, collectionId?: number, page = 0): Observable<PagedResult<ShopItemInfo>> {
+  listItems(shopId: ShopIdType, collectionId?: number, page = 0, subType?: ItemSubType): Observable<PagedResult<ShopItemInfo>> {
     let params = new HttpParams().set('page', page);
     if (collectionId != null) params = params.set('collectionId', collectionId);
+    if (subType) params = params.set('subType', subType);
     return this.http.get<PagedResult<ShopItemInfo>>(
       `${this.base}/shops/${shopId}/items`,
       { params }

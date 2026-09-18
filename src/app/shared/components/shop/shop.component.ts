@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnInit, OnDestroy, Output, inject, signal, inp
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { finalize } from 'rxjs/operators';
-import { ShopItemInfo, ShopIdType, CollectionInfo } from '@toon-live/game-types';
+import { ShopItemInfo, ShopIdType, CollectionInfo, ItemSubType } from '@toon-live/game-types';
 import { ShopService } from '../../../core/services/shop.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
@@ -25,6 +25,25 @@ const SHOP_TABS: ShopTab[] = [
   { id: 'VESTIS',      label: 'Vestis' },
   { id: 'BIJOUTERIE',  label: 'Bijouterie' },
 ];
+
+type SubTypeTab = { id: ItemSubType; label: string };
+
+/** Sub-category filters per shop -- only shops whose catalogue actually spans
+ *  more than one ItemSubType get this row at all (COUPE_TIFF is HAIRSTYLE-only,
+ *  BIJOUTERIE is a single catalogue too), see selectShop()/subTypeTabs(). */
+const SUB_TYPE_TABS: Partial<Record<ShopIdType, SubTypeTab[]>> = {
+  VESTIS: [
+    { id: 'TOP',    label: 'T-shirts' },
+    { id: 'BOTTOM', label: 'Pantalons' },
+    { id: 'HAT',    label: 'Chapeaux' },
+  ],
+  IKEBO: [
+    { id: 'PIECE',     label: 'Meubles' },
+    { id: 'FLOOR',     label: 'Sols' },
+    { id: 'WALL',      label: 'Murs' },
+    { id: 'WALLPAPER', label: 'Papiers peints' },
+  ],
+};
 
 @Component({
   selector: 'app-shop',
@@ -54,6 +73,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   activeShop        = signal<ShopIdType>('COUPE_TIFF');
   collections       = signal<CollectionInfo[]>([]);
   activeCollection  = signal<number | null>(null);
+  activeSubType     = signal<ItemSubType | null>(null);
   items             = signal<ShopItemInfo[]>([]);
   loading           = signal(false);
   page              = signal(0);
@@ -80,12 +100,26 @@ export class ShopComponent implements OnInit, OnDestroy {
   selectShop(shopId: ShopIdType): void {
     this.activeShop.set(shopId);
     this.activeCollection.set(null);
+    this.activeSubType.set(null);
     this.page.set(0);
     this.loadCollections();
   }
 
   selectCollection(collectionId: number | null): void {
     this.activeCollection.set(collectionId);
+    this.page.set(0);
+    this.load();
+  }
+
+  /** Undefined (not just empty) when the current shop has no sub-category
+   *  split at all -- lets the template hide the row entirely with `@if`
+   *  instead of showing a pointless single "Tous" button. */
+  subTypeTabs(): SubTypeTab[] | undefined {
+    return SUB_TYPE_TABS[this.activeShop()];
+  }
+
+  selectSubType(subType: ItemSubType | null): void {
+    this.activeSubType.set(subType);
     this.page.set(0);
     this.load();
   }
@@ -253,7 +287,7 @@ export class ShopComponent implements OnInit, OnDestroy {
 
   private load(): void {
     this.loading.set(true);
-    this.shopService.listItems(this.activeShop(), this.activeCollection() ?? undefined, this.page())
+    this.shopService.listItems(this.activeShop(), this.activeCollection() ?? undefined, this.page(), this.activeSubType() ?? undefined)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: page => {
