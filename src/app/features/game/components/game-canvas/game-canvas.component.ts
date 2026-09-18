@@ -226,6 +226,20 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   private loadingView: LoadingView | null = null;
   private subs: Subscription[]    = [];
   private initDone = false;
+  /**
+   * Set at the top of ngOnDestroy. startLoading() is a long async chain
+   * (socket connect, roomState poll, loadHouse, one await per placed
+   * furniture/texture) — game.component.ts destroys and recreates this
+   * whole component on room switch (see its own paramMap comment), so a
+   * fast switch-during-load can tear THIS instance down (nulling gc/app in
+   * ngOnDestroy) while its own startLoading() is still mid-chain. Without
+   * this, the next `await`'s continuation ran anyway and crashed on
+   * `this.gc.spawnFurniture` (gc now null) — confirmed live via a rapid
+   * double room-switch, which also left the OLD room's canvas frozen on
+   * screen since the new instance's setup never got to run (URL changed,
+   * view didn't). Checked after every meaningful await in startLoading().
+   */
+  private destroyed = false;
   private myId = '';
   /** True once the map is loaded and avatars can be spawned into the scene. */
   private worldReady = false;
@@ -431,6 +445,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       autoDensity: true,
       resizeTo: parent,
     });
+    if (this.destroyed) return;
 
     // ── GameCore ──────────────────────────────────────────────────────────────
     this.gc = new GameCore(this.app, {
@@ -446,6 +461,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // ── Étape 1 : écran de chargement immédiat ────────────────────────────────
     // Pré-charger la texture vidéo pour que le Sprite ait des dimensions correctes
     await Assets.load('assets/ui/loading.webm').catch(() => null);
+    if (this.destroyed) return;
     this.loadingView = new LoadingView();
     this.loadingView.draw(this.app.screen.width, this.app.screen.height);
     this.app.stage.addChild(this.loadingView);
@@ -464,6 +480,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         if (this.socket.isConnected()) { clearInterval(check); resolve(); }
       }, 100);
     });
+    if (this.destroyed) return;
 
     // Subscribe before any further awaiting. The room events below are plain
     // Subjects with no replay, so anything emitted while nobody is listening is
@@ -486,6 +503,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         if (s2) { clearInterval(check); resolve(s2); }
       }, 100);
     });
+    if (this.destroyed) return;
 
     this.loadingView.setMessage('Chargement de la carte...');
     this.loadingView.setProgress(0.5);
@@ -497,10 +515,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       console.error('[GameCanvas] loadHouse failed:', e);
       return;
     }
+    if (this.destroyed) return;
 
     // Meubles déjà placés dans la room (snapshot du join — voir subscribeToRoomEvents
     // pour les placements/déplacements qui arrivent APRÈS, en direct).
     for (const f of state.furnitures ?? []) {
+      if (this.destroyed) return;
       await this.gc.spawnFurniture(
         Number(f.instanceId), f.baseId, f.type, `${f.spriteKey}/${f.spritePath}`,
         f.x, f.y, f.orientation,
@@ -512,8 +532,10 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // meubles ci-dessus (snapshot du join, le direct arrive via remoteTextureApply$/
     // remoteTextureRemove$ dans subscribeToRoomEvents).
     for (const t of state.textures ?? []) {
+      if (this.destroyed) return;
       await this.gc.applyTexture(t.zoneType, t.zoneIndex, t.baseId, t.spritePath);
     }
+    if (this.destroyed) return;
 
     this.loadingView.setMessage('Chargement des joueurs...');
     this.loadingView.setProgress(0.8);
@@ -1007,6 +1029,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.stopPan();
     this.inventory.onClothingChanged = null;
     this.inventory.onPlaceFurniture = null;
