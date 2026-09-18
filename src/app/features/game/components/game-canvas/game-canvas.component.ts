@@ -640,6 +640,18 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // above: the rotation happened locally and nowhere else.
     this.gc.on('furniture:rotated', ({ view, orientation }) => {
       this.socket.sendFurnitureRotate(this.roomId, { instanceId: String(view.model.id), orientation });
+      // Preview panel's rotate button computes its next click from
+      // target.orientation (see FurniturePreviewComponent.rotate) -- without
+      // updating it here too, it stayed stale until the server's echo of
+      // THIS same rotation came back (applyRemoteFurnitureRotation, below),
+      // a full round-trip later. A second click inside that window reused
+      // the pre-rotation orientation and requested the SAME target again
+      // (a silent no-op server-side: "Already at that orientation"),
+      // needing a third click to actually advance -- confirmed as the
+      // reported "sometimes need several clicks" symptom.
+      this.furniturePreview.updateOrientation(Number(view.model.id), orientation);
+      const meta = this.furnitureMeta.get(Number(view.model.id));
+      if (meta) meta.orientation = orientation;
     });
 
     // The world can host avatars from here on. Reconcile against the live room
