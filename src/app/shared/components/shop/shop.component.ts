@@ -76,8 +76,14 @@ export class ShopComponent implements OnInit, OnDestroy {
   activeSubType     = signal<ItemSubType | null>(null);
   items             = signal<ShopItemInfo[]>([]);
   loading           = signal(false);
+  /** True only while appending a further page (infinite scroll) — distinct
+   *  from `loading` (a fresh filter/shop switch, which replaces the list
+   *  and should show the normal "Chargement…" state instead of a footer
+   *  spinner under existing items). */
+  loadingMore       = signal(false);
   page              = signal(0);
   totalPages        = signal(0);
+  hasMore           = signal(false);
   buyError          = signal<string | null>(null);
   buying            = signal<BuyState>(null);
   confirming        = signal<ConfirmState>(null);
@@ -124,12 +130,31 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  prevPage(): void {
-    if (this.page() > 0) { this.page.update(p => p - 1); this.load(); }
+  /** Bound to the item grid's own (scroll) — appends the next page once the
+   *  user nears the bottom, instead of the old prev/next buttons. 200px
+   *  lookahead so the next page is already in by the time they reach the
+   *  actual edge, not a hard stop-and-wait. */
+  onItemsScroll(el: HTMLElement): void {
+    if (this.loading() || this.loadingMore() || !this.hasMore()) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+      this.loadMore();
+    }
   }
 
-  nextPage(): void {
-    if (this.page() < this.totalPages() - 1) { this.page.update(p => p + 1); this.load(); }
+  private loadMore(): void {
+    this.loadingMore.set(true);
+    const nextPage = this.page() + 1;
+    this.shopService.listItems(this.activeShop(), this.activeCollection() ?? undefined, nextPage, this.activeSubType() ?? undefined)
+      .pipe(finalize(() => this.loadingMore.set(false)))
+      .subscribe({
+        next: page => {
+          this.page.set(nextPage);
+          this.items.update(existing => [...existing, ...page.content]);
+          this.hasMore.set(nextPage + 1 < page.totalPages);
+        },
+        // A failed "load more" just leaves what's already shown -- the user
+        // can trigger a retry by scrolling again (hasMore stays true).
+      });
   }
 
   /** Buy button click — asks for confirmation first, doesn't purchase yet.
@@ -285,16 +310,20 @@ export class ShopComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Fresh load (shop/collection/sub-type switch) — replaces the list and
+   *  resets to page 0, as opposed to loadMore()'s append-only page+1 fetch. */
   private load(): void {
     this.loading.set(true);
-    this.shopService.listItems(this.activeShop(), this.activeCollection() ?? undefined, this.page(), this.activeSubType() ?? undefined)
+    this.page.set(0);
+    this.shopService.listItems(this.activeShop(), this.activeCollection() ?? undefined, 0, this.activeSubType() ?? undefined)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: page => {
           this.items.set(page.content);
           this.totalPages.set(page.totalPages);
+          this.hasMore.set(page.totalPages > 1);
         },
-        error: () => this.items.set([]),
+        error: () => { this.items.set([]); this.hasMore.set(false); },
       });
   }
 }

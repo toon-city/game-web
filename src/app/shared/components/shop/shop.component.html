@@ -54,7 +54,7 @@
       } @else if (items().length === 0) {
         <div class="state-msg">Aucun article disponible.</div>
       } @else {
-        <div class="items">
+        <div class="items" #itemsGrid (scroll)="onItemsScroll(itemsGrid)">
           @for (item of items(); track item.id) {
             <div class="item" [class.out-of-stock]="isOutOfStock(item)">
               <div class="item-image">
@@ -92,15 +92,9 @@
               </div>
             </div>
           }
-        </div>
-      }
-
-      <!-- Pagination -->
-      @if (totalPages() > 1) {
-        <div class="pagination">
-          <button (click)="prevPage()" [disabled]="page() === 0" type="button">‹</button>
-          <span>{{ page() + 1 }} / {{ totalPages() }}</span>
-          <button (click)="nextPage()" [disabled]="page() === totalPages() - 1" type="button">›</button>
+          @if (loadingMore()) {
+            <div class="items-loading-more">Chargement…</div>
+          }
         </div>
       }
     </div>

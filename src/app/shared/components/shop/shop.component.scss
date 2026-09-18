@@ -311,34 +311,17 @@
   padding: 20px;
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 8px 0;
+// Infinite-scroll footer, inside .items itself (see onItemsScroll) --
+// full-width so it doesn't get squeezed into the flex-wrap item grid.
+.items-loading-more {
+  width: 100%;
+  text-align: center;
+  padding: 10px 0 2px;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--toon-petrol-dark);
-
-  button {
-    background: rgba(35, 105, 129, 0.07);
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--toon-petrol);
-    transition: background 0.12s;
-
-    &:disabled { opacity: 0.3; cursor: default; }
-    &:hover:not(:disabled) { background: rgba(35, 105, 129, 0.14); }
-  }
+  opacity: 0.6;
 }
 
 .confirm-backdrop {
