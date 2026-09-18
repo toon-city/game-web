@@ -16,18 +16,6 @@
     </div>
 
     <div class="body">
-      <!-- Filtres sous-catégories (vêtements/meubles) -->
-      @if (subTypeTabs(); as subTypes) {
-        <div class="buttons sub-type-buttons">
-          <button class="filter" [class.active]="activeSubType() === null"
-                  (click)="selectSubType(null)" type="button">Tous</button>
-          @for (st of subTypes; track st.id) {
-            <button class="filter" [class.active]="activeSubType() === st.id"
-                    (click)="selectSubType(st.id)" type="button">{{ st.label }}</button>
-          }
-        </div>
-      }
-
       <!-- Filtres collections -->
       <div class="buttons">
         <button class="filter" [class.active]="activeCollection() === null"
@@ -42,6 +30,18 @@
           </button>
         }
       </div>
+
+      <!-- Filtres sous-catégories (vêtements/meubles) -->
+      @if (subTypeTabs(); as subTypes) {
+        <div class="buttons sub-type-buttons">
+          <button class="filter" [class.active]="activeSubType() === null"
+                  (click)="selectSubType(null)" type="button">Tous</button>
+          @for (st of subTypes; track st.id) {
+            <button class="filter" [class.active]="activeSubType() === st.id"
+                    (click)="selectSubType(st.id)" type="button">{{ st.label }}</button>
+          }
+        </div>
+      }
 
       <!-- Message d'erreur achat -->
       @if (buyError()) {

@@ -174,10 +174,11 @@
   flex-grow: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   overflow: auto;
   padding-bottom: 10px;
   align-content: flex-start;
+  justify-content: space-around;
 
   .item {
     display: flex;
