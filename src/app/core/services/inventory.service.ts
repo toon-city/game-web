@@ -31,8 +31,10 @@ export class InventoryService {
    * Émis quand le contenu même de l'inventaire a changé côté serveur sans
    * passer par equip/unequip : poser un meuble dans une room le retire de
    * l'inventaire (`placed_in_room_id`, exclu par UserItemRepository.
-   * findInventory), le reprendre l'y remet. Sans ça le panneau gardait la
-   * liste chargée à son ouverture et le meuble posé y restait visible.
+   * findInventory), le reprendre l'y remet ; un achat en boutique y ajoute
+   * un item. Sans ça le panneau gardait la liste chargée à son ouverture et
+   * ni le meuble posé ni l'objet acheté n'y apparaissaient/disparaissaient
+   * tant qu'on ne le refermait pas et rouvrait.
    */
   readonly itemsChanged$ = new Subject<void>();
 

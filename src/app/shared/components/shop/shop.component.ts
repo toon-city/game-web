@@ -7,6 +7,7 @@ import { ShopService } from '../../../core/services/shop.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { DialogStackService } from '../../../core/services/dialog-stack.service';
 import { ViewportService } from '../../../core/services/viewport.service';
+import { InventoryService } from '../../../core/services/inventory.service';
 
 type BuyState = { shopItemId: number; option: 'PEZ' | 'KREDS' } | null;
 type ConfirmState = { item: ShopItemInfo; option: 'PEZ' | 'KREDS'; sourceEl: HTMLElement; quantity: number } | null;
@@ -36,6 +37,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
 
   private readonly shopService = inject(ShopService);
+  private readonly inventoryService = inject(InventoryService);
   readonly auth = inject(AuthService);
   private readonly dialogStack = inject(DialogStackService);
   protected readonly viewport = inject(ViewportService);
@@ -170,6 +172,11 @@ export class ShopComponent implements OnInit, OnDestroy {
           this.flyToInventory(c.sourceEl);
           this.auth.refreshUser();
           this.load();
+          // The inventory panel, if already open, doesn't otherwise hear
+          // about this — same "server-side content change with no
+          // equip/unequip" case its own itemsChanged$ doc describes for
+          // furniture placement/pickup, just via a purchase instead.
+          this.inventoryService.itemsChanged$.next();
         },
         error: (err) => {
           this.buyError.set(err?.error?.message ?? 'Achat échoué. Veuillez réessayer.');
