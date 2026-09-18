@@ -92,8 +92,8 @@ export class FriendsComponent implements OnInit, OnDestroy {
   }
 
   /** For AvatarBadgeComponent's [override] — same convention as mairie/just-married. */
-  avatarOverride(entry: { skinColor: number | null; clothing: Record<string, string> }): { skinColor: number; clothing: Record<string, string> } {
-    return { skinColor: entry.skinColor ?? 0xffffff, clothing: entry.clothing };
+  avatarOverride(entry: { skinColor: number | null; hairColor?: number | null; clothing: Record<string, string> }): { skinColor: number; hairColor: number; clothing: Record<string, string> } {
+    return { skinColor: entry.skinColor ?? 0xffffff, hairColor: entry.hairColor ?? 0xffffff, clothing: entry.clothing };
   }
 
   search(): void {

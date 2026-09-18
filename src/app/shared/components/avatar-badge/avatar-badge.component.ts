@@ -87,7 +87,7 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
    * data already in RoomUser — no extra network call, and no subscription
    * to equippedChanged$ (that only makes sense for your own outfit).
    */
-  @Input() override?: { skinColor: number; clothing: Record<string, string> };
+  @Input() override?: { skinColor: number; hairColor?: number; clothing: Record<string, string> };
 
   /** Canvas width in px (and height too, unless `height` is set) — defaults to the identity-card badge's 68px, bump it for a bigger avatar (e.g. the profile page). */
   @Input() size = DEFAULT_BOX;
@@ -211,6 +211,7 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
 
     if (this.override) {
       this.avatar.setSkinColor(this.override.skinColor);
+      if (this.override.hairColor !== undefined) this.avatar.setHairColor(this.override.hairColor);
       for (const [category, id] of Object.entries(this.override.clothing)) {
         this.avatar.changeClothing(category, id);
       }
@@ -219,6 +220,8 @@ export class AvatarBadgeComponent implements AfterViewInit, OnDestroy {
 
     const skinColor = this.auth.user()?.skinColor;
     if (skinColor !== undefined) this.avatar.setSkinColor(skinColor);
+    const hairColor = this.auth.user()?.hairColor;
+    if (hairColor !== undefined) this.avatar.setHairColor(hairColor);
 
     this.refreshClothing();
     this.equippedSub = this.inventory.equippedChanged$.subscribe(() => this.refreshClothing());

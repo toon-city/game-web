@@ -115,6 +115,7 @@ export class SocketService implements OnDestroy {
               userId: p.userId,
               username: p.username,
               skinColor: p.skinColor,
+              hairColor: p.hairColor,
               clothing: p.clothing,
               x: p.x,
               y: p.y,

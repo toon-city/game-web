@@ -34,7 +34,7 @@ export class JustMarriedPanelComponent implements OnInit {
   }
 
   /** For AvatarBadgeComponent's [override] — same default skin used elsewhere when none is set. */
-  avatarOverride(spouse: Spouse): { skinColor: number; clothing: Record<string, string> } {
-    return { skinColor: spouse.skinColor ?? 0xffffff, clothing: spouse.clothing };
+  avatarOverride(spouse: Spouse): { skinColor: number; hairColor: number; clothing: Record<string, string> } {
+    return { skinColor: spouse.skinColor ?? 0xffffff, hairColor: spouse.hairColor ?? 0xffffff, clothing: spouse.clothing };
   }
 }

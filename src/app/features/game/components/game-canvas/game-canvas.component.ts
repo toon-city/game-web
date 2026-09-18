@@ -521,6 +521,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
     // ── Étape 5 : spawner les avatars ─────────────────────────────────────────
     const myUsername  = this.auth.user()!.username;
     const mySkinColor = this.auth.user()!.skinColor ?? 0xffffff;
+    const myHairColor = this.auth.user()!.hairColor ?? 0xffffff;
 
     // Trouver les données du joueur courant dans le roomState
     const myRoomUser = state.users.find(u => u.userId === this.myId);
@@ -537,6 +538,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
       direction: myRoomUser?.direction ?? 1,
       username:  myUsername,
       skinColor: myRoomUser?.skinColor ?? mySkinColor,
+      hairColor: myRoomUser?.hairColor ?? myHairColor,
       clothing:  myRoomUser?.clothing ?? {},
     });
     this.gc.bindPlayerInput(this.myId);
@@ -762,6 +764,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
         const avatar = this.gc?.getAvatar(p.userId);
         if (!avatar) return;
         avatar.setSkinColor(p.skinColor);
+        avatar.setHairColor(p.hairColor);
         // p.clothing only lists what's currently equipped — an unequip just
         // drops that category from the map, it's never sent back with an
         // empty value. Without diffing against what was last shown, a
@@ -986,6 +989,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy, OnChanges 
           username:  u.username,
           direction: u.direction,
           skinColor: u.skinColor,
+          hairColor: u.hairColor,
           clothing:  u.clothing,
         });
       } catch (e) {

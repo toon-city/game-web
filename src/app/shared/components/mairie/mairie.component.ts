@@ -54,8 +54,8 @@ export class MairieComponent implements OnInit, OnDestroy {
   readonly isMarried = computed(() => !!this.status()?.marriedToUsername);
 
   /** For AvatarBadgeComponent's [override] — same convention as just-married-panel. */
-  avatarOverride(spouse: Spouse): { skinColor: number; clothing: Record<string, string> } {
-    return { skinColor: spouse.skinColor ?? 0xffffff, clothing: spouse.clothing };
+  avatarOverride(spouse: Spouse): { skinColor: number; hairColor: number; clothing: Record<string, string> } {
+    return { skinColor: spouse.skinColor ?? 0xffffff, hairColor: spouse.hairColor ?? 0xffffff, clothing: spouse.clothing };
   }
 
   /** "depuis le 12/03/2026" — no DatePipe/locale registered anywhere else in this app yet. */

@@ -15,6 +15,7 @@ export interface LoginResponse {
   kreds: number;
   pez: number;
   skinColor?: number;
+  hairColor?: number;
   metierName?: string | null;
   metierDailyPez?: number;
 }
@@ -104,6 +105,7 @@ export class AuthService {
       kreds: res.kreds ?? 0,
       pez: res.pez ?? 1500,
       skinColor: res.skinColor ?? 0xffffff,
+      hairColor: res.hairColor ?? 0xffffff,
       metierName: res.metierName ?? null,
       metierDailyPez: res.metierDailyPez ?? 0,
     };
@@ -137,6 +139,7 @@ export class AuthService {
           toonizLevel: res.toonizLevel ?? current.toonizLevel,
           gender: res.gender ?? current.gender,
           skinColor: res.skinColor ?? current.skinColor,
+          hairColor: res.hairColor ?? current.hairColor,
           metierName: res.metierName ?? null,
           metierDailyPez: res.metierDailyPez ?? 0,
         };

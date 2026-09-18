@@ -85,7 +85,7 @@ export class ProfileComponent implements OnInit, OnChanges, OnDestroy {
   readonly avatarOverride = computed(() => {
     const p = this.profile();
     if (!p) return undefined;
-    return { skinColor: p.skinColor ?? 0xffffff, clothing: p.clothing };
+    return { skinColor: p.skinColor ?? 0xffffff, hairColor: p.hairColor ?? 0xffffff, clothing: p.clothing };
   });
 
   ngOnInit(): void {
